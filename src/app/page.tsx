@@ -6,7 +6,7 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold tracking-tight mb-4">
+          <h1 className="text-4xl font-bold tracking-tight mb-4 text-foreground">
             AngebotNow
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -56,6 +56,15 @@ export default function Home() {
           <Button size="lg">
             Jetzt starten
           </Button>
+        </div>
+
+        <div className="text-center mt-8">
+          <a 
+            href="/styleguide" 
+            className="text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            Design System anzeigen →
+          </a>
         </div>
       </div>
     </div>
