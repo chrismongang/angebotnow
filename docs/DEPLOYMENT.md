@@ -90,6 +90,13 @@ NEXT_PUBLIC_SENTRY_DSN=https://your-sentry-dsn
 - ✅ Bereits behoben in der aktuellen Version
 - Params werden jetzt korrekt awaited
 
+**Problem**: `npm error code ERESOLVE` - Peer dependency conflicts
+
+**Lösung**: 
+- ✅ Bereits behoben mit React 18.3.1
+- `.npmrc` mit `legacy-peer-deps=true` konfiguriert
+- `vercel.json` mit korrektem Install-Command
+
 #### Runtime-Fehler
 
 **Problem**: Datenbank-Verbindung fehlgeschlagen
