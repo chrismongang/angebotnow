@@ -20,6 +20,61 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## AI Provider Configuration
+
+The app supports two AI providers:
+
+### Mock AI (Default)
+- No configuration required
+- Generates sample offer positions
+- Used when `USE_OPENAI` is not set or `false`
+
+### OpenAI
+To enable OpenAI AI processing:
+
+1. Set environment variables:
+```bash
+USE_OPENAI=true
+OPENAI_API_KEY=your-openai-api-key
+```
+
+2. The app will use GPT-4o-mini to generate offer positions based on project descriptions.
+
+## Manueller Testplan (5min)
+
+### 1. Angebotserstellung testen
+1. `/dashboard` öffnen
+2. Bild hochladen (JPG/PNG, max. 10MB)
+3. Projektinfo eintragen (z.B. "Badrenovierung mit Fliesenarbeiten")
+4. Kundenname eingeben
+5. "Angebot erstellen" klicken
+6. **Erwartung**: Erfolgsmeldung, Weiterleitung zur Angebote-Übersicht
+
+### 2. PDF-Download testen
+1. `/angebote` → Angebot in der Liste finden
+2. "Details anzeigen" klicken
+3. "PDF herunterladen" klicken
+4. **Erwartung**: PDF-Datei öffnet sich im Browser/Download
+
+### 3. AI-Provider testen
+
+#### Mit Mock-AI (Standard)
+- `USE_OPENAI` nicht gesetzt oder `false`
+- **Erwartung**: Mock-Inhalte sichtbar ("Fliesenlegen", "Entsorgung")
+- **Gesamtbetrag**: 1746 € (fest vorgegeben)
+
+#### Mit OpenAI
+- `USE_OPENAI=true` und `OPENAI_API_KEY` gesetzt
+- **Erwartung**: Plausible, dynamische Inhalte basierend auf Projektinfo
+- **Server-Log**: Keine Fehler, erfolgreiche API-Calls
+
+### 4. PDF-Generierung testen
+```bash
+# PDF-Test ausführen
+npx vitest --config vitest.pdf.config.ts --run src/test/pdf.generate.smoke.test.ts
+```
+**Erwartung**: ✅ PDF generated successfully: ~1459 bytes
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

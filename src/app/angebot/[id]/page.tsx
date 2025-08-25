@@ -2,10 +2,11 @@ import { prisma } from '@/lib/db'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Image } from "@/components/ui/image"
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
-import { AIResponse } from '@/lib/ai/mock'
+import { AIResult } from '@/lib/ai/provider'
 
 interface PageProps {
   params: {
@@ -62,7 +63,7 @@ export default async function QuoteDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const aiData = quote.aiData as AIResponse | null
+  const aiData = quote.aiData as AIResult | null
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -86,7 +87,7 @@ export default async function QuoteDetailPage({ params }: PageProps) {
           {/* Left Column - PDF and Actions */}
           <div className="space-y-6">
             {/* PDF Display */}
-            {quote.status === 'COMPLETED' && quote.pdfPath ? (
+            {quote.status === 'COMPLETED' ? (
               <Card>
                 <CardHeader>
                   <CardTitle>PDF Angebot</CardTitle>
@@ -99,14 +100,14 @@ export default async function QuoteDetailPage({ params }: PageProps) {
                     <div className="text-center">
                       <p className="text-muted-foreground mb-2">PDF Vorschau</p>
                       <p className="text-sm text-muted-foreground">
-                        Klicken Sie auf "PDF herunterladen" um das Angebot zu öffnen
+                        Klicken Sie auf &quot;PDF herunterladen&quot; um das Angebot zu öffnen
                       </p>
                     </div>
                   </div>
                   
                   <div className="flex gap-2">
                     <Button asChild className="flex-1">
-                      <a href={`/pdfs/${quote.pdfPath}`} target="_blank" rel="noopener noreferrer">
+                      <a href={`/api/quotes/${quote.id}/pdf`} target="_blank" rel="noopener noreferrer">
                         PDF herunterladen
                       </a>
                     </Button>
@@ -121,8 +122,8 @@ export default async function QuoteDetailPage({ params }: PageProps) {
                 <CardContent className="p-8 text-center">
                   <p className="text-muted-foreground mb-4">
                     {quote.status === 'FAILED' 
-                      ? 'PDF-Generierung fehlgeschlagen' 
-                      : 'PDF wird noch generiert...'
+                      ? 'Angebotserstellung fehlgeschlagen' 
+                      : 'Angebot wird noch erstellt...'
                     }
                   </p>
                   {quote.status === 'FAILED' && (
@@ -141,13 +142,10 @@ export default async function QuoteDetailPage({ params }: PageProps) {
                   <CardTitle>Projektfoto</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <img
-                    src={`/uploads/${quote.imagePath}`}
+                  <Image
+                    src={quote.imagePath}
                     alt="Projektfoto"
                     className="w-full rounded-xl"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none'
-                    }}
                   />
                 </CardContent>
               </Card>
@@ -200,45 +198,39 @@ export default async function QuoteDetailPage({ params }: PageProps) {
                     {aiData.positions.map((position, index) => (
                       <div key={index} className="flex justify-between items-center p-3 bg-muted rounded-lg">
                         <div>
-                          <p className="font-medium">{position.description}</p>
+                          <p className="font-medium">{position.title}</p>
                           <p className="text-sm text-muted-foreground">
-                            {position.quantity} {position.unit} × {position.unitPrice.toFixed(2)} €
+                            {position.qty} {position.unit} × {position.price.toFixed(2)} €
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium">{position.totalPrice.toFixed(2)} €</p>
+                          <p className="font-medium">{(position.qty * position.price).toFixed(2)} €</p>
                         </div>
                       </div>
                     ))}
                     
-                    <div className="border-t pt-3 mt-4">
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium">Zwischensumme:</span>
-                        <span>{aiData.summary.subtotal.toFixed(2)} €</span>
+                    {aiData.total && (
+                      <div className="border-t pt-3 mt-4">
+                        <div className="flex justify-between items-center font-bold text-lg">
+                          <span>Gesamtbetrag:</span>
+                          <span>{aiData.total.toFixed(2)} €</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span>MwSt. (19%):</span>
-                        <span>{aiData.summary.tax.toFixed(2)} €</span>
-                      </div>
-                      <div className="flex justify-between items-center font-bold text-lg">
-                        <span>Gesamtbetrag:</span>
-                        <span>{aiData.summary.total.toFixed(2)} €</span>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Notes */}
-            {aiData?.notes && (
+            {/* Description */}
+            {aiData?.description && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Anmerkungen</CardTitle>
+                  <CardTitle>KI-Analyse</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm leading-relaxed">
-                    {aiData.notes}
+                    {aiData.description}
                   </p>
                 </CardContent>
               </Card>

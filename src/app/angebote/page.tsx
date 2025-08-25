@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Image } from "@/components/ui/image"
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
 
@@ -91,13 +92,10 @@ export default async function AngebotePage() {
                   {/* Image thumbnail */}
                   {quote.imagePath && (
                     <div className="aspect-video bg-muted rounded-xl overflow-hidden">
-                      <img
-                        src={`/uploads/${quote.imagePath}`}
+                      <Image
+                        src={quote.imagePath}
                         alt="Projektfoto"
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none'
-                        }}
                       />
                     </div>
                   )}
@@ -117,9 +115,9 @@ export default async function AngebotePage() {
                       </Link>
                     </Button>
                     
-                    {quote.status === 'COMPLETED' && quote.pdfPath && (
+                    {quote.status === 'COMPLETED' && (
                       <Button asChild size="sm" variant="outline">
-                        <a href={`/pdfs/${quote.pdfPath}`} target="_blank" rel="noopener noreferrer">
+                        <a href={`/api/quotes/${quote.id}/pdf`} target="_blank" rel="noopener noreferrer">
                           PDF
                         </a>
                       </Button>
