@@ -1,0 +1,22 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <defs>
+    <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFB366;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F89813;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Rounded square background -->
+  <rect x="4" y="4" width="72" height="72" rx="16" fill="url(#orangeGradient)" stroke="none"/>
+  
+  <!-- Document icon -->
+  <g transform="translate(20, 16)">
+    <!-- Document shape with folded corner -->
+    <path d="M32 4 L32 36 L4 36 L4 4 Z M32 4 L28 8 L28 12 L32 8 Z" fill="white" stroke="white" stroke-width="1"/>
+    
+    <!-- Document lines -->
+    <rect x="8" y="12" width="20" height="2" fill="white" rx="1"/>
+    <rect x="8" y="16" width="20" height="2" fill="white" rx="1"/>
+  </g>
+</svg>

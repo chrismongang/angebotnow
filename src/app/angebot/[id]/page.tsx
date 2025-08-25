@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
 import { AIResult } from '@/lib/ai/provider'
+import { MobileNavigation } from "@/components/mobile-navigation"
 
 interface PageProps {
   params: Promise<{
@@ -73,188 +74,195 @@ export default async function QuoteDetailPage({ params }: PageProps) {
   const aiData = quote.aiData as AIResult | null
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="container mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Angebot Details</h1>
-              <p className="text-muted-foreground">
-                Angebot für {quote.clientName}
-              </p>
-            </div>
-            <Badge variant={getStatusBadgeVariant(quote.status)} className="text-sm">
-              {getStatusText(quote.status)}
-            </Badge>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column - PDF and Actions */}
-          <div className="space-y-6">
-            {/* PDF Display */}
-            {quote.status === 'COMPLETED' ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle>PDF Angebot</CardTitle>
-                  <CardDescription>
-                    Das generierte Angebot als PDF
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="aspect-[3/4] bg-muted rounded-xl border-2 border-dashed border-border flex items-center justify-center">
-                    <div className="text-center">
-                      <p className="text-muted-foreground mb-2">PDF Vorschau</p>
-                      <p className="text-sm text-muted-foreground">
-                        Klicken Sie auf &quot;PDF herunterladen&quot; um das Angebot zu öffnen
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button asChild className="flex-1">
-                      <a href={`/api/quotes/${quote.id}/pdf`} target="_blank" rel="noopener noreferrer">
-                        PDF herunterladen
-                      </a>
-                    </Button>
-                    <Button variant="outline" disabled>
-                      Senden (Dummy)
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <p className="text-muted-foreground mb-4">
-                    {quote.status === 'FAILED' 
-                      ? 'Angebotserstellung fehlgeschlagen' 
-                      : 'Angebot wird noch erstellt...'
-                    }
-                  </p>
-                  {quote.status === 'FAILED' && (
-                    <Button variant="outline">
-                      Erneut versuchen
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Project Image */}
-            {quote.imagePath && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Projektfoto</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Image
-                    src={quote.imagePath}
-                    alt="Projektfoto"
-                    className="w-full rounded-xl"
-                  />
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Right Column - Details */}
-          <div className="space-y-6">
-            {/* Client Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Auftraggeber</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div>
-                  <span className="font-medium">Name:</span> {quote.clientName}
-                </div>
-                <div>
-                  <span className="font-medium">Erstellt am:</span> {formatDate(quote.createdAt)}
-                </div>
-                <div>
-                  <span className="font-medium">Status:</span> {getStatusText(quote.status)}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Project Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Projektbeschreibung</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm leading-relaxed">
-                  {quote.projectInfo}
+    <>
+      <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
+        <div className="container mx-auto max-w-6xl">
+          {/* Mobile-optimierter Header with top spacing */}
+          <div className="pt-8 sm:pt-12 mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2">Angebot Details</h1>
+                <p className="text-muted-foreground">
+                  Angebot für {quote.clientName}
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+              <Badge variant={getStatusBadgeVariant(quote.status)} className="text-sm self-start">
+                {getStatusText(quote.status)}
+              </Badge>
+            </div>
+          </div>
 
-            {/* AI Generated Data */}
-            {aiData && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+            {/* Left Column - PDF and Actions */}
+            <div className="space-y-4 sm:space-y-6">
+              {/* Mobile-optimierte PDF Display */}
+              {quote.status === 'COMPLETED' ? (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg sm:text-xl">📄 PDF Angebot</CardTitle>
+                    <CardDescription>
+                      Das generierte Angebot als PDF
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="aspect-[3/4] bg-muted rounded-xl border-2 border-dashed border-border flex items-center justify-center">
+                      <div className="text-center p-4">
+                        <div className="text-4xl mb-3">📄</div>
+                        <p className="text-muted-foreground mb-2">PDF Vorschau</p>
+                        <p className="text-sm text-muted-foreground">
+                          Klicken Sie auf &quot;PDF herunterladen&quot; um das Angebot zu öffnen
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button asChild size="lg" className="h-12 flex-1">
+                        <a href={`/api/quotes/${quote.id}/pdf`} target="_blank" rel="noopener noreferrer">
+                          PDF herunterladen
+                        </a>
+                      </Button>
+                      <Button variant="outline" size="lg" className="h-12" disabled>
+                        Senden (Dummy)
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="p-6 sm:p-8 text-center">
+                    <div className="space-y-4">
+                      <div className="text-4xl">
+                        {quote.status === 'FAILED' ? '❌' : '⏳'}
+                      </div>
+                      <p className="text-muted-foreground">
+                        {quote.status === 'FAILED' 
+                          ? 'Angebotserstellung fehlgeschlagen' 
+                          : 'Angebot wird noch erstellt...'
+                        }
+                      </p>
+                      {quote.status === 'FAILED' && (
+                        <Button variant="outline" size="lg" className="h-12">
+                          Erneut versuchen
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Mobile-optimierte Project Image */}
+              {quote.imagePath && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg sm:text-xl">📸 Projektfoto</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Image
+                      src={quote.imagePath}
+                      alt="Projektfoto"
+                      className="w-full rounded-xl shadow-sm"
+                    />
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Right Column - Details */}
+            <div className="space-y-4 sm:space-y-6">
+              {/* Mobile-optimierte Client Information */}
               <Card>
-                <CardHeader>
-                  <CardTitle>KI-generierte Positionen</CardTitle>
-                  <CardDescription>
-                    Automatisch erstellte Angebotspositionen
-                  </CardDescription>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg sm:text-xl">👤 Auftraggeber</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Name</p>
+                    <p className="text-base">{quote.clientName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Erstellt am</p>
+                    <p className="text-base">{formatDate(quote.createdAt)}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Mobile-optimierte Project Information */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg sm:text-xl">📋 Projektinformationen</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {aiData.positions.map((position, index) => (
-                      <div key={index} className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                        <div>
-                          <p className="font-medium">{position.title}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {position.qty} {position.unit} × {position.price.toFixed(2)} €
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-medium">{(position.qty * position.price).toFixed(2)} €</p>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {aiData.total && (
-                      <div className="border-t pt-3 mt-4">
-                        <div className="flex justify-between items-center font-bold text-lg">
-                          <span>Gesamtbetrag:</span>
-                          <span>{aiData.total.toFixed(2)} €</span>
+                  <p className="text-base leading-relaxed">{quote.projectInfo}</p>
+                </CardContent>
+              </Card>
+
+              {/* Mobile-optimierte AI Results */}
+              {aiData && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg sm:text-xl">🤖 KI-Analyse</CardTitle>
+                    <CardDescription>
+                      Automatisch generierte Angebotspositionen
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-2">Beschreibung</p>
+                      <p className="text-base leading-relaxed">{aiData.description}</p>
+                    </div>
+
+                    {aiData.positions && aiData.positions.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-3">Positionen</p>
+                        <div className="space-y-3">
+                          {aiData.positions.map((position, index) => (
+                            <div key={index} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                              <div className="flex-1">
+                                <p className="font-medium">{position.title}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {position.qty} {position.unit}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-medium">{(position.qty * position.price).toFixed(2)} €</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {position.price.toFixed(2)} €/{position.unit}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
-            {/* Description */}
-            {aiData?.description && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>KI-Analyse</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm leading-relaxed">
-                    {aiData.description}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+                    {aiData.total && (
+                      <div className="pt-4 border-t">
+                        <div className="flex justify-between items-center">
+                          <p className="text-lg font-semibold">Gesamtsumme</p>
+                          <p className="text-2xl font-bold text-primary">{aiData.total.toFixed(2)} €</p>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile-optimierte Quick Actions */}
+          <div className="mt-8 sm:mt-12">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <Button asChild size="lg" className="h-12">
+                <Link href="/angebote">Zurück zur Übersicht</Link>
+              </Button>
+              <Button variant="outline" asChild size="lg" className="h-12">
+                <Link href="/dashboard">Neues Angebot</Link>
+              </Button>
+            </div>
           </div>
         </div>
-
-        {/* Actions */}
-        <div className="mt-12 flex gap-4">
-          <Button asChild>
-            <Link href="/angebote">Zurück zur Übersicht</Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/dashboard">Neues Angebot erstellen</Link>
-          </Button>
-        </div>
       </div>
-    </div>
+      <MobileNavigation />
+    </>
   )
 }

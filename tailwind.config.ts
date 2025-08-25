@@ -64,7 +64,8 @@ const config: Config = {
         "soft": "0 8px 24px rgba(0,0,0,0.06)",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["var(--font-manrope)", "Manrope", "system-ui", "sans-serif"],
+        manrope: ["var(--font-manrope)", "Manrope", "system-ui", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {

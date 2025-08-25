@@ -1,71 +1,43 @@
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import Link from 'next/link'
+import { Image } from "@/components/ui/image"
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold tracking-tight mb-4 text-foreground">
-            AngebotNow
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Foto + kurze Infos → KI erstellt Angebotsentwurf → PDF
-          </p>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header Section */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
+        {/* App Icon */}
+        <div className="w-20 h-20 mb-6 rounded-2xl shadow-lg overflow-hidden">
+          <Image 
+            src="/icon.svg" 
+            alt="AngebotNow Icon" 
+            className="w-full h-full"
+          />
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle>Foto hochladen</CardTitle>
-              <CardDescription>
-                Laden Sie ein Foto Ihres Projekts hoch
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full">Foto auswählen</Button>
-            </CardContent>
-          </Card>
+        {/* App Name with Gradient */}
+        <h1 className="text-4xl sm:text-5xl font-bold mb-8 bg-gradient-to-r from-[#F89813] to-[#FFB366] bg-clip-text text-transparent">
+          AngebotNow
+        </h1>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Projektinfo</CardTitle>
-              <CardDescription>
-                Geben Sie Details zu Ihrem Projekt ein
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" variant="outline">Info hinzufügen</Button>
-            </CardContent>
-          </Card>
+        {/* Introduction Text */}
+        <p className="text-lg sm:text-xl text-gray-700 text-center max-w-md leading-relaxed mb-12">
+          Erstelle professionelle Angebote in nur 60 Sekunden mit unserer KI-gestützten App.
+        </p>
+      </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>PDF generieren</CardTitle>
-              <CardDescription>
-                KI erstellt automatisch Ihren Angebotsentwurf
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" variant="secondary">Angebot erstellen</Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="text-center mt-12">
-          <Button size="lg">
-            Jetzt starten
-          </Button>
-        </div>
-
-        <div className="text-center mt-8">
-          <a 
-            href="/styleguide" 
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            Design System anzeigen →
-          </a>
-        </div>
+      {/* Bottom CTA Section */}
+      <div className="px-6 pb-8">
+        <Button 
+          size="lg" 
+          className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-[#F89813] to-[#FFB366] hover:from-[#E88A0F] hover:to-[#F89813] border-0 shadow-lg" 
+          asChild
+        >
+          <Link href="/dashboard">
+            Los geht&apos;s
+          </Link>
+        </Button>
       </div>
     </div>
   )

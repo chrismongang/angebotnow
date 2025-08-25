@@ -1,153 +1,277 @@
-import { prisma } from '@/lib/db'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { MobileNavigation } from "@/components/mobile-navigation"
 import { Image } from "@/components/ui/image"
 import Link from 'next/link'
-import { formatDate } from '@/lib/utils'
-import type { Quote } from '@prisma/client'
+import { Plus, Filter, ChevronDown, ChevronUp, FileText } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
-async function getQuotes() {
-  // Check if database is available
-  if (!process.env.DATABASE_URL) {
-    console.warn('DATABASE_URL not available, returning empty quotes list')
-    return []
-  }
-  
-  try {
-    const quotes = await prisma.quote.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 50, // Limit to recent quotes
-    })
-    return quotes
-  } catch (error) {
-    console.error('Error fetching quotes:', error)
-    return []
-  }
+interface Quote {
+  id: string
+  clientName: string
+  projectInfo: string
+  imagePath?: string
+  createdAt: Date
 }
 
-function getStatusBadgeVariant(status: string) {
-  switch (status) {
-    case 'PENDING':
-      return 'secondary'
-    case 'AI_DONE':
-      return 'outline'
-    case 'COMPLETED':
-      return 'default'
-    case 'FAILED':
-      return 'destructive'
-    default:
-      return 'secondary'
-  }
-}
+export default function AngebotePage() {
+  const [quotes, setQuotes] = useState<Quote[]>([])
+  const [showFilter, setShowFilter] = useState(false)
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
+  const [isLoading, setIsLoading] = useState(true)
 
-function getStatusText(status: string) {
-  switch (status) {
-    case 'PENDING':
-      return 'In Bearbeitung'
-    case 'AI_DONE':
-      return 'KI-Verarbeitung'
-    case 'COMPLETED':
-      return 'Abgeschlossen'
-    case 'FAILED':
-      return 'Fehlgeschlagen'
-    default:
-      return status
-  }
-}
+  useEffect(() => {
+    loadQuotes()
+  }, [])
 
-export default async function AngebotePage() {
-  const quotes = await getQuotes()
+  const loadQuotes = async () => {
+    setIsLoading(true)
+    
+    try {
+      if (!process.env.DATABASE_URL) {
+        // Demo mode - create mock data
+        const mockQuotes: Quote[] = [
+          {
+            id: '0123',
+            clientName: 'Max Müller',
+            projectInfo: 'Badezimmer Sanierung',
+            imagePath: '/api/placeholder/150/100',
+            createdAt: new Date('2024-08-20')
+          },
+          {
+            id: '0122',
+            clientName: 'Anna Schmidt',
+            projectInfo: 'Sanierungsarbeiten',
+            imagePath: '/api/placeholder/150/100',
+            createdAt: new Date('2024-08-17')
+          },
+          {
+            id: '0121',
+            clientName: 'Peter Weber',
+            projectInfo: 'Badezimmer Sanierung',
+            imagePath: '/api/placeholder/150/100',
+            createdAt: new Date('2024-08-11')
+          },
+          {
+            id: '0120',
+            clientName: 'Maria Fischer',
+            projectInfo: 'Wand ausbessern',
+            imagePath: '/api/placeholder/150/100',
+            createdAt: new Date('2024-07-25')
+          },
+          {
+            id: '0119',
+            clientName: 'Thomas Klein',
+            projectInfo: 'Sanitärarbeiten',
+            imagePath: '/api/placeholder/150/100',
+            createdAt: new Date('2024-07-07')
+          },
+          {
+            id: '0118',
+            clientName: 'Lisa Wagner',
+            projectInfo: 'Fließenlegerarbeit',
+            imagePath: '/api/placeholder/150/100',
+            createdAt: new Date('2024-06-15')
+          }
+        ]
+        setQuotes(mockQuotes)
+      } else {
+        // Database mode - fetch actual data
+        const response = await fetch('/api/quotes')
+        if (response.ok) {
+          const data = await response.json()
+          setQuotes(data)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading quotes:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const sortedQuotes = [...quotes].sort((a, b) => {
+    const dateA = new Date(a.createdAt).getTime()
+    const dateB = new Date(b.createdAt).getTime()
+    return sortOrder === 'desc' ? dateB - dateA : dateA - dateB
+  })
+
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat('de-DE', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    }).format(new Date(date))
+  }
+
+  const getProjectDescription = (projectInfo: string) => {
+    // Simple AI-like description generation
+    const words = projectInfo.split(' ').slice(0, 3)
+    return words.join(' ')
+  }
+
+  if (isLoading) {
+    return (
+      <>
+        <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
+          <div className="container mx-auto max-w-4xl">
+            <div className="pt-8 sm:pt-12 mb-6 sm:mb-8">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#404040]">Angebotshistorie</h1>
+            </div>
+            <div className="text-center py-12">
+              <p className="text-[#676767]">Lade Angebote...</p>
+            </div>
+          </div>
+        </div>
+        <MobileNavigation />
+      </>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="container mx-auto max-w-6xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Angebote</h1>
-          <p className="text-muted-foreground">
-            Übersicht aller erstellten Angebote
-          </p>
-        </div>
-
-        {quotes.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground mb-4">
-                Noch keine Angebote erstellt
-              </p>
-              <Button asChild>
-                <Link href="/dashboard">Erstes Angebot erstellen</Link>
+    <>
+      <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
+        <div className="container mx-auto max-w-4xl">
+          {/* Header with top spacing */}
+          <div className="pt-8 sm:pt-12 mb-6 sm:mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#404040]">Angebotshistorie</h1>
+              <Button
+                size="sm"
+                className="w-10 h-10 p-0 bg-gradient-to-r from-[#F89813] to-[#FFB366] hover:from-[#E88A0F] hover:to-[#F89813] border-0 shadow-md rounded-[14px]"
+                asChild
+              >
+                <Link href="/dashboard">
+                  <Plus size={20} className="text-white" />
+                </Link>
               </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {quotes.map((quote: Quote) => (
-              <Card key={quote.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex justify-between items-start mb-2">
-                    <CardTitle className="text-lg">{quote.clientName}</CardTitle>
-                    <Badge variant={getStatusBadgeVariant(quote.status)}>
-                      {getStatusText(quote.status)}
-                    </Badge>
-                  </div>
-                  <CardDescription>
-                    {formatDate(quote.createdAt)}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Image thumbnail */}
-                  {quote.imagePath && (
-                    <div className="aspect-video bg-muted rounded-xl overflow-hidden">
-                      <Image
-                        src={quote.imagePath}
-                        alt="Projektfoto"
-                        className="w-full h-full object-cover"
-                      />
+            </div>
+            
+            {/* Filter Section */}
+            <div className="space-y-3">
+              <div 
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={() => setShowFilter(!showFilter)}
+              >
+                <span className="text-[#676767] text-sm">Filter</span>
+                <Filter size={16} className="text-[#676767]" />
+                {showFilter ? (
+                  <ChevronUp size={16} className="text-[#676767]" />
+                ) : (
+                  <ChevronDown size={16} className="text-[#676767]" />
+                )}
+              </div>
+              
+              {showFilter && (
+                <Card className="p-4">
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-[#404040]">Sortierung</h3>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant={sortOrder === 'desc' ? 'default' : 'outline'}
+                        onClick={() => setSortOrder('desc')}
+                        className={cn(
+                          sortOrder === 'desc' 
+                            ? 'bg-[#F89813] hover:bg-[#E88A0F] border-[#F89813] rounded-[14px]' 
+                            : 'border-[#EDEDED] text-[#676767] rounded-[14px]'
+                        )}
+                      >
+                        Neueste zuerst
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={sortOrder === 'asc' ? 'default' : 'outline'}
+                        onClick={() => setSortOrder('asc')}
+                        className={cn(
+                          sortOrder === 'asc' 
+                            ? 'bg-[#F89813] hover:bg-[#E88A0F] border-[#F89813] rounded-[14px]' 
+                            : 'border-[#EDEDED] text-[#676767] rounded-[14px]'
+                        )}
+                      >
+                        Älteste zuerst
+                      </Button>
                     </div>
-                  )}
-
-                  {/* Project info preview */}
-                  <div>
-                    <p className="text-sm text-muted-foreground line-clamp-3">
-                      {quote.projectInfo}
-                    </p>
                   </div>
+                </Card>
+              )}
+            </div>
+          </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-2">
-                    <Button asChild size="sm" className="flex-1">
-                      <Link href={`/angebot/${quote.id}`}>
-                        Details anzeigen
+          {/* Quotes List */}
+          <div className="space-y-4">
+            {sortedQuotes.length === 0 ? (
+              <Card className="p-8 text-center">
+                <div className="space-y-4">
+                  <div className="w-16 h-16 mx-auto bg-[#EDEDED] rounded-full flex items-center justify-center">
+                    <FileText size={24} className="text-[#676767]" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-[#404040] mb-2">Keine Angebote vorhanden</h3>
+                    <p className="text-[#676767] mb-4">Erstellen Sie Ihr erstes Angebot</p>
+                    <Button
+                      className="bg-gradient-to-r from-[#F89813] to-[#FFB366] hover:from-[#E88A0F] hover:to-[#F89813] border-0 rounded-[14px]"
+                      asChild
+                    >
+                      <Link href="/dashboard">
+                        Angebot erstellen
                       </Link>
                     </Button>
-                    
-                    {quote.status === 'COMPLETED' && (
-                      <Button asChild size="sm" variant="outline">
-                        <a href={`/api/quotes/${quote.id}/pdf`} target="_blank" rel="noopener noreferrer">
-                          PDF
-                        </a>
-                      </Button>
-                    )}
                   </div>
-                </CardContent>
+                </div>
               </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Quick Actions */}
-        <div className="mt-12">
-          <div className="flex gap-4">
-            <Button asChild>
-              <Link href="/dashboard">Neues Angebot erstellen</Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/">Zurück zur Startseite</Link>
-            </Button>
+            ) : (
+              sortedQuotes.map((quote) => (
+                <Link key={quote.id} href={`/angebot/${quote.id}`}>
+                  <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                    <CardContent className="p-0">
+                      <div className="flex items-center gap-4">
+                        {/* Image Preview */}
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#EDEDED] flex-shrink-0">
+                          {quote.imagePath ? (
+                            <Image
+                              src={quote.imagePath}
+                              alt="Projekt Vorschau"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <FileText size={20} className="text-[#676767]" />
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-[#404040] mb-1">
+                                Angebot #{quote.id}
+                              </h3>
+                              <p className="text-sm text-[#676767] line-clamp-1">
+                                {getProjectDescription(quote.projectInfo)}
+                              </p>
+                            </div>
+                            <div className="text-right ml-4">
+                              <p className="text-xs text-[#676767]">
+                                {formatDate(quote.createdAt)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))
+            )}
           </div>
         </div>
       </div>
-    </div>
+      <MobileNavigation />
+    </>
   )
 }

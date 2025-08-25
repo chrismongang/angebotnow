@@ -1,196 +1,195 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { createQuote } from '@/lib/actions'
+import { MobileNavigation } from "@/components/mobile-navigation"
+import { createQuote } from "@/lib/actions"
+import { getFirstName } from "@/lib/user-data"
+import { Image } from "@/components/ui/image"
 
 export default function DashboardPage() {
-  const [file, setFile] = useState<File | null>(null)
   const [projectInfo, setProjectInfo] = useState('')
   const [clientName, setClientName] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [preview, setPreview] = useState<string | null>(null)
+  const [firstName, setFirstName] = useState('Max')
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0]
-    if (!selectedFile) return
+  // Load user data on component mount
+  useEffect(() => {
+    setFirstName(getFirstName())
+  }, [])
 
-    // Check file size (10MB)
-    if (selectedFile.size > 10 * 1024 * 1024) {
-      alert('Datei ist zu groß. Maximale Größe: 10MB')
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    setUploadError(null)
+    
+    if (!file) {
+      setSelectedFile(null)
+      setPreviewUrl(null)
       return
     }
 
-    // Check file type
-    if (!selectedFile.type.startsWith('image/')) {
-      alert('Bitte wählen Sie eine Bilddatei aus')
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      setUploadError('Nur JPG, PNG und WebP Dateien sind erlaubt.')
       return
     }
 
-    setFile(selectedFile)
-
-    // Create preview
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string)
+    // Validate file size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError('Datei ist zu groß. Maximale Größe: 10MB')
+      return
     }
-    reader.readAsDataURL(selectedFile)
+
+    setSelectedFile(file)
+    
+    // Create preview URL
+    const url = URL.createObjectURL(file)
+    setPreviewUrl(url)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!file || !projectInfo.trim() || !clientName.trim()) {
-      alert('Bitte füllen Sie alle Felder aus')
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    
+    if (!selectedFile || !projectInfo.trim() || !clientName.trim()) {
       return
     }
 
     setIsSubmitting(true)
-
+    
     try {
       const formData = new FormData()
-      formData.append('file', file)
-      formData.append('projectInfo', projectInfo)
-      formData.append('clientName', clientName)
-
-      const result = await createQuote(formData)
+      formData.append('projectInfo', projectInfo.trim())
+      formData.append('clientName', clientName.trim())
+      formData.append('file', selectedFile)
       
-      if (result.success) {
-        alert('Angebot erfolgreich erstellt!')
-        // Reset form
-        setFile(null)
-        setProjectInfo('')
-        setClientName('')
-        setPreview(null)
-      } else {
-        alert(`Fehler: ${result.error}`)
-      }
+      await createQuote(formData)
+      
+      // Reset form
+      setProjectInfo('')
+      setClientName('')
+      setSelectedFile(null)
+      setPreviewUrl(null)
+      setUploadError(null)
+      
+      // Optional: Redirect to offers page or show success message
     } catch (error) {
-      alert('Ein Fehler ist aufgetreten')
-      console.error(error)
+      console.error('Error creating quote:', error)
+      // Optional: Show error message
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="container mx-auto max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">Erstellen Sie ein neues Angebot</p>
-        </div>
+    <>
+      <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
+        <div className="container mx-auto max-w-4xl">
+          {/* Header with top spacing */}
+          <div className="pt-8 sm:pt-12 mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-[#404040]">Willkommen!</h1>
+            <p className="text-lg sm:text-xl text-[#676767]">{firstName}</p>
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Upload Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Foto hochladen</CardTitle>
-              <CardDescription>
-                Laden Sie ein Foto Ihres Projekts hoch (max. 10MB)
-              </CardDescription>
+          {/* Main Form Card */}
+          <Card className="mb-6">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg sm:text-xl text-[#404040]">Angebot erstellen</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="file">Projektfoto</Label>
-                <Input
-                  id="file"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  Unterstützte Formate: JPG, PNG, WebP (max. 10MB)
-                </p>
-              </div>
-              
-              {preview && (
-                <div className="mt-4">
-                  <p className="text-sm font-medium mb-2">Vorschau:</p>
-                  <img 
-                    src={preview} 
-                    alt="Vorschau" 
-                    className="max-w-xs rounded-xl border"
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Image Upload Section */}
+                <div className="space-y-3">
+                  <Label className="text-base font-medium text-[#404040]">1. Baustellen-Foto hochladen</Label>
+                  <div className="flex items-center justify-center gap-4">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      id="file-upload"
+                    />
+                    <label htmlFor="file-upload" className="cursor-pointer">
+                      <div className="w-16 h-16 bg-gradient-to-r from-[#F89813] to-[#FFB366] rounded-[14px] flex items-center justify-center shadow-md hover:shadow-lg transition-shadow">
+                        <span className="text-white text-2xl font-bold">+</span>
+                      </div>
+                    </label>
+                    
+                    {previewUrl && (
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src={previewUrl}
+                          alt="Preview"
+                          className="w-20 h-20 rounded-lg border shadow-sm object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedFile(null)
+                            setPreviewUrl(null)
+                            setUploadError(null)
+                          }}
+                          className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
+                        >
+                          Entfernen
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {uploadError && (
+                    <p className="text-red-600 text-sm">{uploadError}</p>
+                  )}
+                </div>
+
+                {/* Project Information Section */}
+                <div className="space-y-3">
+                  <Label className="text-base font-medium text-[#404040]">2. Projektinformationen</Label>
+                  <Textarea
+                    value={projectInfo}
+                    onChange={(e) => setProjectInfo(e.target.value)}
+                    placeholder="Beschreiben Sie das Projekt..."
+                    className="bg-[#EDEDED] border-[#EDEDED] focus:border-[#F89813] focus:ring-[#F89813] text-base min-h-24 resize-none rounded-[10px]"
+                    required
                   />
                 </div>
-              )}
+
+                {/* Client Name Section */}
+                <div className="space-y-3">
+                  <Label className="text-base font-medium text-[#404040]">3. Name des Auftraggebers</Label>
+                  <Input
+                    type="text"
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    placeholder="Name des Kunden..."
+                    className="bg-[#EDEDED] border-[#EDEDED] focus:border-[#F89813] focus:ring-[#F89813] h-12 text-base rounded-[10px]"
+                    required
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  disabled={!selectedFile || !projectInfo.trim() || !clientName.trim() || isSubmitting}
+                  className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-[#F89813] to-[#FFB366] hover:from-[#E88A0F] hover:to-[#F89813] border-0 shadow-lg rounded-[14px]"
+                >
+                  {isSubmitting ? 'Wird erstellt...' : 'Angebot erstellen'}
+                </Button>
+              </form>
             </CardContent>
           </Card>
-
-          {/* Project Info Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Projektinformationen</CardTitle>
-              <CardDescription>
-                Beschreiben Sie Ihr Projekt
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Label htmlFor="projectInfo">Projektbeschreibung</Label>
-                <Textarea
-                  id="projectInfo"
-                  placeholder="Beschreiben Sie Ihr Projekt, Anforderungen, Materialien, etc..."
-                  value={projectInfo}
-                  onChange={(e) => setProjectInfo(e.target.value)}
-                  required
-                  rows={4}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Client Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Auftraggeber</CardTitle>
-              <CardDescription>
-                Informationen zum Kunden
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Label htmlFor="clientName">Name des Auftraggebers</Label>
-                <Input
-                  id="clientName"
-                  placeholder="Name oder Firma"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  required
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Submit Section */}
-          <div className="flex justify-end">
-            <Button 
-              type="submit" 
-              size="lg" 
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Wird erstellt...' : 'Angebot erstellen'}
-            </Button>
-          </div>
-        </form>
-
-        {/* Quick Actions */}
-        <div className="mt-12">
-          <h2 className="text-xl font-semibold mb-4">Schnellzugriff</h2>
-          <div className="flex gap-4">
-            <Button variant="outline" asChild>
-              <a href="/angebote">Alle Angebote anzeigen</a>
-            </Button>
-            <Button variant="outline" asChild>
-              <a href="/styleguide">Design System</a>
-            </Button>
-          </div>
         </div>
       </div>
-    </div>
+      <MobileNavigation />
+    </>
   )
 }
