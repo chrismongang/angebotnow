@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Image } from "@/components/ui/image"
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
+import type { Quote } from '@prisma/client'
 
 async function getQuotes() {
   // Check if database is available
@@ -81,7 +82,7 @@ export default async function AngebotePage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {quotes.map((quote) => (
+            {quotes.map((quote: Quote) => (
               <Card key={quote.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex justify-between items-start mb-2">
