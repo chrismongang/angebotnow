@@ -9,12 +9,18 @@ import { formatDate } from '@/lib/utils'
 import { AIResult } from '@/lib/ai/provider'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 async function getQuote(id: string) {
+  // Check if database is available
+  if (!process.env.DATABASE_URL) {
+    console.warn('DATABASE_URL not available, cannot fetch quote')
+    return null
+  }
+  
   try {
     const quote = await prisma.quote.findUnique({
       where: { id },
@@ -57,7 +63,8 @@ function getStatusText(status: string) {
 }
 
 export default async function QuoteDetailPage({ params }: PageProps) {
-  const quote = await getQuote(params.id)
+  const { id } = await params
+  const quote = await getQuote(id)
 
   if (!quote) {
     notFound()

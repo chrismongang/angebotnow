@@ -20,6 +20,45 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Deployment & Environment Variables
+
+### Required Environment Variables
+
+For basic functionality, you need:
+
+```bash
+# Database (Required for full functionality)
+DATABASE_URL=postgresql://username:password@host:port/database
+SHADOW_DATABASE_URL=postgresql://username:password@host:port/shadow_database
+
+# Optional: Enhanced features
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+
+OPENAI_API_KEY=sk-your-openai-api-key
+USE_OPENAI=true
+
+SENTRY_DSN=https://your-sentry-dsn
+NEXT_PUBLIC_SENTRY_DSN=https://your-sentry-dsn
+```
+
+### Vercel Deployment
+
+1. **Connect your repository** to Vercel
+2. **Set environment variables** in Vercel Dashboard:
+   - Go to Project Settings → Environment Variables
+   - Add all required variables above
+3. **Deploy**: Vercel will automatically build and deploy
+
+### Demo Mode
+
+If `DATABASE_URL` is not set, the app runs in demo mode:
+- Form submissions are simulated
+- No actual database operations
+- Placeholder images are used
+- Mock AI responses are generated
+
 ## AI Provider Configuration
 
 The app supports two AI providers:

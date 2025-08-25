@@ -55,6 +55,17 @@ export async function createQuote(formData: FormData) {
 
     console.log('Creating quote in database...')
 
+    // Check if database is available
+    if (!process.env.DATABASE_URL) {
+      console.warn('DATABASE_URL not available, using mock mode')
+      // Return mock success for demo purposes
+      return { 
+        success: true, 
+        quoteId: 'mock-quote-' + Date.now(),
+        message: 'Demo-Modus: Angebot wurde simuliert (keine Datenbank verfügbar)'
+      }
+    }
+
     // Create quote in database
     // First, ensure a mock user exists
     let mockUser = await prisma.user.findUnique({

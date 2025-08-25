@@ -8,6 +8,15 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  
+  // Check if database is available
+  if (!process.env.DATABASE_URL) {
+    return NextResponse.json({ 
+      error: 'Datenbank nicht verfügbar',
+      message: 'Bitte konfigurieren Sie DATABASE_URL in den Umgebungsvariablen'
+    }, { status: 503 });
+  }
+  
   try {
     const quote = await prisma.quote.findUnique({
       where: { id },

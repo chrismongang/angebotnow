@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "AngebotNow - KI-gestützte Angebotserstellung",
   description: "Foto + kurze Infos → KI erstellt Angebotsentwurf → PDF",
+  keywords: ["Angebot", "KI", "PDF", "Handwerk", "Automatisierung"],
 };
 
 export default function RootLayout({

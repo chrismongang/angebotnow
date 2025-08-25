@@ -7,6 +7,12 @@ import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
 
 async function getQuotes() {
+  // Check if database is available
+  if (!process.env.DATABASE_URL) {
+    console.warn('DATABASE_URL not available, returning empty quotes list')
+    return []
+  }
+  
   try {
     const quotes = await prisma.quote.findMany({
       orderBy: { createdAt: 'desc' },
