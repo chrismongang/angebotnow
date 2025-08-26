@@ -21,7 +21,7 @@ cloudinary.config({
 
 export { cloudinary };
 
-export async function uploadImage(file: File): Promise<{
+export async function uploadImage(file: File | ArrayBuffer): Promise<{
   success: boolean;
   url?: string;
   publicId?: string;
@@ -29,29 +29,44 @@ export async function uploadImage(file: File): Promise<{
 }> {
   try {
     console.log('Starting Cloudinary upload...');
-    console.log('File type:', file.type);
-    console.log('File size:', file.size);
     
-    // Convert File to Buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    let buffer: Buffer;
+    
+    if (file instanceof File) {
+      console.log('File type:', file.type);
+      console.log('File size:', file.size);
+      
+      // Convert File to Buffer
+      const bytes = await file.arrayBuffer();
+      buffer = Buffer.from(bytes);
+    } else {
+      // Already ArrayBuffer
+      buffer = Buffer.from(file);
+    }
     
     console.log('Buffer size:', buffer.length);
     
     // Convert to base64
     const base64String = buffer.toString("base64");
-    const dataURI = `data:${file.type};base64,${base64String}`;
+    const dataURI = `data:image/jpeg;base64,${base64String}`;
     
     console.log('Data URI length:', dataURI.length);
     
-    // Upload to Cloudinary with simpler transformation
+    // Upload to Cloudinary with optimized transformation
     const result = await cloudinary.uploader.upload(dataURI, {
       folder: "angebotnow",
       resource_type: "image",
       transformation: [
-        { width: 800, height: 600, crop: "limit" },
-        { quality: "auto" }
+        { width: 1200, height: 800, crop: "limit" },
+        { quality: "auto:good" },
+        { format: "auto" }
       ],
+      eager: [
+        { width: 400, height: 300, crop: "fill", quality: "auto" },
+        { width: 800, height: 600, crop: "limit", quality: "auto" }
+      ],
+      eager_async: true,
+      eager_notification_url: process.env.CLOUDINARY_WEBHOOK_URL,
     });
     
     console.log('Cloudinary upload successful:', result.secure_url);
@@ -68,4 +83,47 @@ export async function uploadImage(file: File): Promise<{
       error: error instanceof Error ? error.message : "Bild-Upload fehlgeschlagen",
     };
   }
+}
+
+export async function deleteImage(publicId: string): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    if (!cloudName || !apiKey || !apiSecret) {
+      throw new Error('Cloudinary not configured');
+    }
+    
+    const result = await cloudinary.uploader.destroy(publicId);
+    
+    if (result.result === 'ok') {
+      console.log('Image deleted successfully:', publicId);
+      return { success: true };
+    } else {
+      throw new Error('Failed to delete image');
+    }
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Bild-Löschung fehlgeschlagen",
+    };
+  }
+}
+
+export function getOptimizedImageUrl(publicId: string, options: {
+  width?: number;
+  height?: number;
+  quality?: string;
+  format?: string;
+} = {}): string {
+  const { width = 800, height = 600, quality = 'auto', format = 'auto' } = options;
+  
+  return cloudinary.url(publicId, {
+    transformation: [
+      { width, height, crop: 'limit' },
+      { quality },
+      { format }
+    ]
+  });
 }

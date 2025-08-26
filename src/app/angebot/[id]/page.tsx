@@ -1,13 +1,20 @@
-import { prisma } from '@/lib/db'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { use } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Image } from "@/components/ui/image"
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { formatDate } from '@/lib/utils'
+import { formatDate, calculateTotal, calculateTotalWithVAT, formatPrice } from '@/lib/utils'
 import { AIResult } from '@/lib/ai/provider'
+import { updateQuotePositions } from '@/lib/actions'
 import { MobileNavigation } from "@/components/mobile-navigation"
+import { ArrowLeft, FileText, Download, Share2, Edit, Save, X } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { Input } from "@/components/ui/input"
 
 interface PageProps {
   params: Promise<{
@@ -15,114 +22,212 @@ interface PageProps {
   }>
 }
 
-async function getQuote(id: string) {
-  // Check if database is available
-  if (!process.env.DATABASE_URL) {
-    console.warn('DATABASE_URL not available, cannot fetch quote')
-    return null
-  }
-  
-  try {
-    const quote = await prisma.quote.findUnique({
-      where: { id },
-    })
-    return quote
-  } catch (error) {
-    console.error('Error fetching quote:', error)
-    return null
-  }
-}
+export default function QuoteDetailPage({ params }: PageProps) {
+  const { id } = use(params)
+  const [quote, setQuote] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedPositions, setEditedPositions] = useState<Array<{ title: string; qty: number; unit: string; price: number }>>([])
+  const [isUpdating, setIsUpdating] = useState(false)
 
-function getStatusBadgeVariant(status: string) {
-  switch (status) {
-    case 'PENDING':
-      return 'secondary'
-    case 'AI_DONE':
-      return 'outline'
-    case 'COMPLETED':
-      return 'default'
-    case 'FAILED':
-      return 'destructive'
-    default:
-      return 'secondary'
+  useEffect(() => {
+    const fetchQuote = async () => {
+      try {
+        const response = await fetch(`/api/quotes/${id}`)
+        if (response.ok) {
+          const data = await response.json()
+          setQuote(data)
+        } else {
+          setError('Angebot nicht gefunden')
+        }
+      } catch (err) {
+        setError('Fehler beim Laden des Angebots')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchQuote()
+  }, [id])
+
+  if (isLoading) {
+    return (
+      <>
+        <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
+          <div className="container mx-auto max-w-6xl">
+            <div className="text-center py-12">
+              <p className="text-[#676767]">Lade Angebot...</p>
+            </div>
+          </div>
+        </div>
+        <MobileNavigation />
+      </>
+    )
   }
-}
 
-function getStatusText(status: string) {
-  switch (status) {
-    case 'PENDING':
-      return 'In Bearbeitung'
-    case 'AI_DONE':
-      return 'KI-Verarbeitung'
-    case 'COMPLETED':
-      return 'Abgeschlossen'
-    case 'FAILED':
-      return 'Fehlgeschlagen'
-    default:
-      return status
-  }
-}
-
-export default async function QuoteDetailPage({ params }: PageProps) {
-  const { id } = await params
-  const quote = await getQuote(id)
-
-  if (!quote) {
+  if (error || !quote) {
     notFound()
   }
 
   const aiData = quote.aiData as AIResult | null
 
+  // Calculate correct totals
+  const getQuoteTotal = (positions: Array<{ qty: number; price: number }>) => {
+    const subtotal = calculateTotal(positions)
+    return calculateTotalWithVAT(subtotal)
+  }
+
+  const getSubtotal = (positions: Array<{ qty: number; price: number }>) => {
+    return calculateTotal(positions)
+  }
+
+  const getVAT = (positions: Array<{ qty: number; price: number }>) => {
+    const subtotal = calculateTotal(positions)
+    return calculateTotalWithVAT(subtotal) - subtotal
+  }
+
+  // Use edited positions if in editing mode, otherwise use original positions
+  const currentPositions = isEditing ? editedPositions : (aiData?.positions || [])
+  const total = getQuoteTotal(currentPositions)
+  const subtotal = getSubtotal(currentPositions)
+  const vat = getVAT(currentPositions)
+
+  const handleShare = () => {
+    // TODO: Implement share functionality
+    alert('Share-Funktionalität wird implementiert')
+  }
+
+  const handleSaveToAccounting = () => {
+    // TODO: Implement accounting tool integration
+    alert('Buchhaltungstool-Integration wird implementiert')
+  }
+
+  const handleEdit = () => {
+    if (quote?.aiData?.positions) {
+      setEditedPositions([...quote.aiData.positions])
+      setIsEditing(true)
+    }
+  }
+
+  const handleCancel = () => {
+    setIsEditing(false)
+    setEditedPositions([])
+  }
+
+  const handleSave = async () => {
+    if (!quote || editedPositions.length === 0) return
+
+    setIsUpdating(true)
+    try {
+      const result = await updateQuotePositions(quote.id, editedPositions)
+      
+      if (result.success) {
+        // Update local state
+        setQuote({
+          ...quote,
+          aiData: {
+            ...quote.aiData,
+            positions: editedPositions,
+            total: editedPositions.reduce((sum, pos) => sum + (pos.qty * pos.price), 0)
+          }
+        })
+        setIsEditing(false)
+        setEditedPositions([])
+        alert('Angebot erfolgreich aktualisiert!')
+      } else {
+        alert(result.error || 'Fehler beim Aktualisieren des Angebots')
+      }
+    } catch (error) {
+      console.error('Error updating quote:', error)
+      alert('Fehler beim Aktualisieren des Angebots')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const updatePosition = (index: number, field: 'title' | 'qty' | 'unit' | 'price', value: string | number) => {
+    const newPositions = [...editedPositions]
+    newPositions[index] = {
+      ...newPositions[index],
+      [field]: field === 'qty' || field === 'price' ? Number(value) : value
+    }
+    setEditedPositions(newPositions)
+  }
+
   return (
     <>
       <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
         <div className="container mx-auto max-w-6xl">
-          {/* Mobile-optimierter Header with top spacing */}
+          {/* Header with back button and title */}
           <div className="pt-8 sm:pt-12 mb-6 sm:mb-8">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold mb-2">Angebot Details</h1>
-                <p className="text-muted-foreground">
-                  Angebot für {quote.clientName}
-                </p>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="mr-3 bg-[#F89813] hover:bg-[#E88A0F] text-white border-0 shadow-sm rounded-[14px]" 
+                  asChild
+                >
+                  <Link href="/angebote">
+                    <ArrowLeft size={20} className="text-white" />
+                  </Link>
+                </Button>
+                <h1 className="text-2xl sm:text-3xl font-bold text-[#404040]">Angebot #{quote.quoteNumber || quote.id}</h1>
               </div>
-              <Badge variant={getStatusBadgeVariant(quote.status)} className="text-sm self-start">
-                {getStatusText(quote.status)}
-              </Badge>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             {/* Left Column - PDF and Actions */}
-            <div className="space-y-4 sm:space-y-6">
-              {/* Mobile-optimierte PDF Display */}
+            <div className="space-y-6 sm:space-y-8">
+              {/* PDF Block - Similar to Success Block */}
               {quote.status === 'COMPLETED' ? (
                 <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg sm:text-xl">📄 PDF Angebot</CardTitle>
-                    <CardDescription>
-                      Das generierte Angebot als PDF
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="aspect-[3/4] bg-muted rounded-xl border-2 border-dashed border-border flex items-center justify-center">
-                      <div className="text-center p-4">
-                        <div className="text-4xl mb-3">📄</div>
-                        <p className="text-muted-foreground mb-2">PDF Vorschau</p>
-                        <p className="text-sm text-muted-foreground">
-                          Klicken Sie auf &quot;PDF herunterladen&quot; um das Angebot zu öffnen
-                        </p>
+                  <CardContent className="p-6">
+                    {/* PDF Preview */}
+                    <div className="flex justify-center mb-6">
+                      <div className="bg-gray-100 rounded-[14px] p-4 inline-block">
+                        <div className="text-center">
+                          <div className="w-16 h-16 bg-[#F89813] rounded-[14px] flex items-center justify-center mx-auto mb-2">
+                            <FileText className="h-8 w-8 text-white" />
+                          </div>
+                          <p className="text-sm text-gray-600">
+                            {quote.quoteNumber ? `Angebot_${quote.quoteNumber}.pdf` : `Angebot_${quote.id}.pdf`}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                    
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Button asChild size="lg" className="h-12 flex-1">
+
+                    {/* Action Buttons */}
+                    <div className="space-y-3">
+                      <Button 
+                        asChild 
+                        className="w-full h-12 border-orange-300 text-[#404040] hover:bg-orange-50 rounded-[14px]"
+                        variant="outline"
+                      >
                         <a href={`/api/quotes/${quote.id}/pdf`} target="_blank" rel="noopener noreferrer">
+                          <Download className="h-5 w-5 mr-2 text-[#F89813]" />
                           PDF herunterladen
                         </a>
                       </Button>
-                      <Button variant="outline" size="lg" className="h-12" disabled>
-                        Senden (Dummy)
+                      
+                      <Button 
+                        className="w-full h-12 border-orange-300 text-[#404040] hover:bg-orange-50 rounded-[14px]"
+                        variant="outline"
+                        onClick={handleShare}
+                      >
+                        <Share2 className="h-5 w-5 mr-2 text-[#F89813]" />
+                        An Kunden senden
+                      </Button>
+                      
+                      <Button 
+                        className="w-full h-12 border-orange-300 text-[#404040] hover:bg-orange-50 rounded-[14px]"
+                        variant="outline"
+                        onClick={handleSaveToAccounting}
+                      >
+                        <FileText className="h-5 w-5 mr-2 text-[#F89813]" />
+                        In LexWare speichern
                       </Button>
                     </div>
                   </CardContent>
@@ -132,7 +237,7 @@ export default async function QuoteDetailPage({ params }: PageProps) {
                   <CardContent className="p-6 sm:p-8 text-center">
                     <div className="space-y-4">
                       <div className="text-4xl">
-                        {quote.status === 'FAILED' ? '❌' : '⏳'}
+                        {quote.status === 'FAILED' ? 'Fehler' : 'Wird erstellt...'}
                       </div>
                       <p className="text-muted-foreground">
                         {quote.status === 'FAILED' 
@@ -150,96 +255,172 @@ export default async function QuoteDetailPage({ params }: PageProps) {
                 </Card>
               )}
 
-              {/* Mobile-optimierte Project Image */}
-              {quote.imagePath && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg sm:text-xl">📸 Projektfoto</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Image
-                      src={quote.imagePath}
-                      alt="Projektfoto"
-                      className="w-full rounded-xl shadow-sm"
-                    />
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-
-            {/* Right Column - Details */}
-            <div className="space-y-4 sm:space-y-6">
-              {/* Mobile-optimierte Client Information */}
+              {/* Project Info Block - Combined */}
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-lg sm:text-xl">👤 Auftraggeber</CardTitle>
+                  <CardTitle className="text-lg sm:text-xl">Projektinfos</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4">
+                  {/* Client Info */}
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Name</p>
-                    <p className="text-base">{quote.clientName}</p>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-[#404040]">Auftraggeber</Label>
+                      <p className="text-[#676767] py-2">{quote.clientName}</p>
+                      {(quote.clientStreet || quote.clientCity) && (
+                        <p className="text-[#676767] py-2">
+                          {[quote.clientStreet, quote.clientCity].filter(Boolean).join(', ')}
+                        </p>
+                      )}
+                    </div>
                   </div>
+                  
+                  {/* Project Image - Smaller */}
+                  {quote.imagePath && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-2">Projektfoto</p>
+                      <div className="w-32 h-32 rounded-lg overflow-hidden bg-[#EDEDED] flex-shrink-0">
+                        <Image
+                          src={quote.imagePath}
+                          alt="Projektfoto"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* AI Description */}
+                  {aiData?.description && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">Projektbeschreibung</p>
+                      <p className="text-base leading-relaxed">{aiData.description}</p>
+                    </div>
+                  )}
+                  
+                  {/* Created Date */}
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Erstellt am</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Erstellt am</p>
                     <p className="text-base">{formatDate(quote.createdAt)}</p>
                   </div>
                 </CardContent>
               </Card>
+            </div>
 
-              {/* Mobile-optimierte Project Information */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg sm:text-xl">📋 Projektinformationen</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-base leading-relaxed">{quote.projectInfo}</p>
-                </CardContent>
-              </Card>
-
-              {/* Mobile-optimierte AI Results */}
+            {/* Right Column - AI Analysis */}
+            <div className="space-y-4 sm:space-y-6">
+              {/* AI Analysis - Renamed */}
               {aiData && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg sm:text-xl">🤖 KI-Analyse</CardTitle>
-                    <CardDescription>
-                      Automatisch generierte Angebotspositionen
-                    </CardDescription>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg sm:text-xl">Angebotskalkulation</CardTitle>
+                      {!isEditing ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleEdit}
+                          className="text-[#F89813] border-[#F89813] hover:bg-[#F89813] hover:text-white flex items-center gap-2 rounded-[14px]"
+                        >
+                          <Edit size={16} />
+                          Bearbeiten
+                        </Button>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCancel}
+                            className="flex items-center gap-2 rounded-[14px]"
+                          >
+                            <X size={16} />
+                            Abbrechen
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={handleSave}
+                            disabled={isUpdating}
+                            className="bg-[#F89813] hover:bg-[#E88A0F] flex items-center gap-2 rounded-[14px]"
+                          >
+                            <Save size={16} />
+                            Speichern
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-2">Beschreibung</p>
-                      <p className="text-base leading-relaxed">{aiData.description}</p>
-                    </div>
-
-                    {aiData.positions && aiData.positions.length > 0 && (
+                    {(isEditing ? editedPositions : aiData.positions) && (isEditing ? editedPositions : aiData.positions).length > 0 && (
                       <div>
                         <p className="text-sm font-medium text-muted-foreground mb-3">Positionen</p>
                         <div className="space-y-3">
-                          {aiData.positions.map((position, index) => (
-                            <div key={index} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                              <div className="flex-1">
-                                <p className="font-medium">{position.title}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {position.qty} {position.unit}
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <p className="font-medium">{(position.qty * position.price).toFixed(2)} €</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {position.price.toFixed(2)} €/{position.unit}
-                                </p>
-                              </div>
+                          {(isEditing ? editedPositions : aiData.positions).map((position, index) => (
+                            <div key={index} className="p-3 bg-muted/50 rounded-lg">
+                              {isEditing ? (
+                                <div className="space-y-3">
+                                  <Input
+                                    value={position.title}
+                                    onChange={(e) => updatePosition(index, 'title', e.target.value)}
+                                    placeholder="Bezeichnung"
+                                    className="bg-white"
+                                  />
+                                  <div className="grid grid-cols-3 gap-2">
+                                    <Input
+                                      type="number"
+                                      value={position.qty}
+                                      onChange={(e) => updatePosition(index, 'qty', e.target.value)}
+                                      placeholder="Menge"
+                                      className="bg-white"
+                                    />
+                                    <Input
+                                      value={position.unit}
+                                      onChange={(e) => updatePosition(index, 'unit', e.target.value)}
+                                      placeholder="Einheit"
+                                      className="bg-white"
+                                    />
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      value={position.price}
+                                      onChange={(e) => updatePosition(index, 'price', e.target.value)}
+                                      placeholder="Preis"
+                                      className="bg-white"
+                                    />
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex justify-between items-center">
+                                  <div className="flex-1">
+                                    <p className="font-medium">{position.title}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {position.qty} {position.unit}
+                                    </p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="font-medium">{formatPrice(position.qty * position.price)}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {formatPrice(position.price)}/{position.unit}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
                       </div>
                     )}
 
-                    {aiData.total && (
-                      <div className="pt-4 border-t">
+                    {total > 0 && (
+                      <div className="pt-4 border-t space-y-2">
                         <div className="flex justify-between items-center">
+                          <p className="text-sm text-muted-foreground">Zwischensumme</p>
+                          <p className="text-sm">{formatPrice(subtotal)}</p>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p className="text-sm text-muted-foreground">19% MwSt.</p>
+                          <p className="text-sm">{formatPrice(vat)}</p>
+                        </div>
+                        <div className="flex justify-between items-center pt-2 border-t">
                           <p className="text-lg font-semibold">Gesamtsumme</p>
-                          <p className="text-2xl font-bold text-primary">{aiData.total.toFixed(2)} €</p>
+                          <p className="text-2xl font-bold text-primary">{formatPrice(total)}</p>
                         </div>
                       </div>
                     )}
@@ -248,20 +429,9 @@ export default async function QuoteDetailPage({ params }: PageProps) {
               )}
             </div>
           </div>
-
-          {/* Mobile-optimierte Quick Actions */}
-          <div className="mt-8 sm:mt-12">
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Button asChild size="lg" className="h-12">
-                <Link href="/angebote">Zurück zur Übersicht</Link>
-              </Button>
-              <Button variant="outline" asChild size="lg" className="h-12">
-                <Link href="/dashboard">Neues Angebot</Link>
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
+      <div className="pb-20 md:pb-8"></div>
       <MobileNavigation />
     </>
   )

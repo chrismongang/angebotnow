@@ -23,6 +23,10 @@ export interface UserData {
   defaultCurrency: string;
   defaultPaymentTerms: string;
   defaultValidity: string;
+  
+  // Angebotsnummern-Verwaltung
+  lastQuoteNumber: number;
+  currentYear: number;
 }
 
 const defaultUserData: UserData = {
@@ -42,7 +46,9 @@ const defaultUserData: UserData = {
   defaultQuotePrefix: 'AN',
   defaultCurrency: 'EUR',
   defaultPaymentTerms: '30 Tage netto',
-  defaultValidity: '30 Tage'
+  defaultValidity: '30 Tage',
+  lastQuoteNumber: 0,
+  currentYear: new Date().getFullYear()
 };
 
 export function getUserData(): UserData {
@@ -79,13 +85,23 @@ export function getCompanyInfoForPDF(): {
   address?: string;
   email?: string;
   phone?: string;
+  taxNumber?: string;
+  vatNumber?: string;
+  bankName?: string;
+  bankAccount?: string;
+  bankBic?: string;
 } {
   const userData = getUserData();
   return {
     name: userData.companyName,
-    address: `${userData.street}, ${userData.city}`,
+    address: `${userData.street}\n${userData.city}`, // Line break between street and city
     email: userData.email,
-    phone: userData.phone
+    phone: userData.phone,
+    taxNumber: userData.taxNumber,
+    vatNumber: userData.vatNumber,
+    bankName: userData.bankName,
+    bankAccount: userData.bankAccount,
+    bankBic: userData.bankBic
   };
 }
 
@@ -97,4 +113,35 @@ export function getFullName(): string {
 export function getFirstName(): string {
   const userData = getUserData();
   return userData.firstName;
+}
+
+export function getNextQuoteNumber(): string {
+  const userData = getUserData();
+  const currentYear = new Date().getFullYear();
+  
+  // Reset counter if year changed
+  if (userData.currentYear !== currentYear) {
+    userData.lastQuoteNumber = 0;
+    userData.currentYear = currentYear;
+  }
+  
+  // Increment quote number
+  userData.lastQuoteNumber += 1;
+  
+  // Save updated data
+  saveUserData(userData);
+  
+  // Format: AN20250001 (prefix + year + 4-digit number)
+  return `${userData.defaultQuotePrefix}${currentYear}${userData.lastQuoteNumber.toString().padStart(4, '0')}`;
+}
+
+export function generateQuoteFileName(clientName: string, quoteNumber: string): string {
+  // Clean client name for filename (remove special characters, replace spaces with underscores)
+  const cleanClientName = clientName
+    .replace(/[^a-zA-ZäöüßÄÖÜ0-9\s]/g, '') // Remove special characters except letters, numbers, spaces
+    .replace(/\s+/g, '_') // Replace spaces with underscores
+    .trim();
+  
+  // Format: Angebot_[ClientName]_[QuoteNumber].pdf
+  return `Angebot_${cleanClientName}_${quoteNumber}.pdf`;
 }

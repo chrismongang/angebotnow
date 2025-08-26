@@ -1,52 +1,160 @@
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { NextResponse } from 'next/server'
+
+// Helper function to calculate total from positions
+function calculateTotal(positions: Array<{ qty: number; price: number }>): number {
+  if (!positions || !Array.isArray(positions)) {
+    return 0
+  }
+  
+  return positions.reduce((sum, position) => {
+    const qty = typeof position.qty === 'number' ? position.qty : 0
+    const price = typeof position.price === 'number' ? position.price : 0
+    return sum + (qty * price)
+  }, 0)
+}
+
+// Helper function to get total with VAT
+function calculateTotalWithVAT(total: number, vatRate: number = 0.19): number {
+  return total * (1 + vatRate)
+}
 
 export async function GET() {
   try {
     // Check if database is available
     if (!process.env.DATABASE_URL) {
-      // Demo mode - return mock data
+      // Demo mode - return mock data with AI data
       const mockQuotes = [
         {
           id: '0123',
           clientName: 'Max Müller',
           projectInfo: 'Badezimmer Sanierung',
           imagePath: '/api/placeholder/150/100',
-          createdAt: new Date('2024-08-20')
+          createdAt: new Date('2024-08-20'),
+          quoteNumber: 'AN20250001',
+          clientStreet: 'Musterstraße 123',
+          clientCity: '90475 Nürnberg',
+          aiData: {
+            description: 'Komplette Badezimmer-Sanierung mit neuen Fliesen',
+            positions: [
+              { title: 'Fliesenarbeiten', qty: 12, unit: 'm²', price: 45 },
+              { title: 'Sanitäranlagen', qty: 1, unit: 'Psch', price: 800 },
+              { title: 'Entsorgung Altmaterial', qty: 1, unit: 'Psch', price: 150 }
+            ],
+            total: calculateTotalWithVAT(calculateTotal([
+              { qty: 12, price: 45 },
+              { qty: 1, price: 800 },
+              { qty: 1, price: 150 }
+            ]))
+          }
         },
         {
           id: '0122',
           clientName: 'Anna Schmidt',
           projectInfo: 'Sanierungsarbeiten',
           imagePath: '/api/placeholder/150/100',
-          createdAt: new Date('2024-08-17')
+          createdAt: new Date('2024-08-17'),
+          quoteNumber: 'AN20250002',
+          aiData: {
+            description: 'Umfassende Sanierungsarbeiten im Wohnbereich',
+            positions: [
+              { title: 'Wandverkleidung', qty: 25, unit: 'm²', price: 35 },
+              { title: 'Deckenarbeiten', qty: 20, unit: 'm²', price: 28 },
+              { title: 'Malerarbeiten', qty: 45, unit: 'm²', price: 12 }
+            ],
+            total: calculateTotalWithVAT(calculateTotal([
+              { qty: 25, price: 35 },
+              { qty: 20, price: 28 },
+              { qty: 45, price: 12 }
+            ]))
+          }
         },
         {
           id: '0121',
           clientName: 'Peter Weber',
           projectInfo: 'Badezimmer Sanierung',
           imagePath: '/api/placeholder/150/100',
-          createdAt: new Date('2024-08-11')
+          createdAt: new Date('2024-08-11'),
+          quoteNumber: 'AN20250003',
+          aiData: {
+            description: 'Moderne Badezimmer-Gestaltung',
+            positions: [
+              { title: 'Fliesenarbeiten', qty: 15, unit: 'm²', price: 48 },
+              { title: 'Dusche komplett', qty: 1, unit: 'Stk', price: 1200 },
+              { title: 'Armaturen', qty: 1, unit: 'Psch', price: 450 }
+            ],
+            total: calculateTotalWithVAT(calculateTotal([
+              { qty: 15, price: 48 },
+              { qty: 1, price: 1200 },
+              { qty: 1, price: 450 }
+            ]))
+          }
         },
         {
           id: '0120',
           clientName: 'Maria Fischer',
           projectInfo: 'Wand ausbessern',
           imagePath: '/api/placeholder/150/100',
-          createdAt: new Date('2024-07-25')
+          createdAt: new Date('2024-07-25'),
+          quoteNumber: 'AN20250004',
+          aiData: {
+            description: 'Wandreparatur und Ausbesserung',
+            positions: [
+              { title: 'Wandausbesserung', qty: 8, unit: 'm²', price: 25 },
+              { title: 'Spachtelarbeiten', qty: 8, unit: 'm²', price: 15 },
+              { title: 'Malerarbeiten', qty: 8, unit: 'm²', price: 12 }
+            ],
+            total: calculateTotalWithVAT(calculateTotal([
+              { qty: 8, price: 25 },
+              { qty: 8, price: 15 },
+              { qty: 8, price: 12 }
+            ]))
+          }
         },
         {
           id: '0119',
           clientName: 'Thomas Klein',
           projectInfo: 'Sanitärarbeiten',
           imagePath: '/api/placeholder/150/100',
-          createdAt: new Date('2024-07-07')
+          createdAt: new Date('2024-07-07'),
+          quoteNumber: 'AN20250005',
+          aiData: {
+            description: 'Sanitäre Installation und Reparatur',
+            positions: [
+              { title: 'WC-Installation', qty: 1, unit: 'Stk', price: 350 },
+              { title: 'Wasseranschluss', qty: 1, unit: 'Psch', price: 180 },
+              { title: 'Dichtheitsprüfung', qty: 1, unit: 'Psch', price: 120 }
+            ],
+            total: calculateTotalWithVAT(calculateTotal([
+              { qty: 1, price: 350 },
+              { qty: 1, price: 180 },
+              { qty: 1, price: 120 }
+            ]))
+          }
         },
         {
           id: '0118',
           clientName: 'Lisa Wagner',
           projectInfo: 'Fließenlegerarbeit',
           imagePath: '/api/placeholder/150/100',
-          createdAt: new Date('2024-06-15')
+          createdAt: new Date('2024-06-15'),
+          quoteNumber: 'AN20250006',
+          aiData: {
+            description: 'Professionelle Fliesenlegerarbeiten',
+            positions: [
+              { title: 'Fliesenarbeiten', qty: 18, unit: 'm²', price: 42 },
+              { title: 'Fugenmörtel', qty: 18, unit: 'm²', price: 8 },
+              { title: 'Entsorgung', qty: 1, unit: 'Psch', price: 100 }
+            ],
+            total: calculateTotalWithVAT(calculateTotal([
+              { qty: 18, price: 42 },
+              { qty: 18, price: 8 },
+              { qty: 1, price: 100 }
+            ]))
+          }
         }
       ]
       
@@ -65,7 +173,11 @@ export async function GET() {
         clientName: true,
         projectInfo: true,
         imagePath: true,
-        createdAt: true
+        aiData: true,
+        createdAt: true,
+        quoteNumber: true,
+        clientStreet: true,
+        clientCity: true
       }
     })
 

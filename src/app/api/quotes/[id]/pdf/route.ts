@@ -1,6 +1,10 @@
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { NextRequest, NextResponse } from 'next/server'
 import { generatePDF } from '@/lib/pdf/generate'
-import { getCompanyInfoForPDF } from '@/lib/user-data'
+import { getCompanyInfoForPDF, generateQuoteFileName } from '@/lib/user-data'
 
 export async function GET(
   request: NextRequest,
@@ -19,24 +23,30 @@ export async function GET(
         positions: [
           { title: 'Demo Position', qty: 1, unit: 'Psch', price: 100 }
         ],
-        total: 100
+        total: 100,
+        quoteNumber: 'AN20250001',
+        clientStreet: 'Musterstraße 123',
+        clientCity: '90475 Nürnberg'
       }
 
       const companyInfo = getCompanyInfoForPDF()
+      const fileName = generateQuoteFileName(mockQuote.clientName, mockQuote.quoteNumber)
       
       const pdfBytes = await generatePDF({
         clientName: mockQuote.clientName,
         projectInfo: mockQuote.projectInfo,
         positions: mockQuote.positions,
         total: mockQuote.total,
-        quoteNumber: id,
+        quoteNumber: mockQuote.quoteNumber,
+        clientStreet: mockQuote.clientStreet,
+        clientCity: mockQuote.clientCity,
         company: companyInfo
       })
 
       return new NextResponse(Buffer.from(pdfBytes), {
         headers: {
           'Content-Type': 'application/pdf',
-          'Content-Disposition': `attachment; filename="angebot_${id}.pdf"`,
+          'Content-Disposition': `attachment; filename="${fileName}"`,
           'Cache-Control': 'no-store'
         }
       })
@@ -57,13 +67,40 @@ export async function GET(
     // Get company info from user data
     const companyInfo = getCompanyInfoForPDF()
 
+    // Parse AI data if available
+    let positions: Array<{ title: string; qty: number; unit: string; price: number }> = [];
+    let total = 0;
+    let description = quote.projectInfo;
+
+    if (quote.aiData && typeof quote.aiData === 'object') {
+      const aiData = quote.aiData as any;
+      
+      if (aiData.positions && Array.isArray(aiData.positions)) {
+        positions = aiData.positions;
+      }
+      
+      if (typeof aiData.total === 'number') {
+        total = aiData.total;
+      }
+      
+      if (aiData.description && typeof aiData.description === 'string') {
+        description = aiData.description;
+      }
+    }
+
+    // Use structured quote number if available, otherwise fallback to ID
+    const quoteNumber = quote.quoteNumber || quote.id
+    const fileName = generateQuoteFileName(quote.clientName, quoteNumber)
+
     // Generate PDF with actual data
     const pdfBytes = await generatePDF({
       clientName: quote.clientName,
-      projectInfo: quote.projectInfo,
-      positions: [], // No positions in current schema
-      total: 0, // No total in current schema
-      quoteNumber: quote.id,
+      projectInfo: description,
+      positions: positions,
+      total: total,
+      quoteNumber: quoteNumber,
+      clientStreet: quote.clientStreet || undefined,
+      clientCity: quote.clientCity || undefined,
       company: companyInfo
     })
 
@@ -72,7 +109,7 @@ export async function GET(
     return new NextResponse(Buffer.from(pdfBytes), {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="angebot_${id}.pdf"`,
+        'Content-Disposition': `attachment; filename="${fileName}"`,
         'Cache-Control': 'no-store'
       }
     })

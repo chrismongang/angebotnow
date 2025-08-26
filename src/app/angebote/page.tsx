@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { MobileNavigation } from "@/components/mobile-navigation"
 import { Image } from "@/components/ui/image"
 import Link from 'next/link'
-import { Plus, Filter, ChevronDown, ChevronUp, FileText } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Plus, Filter, ChevronDown, ChevronUp, FileText, Euro } from 'lucide-react'
+import { cn, calculateTotal, calculateTotalWithVAT, formatPrice } from '@/lib/utils'
 
 interface Quote {
   id: string
@@ -15,6 +15,12 @@ interface Quote {
   projectInfo: string
   imagePath?: string
   createdAt: Date
+  aiData?: {
+    description: string
+    positions: Array<{ title: string; qty: number; unit: string; price: number }>
+    total: number
+  }
+  quoteNumber?: string // Added for structured quote number
 }
 
 export default function AngebotePage() {
@@ -31,63 +37,18 @@ export default function AngebotePage() {
     setIsLoading(true)
     
     try {
-      if (!process.env.DATABASE_URL) {
-        // Demo mode - create mock data
-        const mockQuotes: Quote[] = [
-          {
-            id: '0123',
-            clientName: 'Max Müller',
-            projectInfo: 'Badezimmer Sanierung',
-            imagePath: '/api/placeholder/150/100',
-            createdAt: new Date('2024-08-20')
-          },
-          {
-            id: '0122',
-            clientName: 'Anna Schmidt',
-            projectInfo: 'Sanierungsarbeiten',
-            imagePath: '/api/placeholder/150/100',
-            createdAt: new Date('2024-08-17')
-          },
-          {
-            id: '0121',
-            clientName: 'Peter Weber',
-            projectInfo: 'Badezimmer Sanierung',
-            imagePath: '/api/placeholder/150/100',
-            createdAt: new Date('2024-08-11')
-          },
-          {
-            id: '0120',
-            clientName: 'Maria Fischer',
-            projectInfo: 'Wand ausbessern',
-            imagePath: '/api/placeholder/150/100',
-            createdAt: new Date('2024-07-25')
-          },
-          {
-            id: '0119',
-            clientName: 'Thomas Klein',
-            projectInfo: 'Sanitärarbeiten',
-            imagePath: '/api/placeholder/150/100',
-            createdAt: new Date('2024-07-07')
-          },
-          {
-            id: '0118',
-            clientName: 'Lisa Wagner',
-            projectInfo: 'Fließenlegerarbeit',
-            imagePath: '/api/placeholder/150/100',
-            createdAt: new Date('2024-06-15')
-          }
-        ]
-        setQuotes(mockQuotes)
+      // Always fetch from API - let the API handle demo mode if needed
+      const response = await fetch('/api/quotes')
+      if (response.ok) {
+        const data = await response.json()
+        setQuotes(data)
       } else {
-        // Database mode - fetch actual data
-        const response = await fetch('/api/quotes')
-        if (response.ok) {
-          const data = await response.json()
-          setQuotes(data)
-        }
+        console.error('Failed to fetch quotes:', response.status)
+        setQuotes([])
       }
     } catch (error) {
       console.error('Error loading quotes:', error)
+      setQuotes([])
     } finally {
       setIsLoading(false)
     }
@@ -104,13 +65,27 @@ export default function AngebotePage() {
       day: '2-digit',
       month: 'short',
       year: 'numeric'
-    }).format(new Date(date))
+    }).format(new Date(date)).replace('.', '')
   }
 
-  const getProjectDescription = (projectInfo: string) => {
-    // Simple AI-like description generation
-    const words = projectInfo.split(' ').slice(0, 3)
+  const getProjectDescription = (quote: Quote) => {
+    if (quote.aiData?.description) {
+      return quote.aiData.description
+    }
+    // Fallback to original project info
+    const words = quote.projectInfo.split(' ').slice(0, 3)
     return words.join(' ')
+  }
+
+  const getQuoteTotal = (quote: Quote): number => {
+    if (quote.aiData?.positions && Array.isArray(quote.aiData.positions)) {
+      // Calculate total from positions
+      const subtotal = calculateTotal(quote.aiData.positions)
+      // Return total with VAT (as shown in PDF)
+      return calculateTotalWithVAT(subtotal)
+    }
+    // Fallback to stored total or 0
+    return quote.aiData?.total || 0
   }
 
   if (isLoading) {
@@ -202,7 +177,7 @@ export default function AngebotePage() {
           </div>
 
           {/* Quotes List */}
-          <div className="space-y-4">
+          <div className="space-y-8">
             {sortedQuotes.length === 0 ? (
               <Card className="p-8 text-center">
                 <div className="space-y-4">
@@ -224,49 +199,59 @@ export default function AngebotePage() {
                 </div>
               </Card>
             ) : (
-              sortedQuotes.map((quote) => (
-                <Link key={quote.id} href={`/angebot/${quote.id}`}>
-                  <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
-                    <CardContent className="p-0">
-                      <div className="flex items-center gap-4">
-                        {/* Image Preview */}
-                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#EDEDED] flex-shrink-0">
-                          {quote.imagePath ? (
-                            <Image
-                              src={quote.imagePath}
-                              alt="Projekt Vorschau"
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <FileText size={20} className="text-[#676767]" />
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-[#404040] mb-1">
-                                Angebot #{quote.id}
-                              </h3>
-                              <p className="text-sm text-[#676767] line-clamp-1">
-                                {getProjectDescription(quote.projectInfo)}
-                              </p>
-                            </div>
-                            <div className="text-right ml-4">
-                              <p className="text-xs text-[#676767]">
-                                {formatDate(quote.createdAt)}
-                              </p>
+              sortedQuotes.map((quote) => {
+                const total = getQuoteTotal(quote)
+                return (
+                  <Link key={quote.id} href={`/angebot/${quote.id}`}>
+                    <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer mb-3">
+                      <CardContent className="p-0">
+                        <div className="flex items-center gap-4">
+                          {/* Image Preview */}
+                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#EDEDED] flex-shrink-0">
+                            {quote.imagePath ? (
+                              <Image
+                                src={quote.imagePath}
+                                alt="Projekt Vorschau"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <FileText size={20} className="text-[#676767]" />
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold text-[#404040] mb-1">
+                                  {quote.clientName}
+                                </h3>
+                                <p className="text-xs text-[#676767]">
+                                  {quote.quoteNumber ? `Angebot #${quote.quoteNumber}` : `Angebot #${quote.id}`}
+                                </p>
+                              </div>
+                              <div className="text-right ml-4">
+                                {total > 0 && (
+                                  <div className="mb-1">
+                                    <span className="text-sm font-semibold text-[#404040]">
+                                      {formatPrice(total)}
+                                    </span>
+                                  </div>
+                                )}
+                                <p className="text-xs text-[#676767]">
+                                  {formatDate(quote.createdAt)}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))
+                      </CardContent>
+                    </Card>
+                  </Link>
+                )
+              })
             )}
           </div>
         </div>

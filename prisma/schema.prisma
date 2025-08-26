@@ -25,6 +25,9 @@ model Quote {
   imagePath   String?
   pdfPath     String?
   aiData      Json?
+  quoteNumber String?    // Structured quote number (e.g., AN20250001)
+  clientStreet String?   // Client address - street
+  clientCity   String?   // Client address - city
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }

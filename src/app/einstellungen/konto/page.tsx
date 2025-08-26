@@ -11,24 +11,54 @@ import { ArrowLeft, Edit, Save, X } from 'lucide-react'
 import { getUserData, saveUserData, type UserData } from '@/lib/user-data'
 
 export default function KontoPage() {
-  const [userData, setUserData] = useState<UserData>(getUserData())
+  const [userData, setUserData] = useState<UserData | null>(null)
   const [isEditing, setIsEditing] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isClient, setIsClient] = useState(false)
 
-  // Load user data on component mount
+  // Ensure we're on the client side
   useEffect(() => {
-    setUserData(getUserData())
+    setIsClient(true)
   }, [])
 
+  // Load user data on component mount (only on client)
+  useEffect(() => {
+    if (isClient) {
+      setUserData(getUserData())
+      setIsLoading(false)
+    }
+  }, [isClient])
+
   const handleSave = () => {
-    saveUserData(userData)
-    setIsEditing(false)
-    // Optional: Erfolgsmeldung anzeigen
+    if (userData) {
+      saveUserData(userData)
+      setIsEditing(false)
+      // Optional: Erfolgsmeldung anzeigen
+    }
   }
 
   const handleCancel = () => {
     // Reset to saved data
-    setUserData(getUserData())
-    setIsEditing(false)
+    if (userData) {
+      setUserData(getUserData())
+      setIsEditing(false)
+    }
+  }
+
+  // Show loading state while data is being loaded or not on client yet
+  if (!isClient || isLoading || !userData) {
+    return (
+      <>
+        <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
+          <div className="container mx-auto max-w-4xl">
+            <div className="text-center py-12">
+              <p className="text-[#676767]">Lade Kontodaten...</p>
+            </div>
+          </div>
+        </div>
+        <MobileNavigation />
+      </>
+    )
   }
 
   return (
