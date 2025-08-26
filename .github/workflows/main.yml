@@ -8,6 +8,15 @@ on:
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    env:
+      # Mock environment variables for build testing
+      DATABASE_URL: "postgresql://mock:mock@localhost:5432/mock"
+      OPENAI_API_KEY: "mock-key-for-testing"
+      USE_OPENAI: "false"
+      CLOUDINARY_CLOUD_NAME: "mock-cloud"
+      CLOUDINARY_API_KEY: "mock-key"
+      CLOUDINARY_API_SECRET: "mock-secret"
+      SENTRY_DSN: "https://mock@sentry.io/mock"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
