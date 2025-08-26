@@ -98,22 +98,29 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
   const senderX = width - 200;
   const senderY = height - 80;
   
-  if (input.company?.name) drawText(input.company.name, senderX, senderY, 12, true);
-  if (input.company?.address) {
+  // Helper function to check if a value is meaningful
+  const isValidText = (text: string | undefined | null): text is string => {
+    return Boolean(text && text.trim().length > 0)
+  }
+  
+  if (input.company && isValidText(input.company.name)) drawText(input.company.name, senderX, senderY, 12, true);
+  if (input.company && isValidText(input.company.address)) {
     const addressLines = input.company.address.split('\n');
     addressLines.forEach((line, index) => {
-      drawText(line, senderX, senderY - 16 - (index * 16), 10);
+      if (isValidText(line)) {
+        drawText(line, senderX, senderY - 16 - (index * 16), 10);
+      }
     });
   }
-  if (input.company?.email) drawText(`E-Mail: ${input.company.email}`, senderX, senderY - 48, 10);
-  if (input.company?.phone) drawText(`Tel.: ${input.company.phone}`, senderX, senderY - 64, 10);
+  if (input.company && isValidText(input.company.email)) drawText(`E-Mail: ${input.company.email}`, senderX, senderY - 48, 10);
+  if (input.company && isValidText(input.company.phone)) drawText(`Tel.: ${input.company.phone}`, senderX, senderY - 64, 10);
 
   // Recipient information (top left, below branding)
   const recipientX = 40;
   const recipientY = height - 120; // More space below branding
   
   // Sender address for window envelope (light gray)
-  if (input.company?.name && input.company?.address) {
+  if (input.company && isValidText(input.company.name) && isValidText(input.company.address)) {
     const senderAddress = `${input.company.name} - ${input.company.address.replace('\n', ' ')}`;
     drawText(senderAddress, recipientX, recipientY + 20, 10, false, grayscale(0.5));
   }
@@ -295,14 +302,14 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
   drawText('Ist unser Angebot für Sie interessant? Dann freuen wir uns über Ihren Auftrag!', recipientX, closingY, 10);
   drawText('Zögern Sie bitte nicht, uns bei Fragen zu kontaktieren.', recipientX, closingY - 16, 10);
   
-  if (input.company?.phone) {
+  if (input.company && isValidText(input.company.phone)) {
     drawText(`Sie erreichen uns jederzeit unter der Telefonnummer: ${input.company.phone}`, recipientX, closingY - 32, 10);
   }
 
   // Signature
   const signatureY = closingY - 80;
   drawText('Mit freundlichen Grüßen', recipientX, signatureY, 11);
-  drawText(input.company?.name || 'AngebotNow', recipientX, signatureY - 20, 11, true);
+  drawText(input.company && isValidText(input.company.name) ? input.company.name : 'AngebotNow', recipientX, signatureY - 20, 11, true);
 
   // Footer
   const footerY = 80;
@@ -314,24 +321,26 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
   const footerCol3X = width - 200;
   
   // Column 1 - Company details
-  if (input.company?.name) drawText(input.company.name, footerCol1X, footerY, 8);
-  if (input.company?.address) {
+  if (input.company && isValidText(input.company.name)) drawText(input.company.name, footerCol1X, footerY, 8);
+  if (input.company && isValidText(input.company.address)) {
     const addressLines = input.company.address.split('\n');
     addressLines.forEach((line, index) => {
-      drawText(line, footerCol1X, footerY - 12 - (index * 12), 8);
+      if (isValidText(line)) {
+        drawText(line, footerCol1X, footerY - 12 - (index * 12), 8);
+      }
     });
   }
-  if (input.company?.email) drawText(`E-Mail: ${input.company.email}`, footerCol1X, footerY - 48, 8);
-  if (input.company?.phone) drawText(`Tel: ${input.company.phone}`, footerCol1X, footerY - 60, 8);
+  if (input.company && isValidText(input.company.email)) drawText(`E-Mail: ${input.company.email}`, footerCol1X, footerY - 48, 8);
+  if (input.company && isValidText(input.company.phone)) drawText(`Tel: ${input.company.phone}`, footerCol1X, footerY - 60, 8);
   
   // Column 2 - Bank details
-  if (input.company?.bankName) drawText(`Kreditinstitut: ${input.company.bankName}`, footerCol2X, footerY, 8);
-  if (input.company?.bankAccount) drawText(`IBAN: ${input.company.bankAccount}`, footerCol2X, footerY - 12, 8);
-  if (input.company?.bankBic) drawText(`BIC: ${input.company.bankBic}`, footerCol2X, footerY - 24, 8);
+  if (input.company && isValidText(input.company.bankName)) drawText(`Kreditinstitut: ${input.company.bankName}`, footerCol2X, footerY, 8);
+  if (input.company && isValidText(input.company.bankAccount)) drawText(`IBAN: ${input.company.bankAccount}`, footerCol2X, footerY - 12, 8);
+  if (input.company && isValidText(input.company.bankBic)) drawText(`BIC: ${input.company.bankBic}`, footerCol2X, footerY - 24, 8);
   
   // Column 3 - Legal info
-  if (input.company?.vatNumber) drawText(`USt-ID: ${input.company.vatNumber}`, footerCol3X, footerY, 8);
-  if (input.company?.taxNumber) drawText(`Steuer-Nr.: ${input.company.taxNumber}`, footerCol3X, footerY - 12, 8);
+  if (input.company && isValidText(input.company.vatNumber)) drawText(`USt-ID: ${input.company.vatNumber}`, footerCol3X, footerY, 8);
+  if (input.company && isValidText(input.company.taxNumber)) drawText(`Steuer-Nr.: ${input.company.taxNumber}`, footerCol3X, footerY - 12, 8);
   drawText('Finanzamt Musterstadt', footerCol3X, footerY - 24, 8);
 
   return await pdfDoc.save();

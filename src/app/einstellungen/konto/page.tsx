@@ -1,52 +1,140 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MobileNavigation } from "@/components/mobile-navigation"
 import Link from 'next/link'
-import { ArrowLeft, Edit, Save, X } from 'lucide-react'
-import { getUserData, saveUserData, type UserData } from '@/lib/user-data'
+import { ArrowLeft, Edit, Save, X, CheckCircle, AlertCircle } from 'lucide-react'
+import { type UserData } from '@/lib/user-data'
 
 export default function KontoPage() {
+  const { data: session, status } = useSession()
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [isClient, setIsClient] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
-  // Ensure we're on the client side
+  // Load user data from database when session is available
   useEffect(() => {
-    setIsClient(true)
-  }, [])
+    if (status === 'loading') return
 
-  // Load user data on component mount (only on client)
-  useEffect(() => {
-    if (isClient) {
-      setUserData(getUserData())
+    if (status === 'authenticated' && session?.user?.id) {
+      loadUserData()
+    } else if (status === 'unauthenticated') {
+      // Fallback to localStorage for demo mode
+      loadFromLocalStorage()
+    }
+  }, [status, session]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadUserData = async () => {
+    try {
+      const response = await fetch('/api/user-data')
+      if (response.ok) {
+        const data = await response.json()
+        setUserData(data)
+      } else {
+        // Fallback to localStorage if API fails
+        loadFromLocalStorage()
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error)
+      loadFromLocalStorage()
+    } finally {
       setIsLoading(false)
     }
-  }, [isClient])
+  }
 
-  const handleSave = () => {
-    if (userData) {
-      saveUserData(userData)
-      setIsEditing(false)
-      // Optional: Erfolgsmeldung anzeigen
+  const loadFromLocalStorage = () => {
+    try {
+      const stored = localStorage.getItem('userData')
+      if (stored) {
+        setUserData(JSON.parse(stored))
+      } else {
+        // Use default data
+        setUserData({
+          firstName: 'Max',
+          lastName: 'Mustermann',
+          companyName: 'Inatros GmbH',
+          street: 'Musterstraße 123',
+          city: '90475 Nürnberg',
+          email: 'info@inatros.de',
+          phone: '+49 911 123456',
+          companyLogo: '',
+          taxNumber: 'DE123456789',
+          vatNumber: 'DE123456789',
+          bankName: 'Musterbank AG',
+          bankAccount: 'DE89 3704 0044 0532 0130 00',
+          bankBic: 'COBADEFFXXX',
+          defaultQuotePrefix: 'AN',
+          defaultCurrency: 'EUR',
+          defaultPaymentTerms: '30 Tage netto',
+          defaultValidity: '30 Tage',
+          lastQuoteNumber: 0,
+          currentYear: new Date().getFullYear()
+        })
+      }
+    } catch (error) {
+      console.error('Error loading from localStorage:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSave = async () => {
+    if (!userData) return
+
+    setIsSaving(true)
+    setSaveStatus('idle')
+
+    try {
+      if (status === 'authenticated') {
+        // Save to database
+        const response = await fetch('/api/user-data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+        })
+
+        if (response.ok) {
+          setSaveStatus('success')
+          setIsEditing(false)
+        } else {
+          setSaveStatus('error')
+        }
+      } else {
+        // Save to localStorage for demo mode
+        localStorage.setItem('userData', JSON.stringify(userData))
+        setSaveStatus('success')
+        setIsEditing(false)
+      }
+    } catch (error) {
+      console.error('Error saving user data:', error)
+      setSaveStatus('error')
+    } finally {
+      setIsSaving(false)
     }
   }
 
   const handleCancel = () => {
-    // Reset to saved data
-    if (userData) {
-      setUserData(getUserData())
-      setIsEditing(false)
+    // Reload data from source
+    if (status === 'authenticated') {
+      loadUserData()
+    } else {
+      loadFromLocalStorage()
     }
+    setIsEditing(false)
+    setSaveStatus('idle')
   }
 
-  // Show loading state while data is being loaded or not on client yet
-  if (!isClient || isLoading || !userData) {
+  // Show loading state while data is being loaded
+  if (isLoading || !userData) {
     return (
       <>
         <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
@@ -100,6 +188,7 @@ export default function KontoPage() {
                     size="sm" 
                     onClick={handleCancel}
                     className="flex items-center gap-2 rounded-[14px]"
+                    disabled={isSaving}
                   >
                     <X size={16} />
                     Abbrechen
@@ -108,14 +197,39 @@ export default function KontoPage() {
                     size="sm" 
                     onClick={handleSave}
                     className="bg-[#F89813] hover:bg-[#E88A0F] flex items-center gap-2 rounded-[14px]"
+                    disabled={isSaving}
                   >
-                    <Save size={16} />
-                    Speichern
+                    {isSaving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Speichern...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={16} />
+                        Speichern
+                      </>
+                    )}
                   </Button>
                 </div>
               )}
             </div>
             <p className="text-[#676767]">Verwalten Sie Ihre Kontodaten und Firmeninformationen</p>
+            
+            {/* Save Status */}
+            {saveStatus === 'success' && (
+              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
+                <CheckCircle size={16} className="text-green-600" />
+                <p className="text-sm text-green-800">Daten erfolgreich gespeichert!</p>
+              </div>
+            )}
+            
+            {saveStatus === 'error' && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
+                <AlertCircle size={16} className="text-red-600" />
+                <p className="text-sm text-red-800">Fehler beim Speichern. Bitte versuchen Sie es erneut.</p>
+              </div>
+            )}
             
             {/* PDF Integration Notice */}
             <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
@@ -123,6 +237,21 @@ export default function KontoPage() {
                 <strong>Hinweis:</strong> Die hier eingegebenen Firmeninformationen werden automatisch in alle generierten PDF-Angebote eingefügt.
               </p>
             </div>
+
+            {/* Storage Mode Notice */}
+            {status === 'authenticated' ? (
+              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-xs text-green-700">
+                  <strong>Datenbank-Modus:</strong> Ihre Daten werden sicher in der Cloud gespeichert.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-xs text-yellow-700">
+                  <strong>Demo-Modus:</strong> Daten werden lokal gespeichert. Melden Sie sich an für Cloud-Speicherung.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Personal Information Card */}

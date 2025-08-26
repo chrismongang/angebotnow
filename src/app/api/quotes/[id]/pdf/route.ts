@@ -4,7 +4,9 @@ export const revalidate = 0;
 
 import { NextRequest, NextResponse } from 'next/server'
 import { generatePDF } from '@/lib/pdf/generate'
-import { getCompanyInfoForPDF, generateQuoteFileName } from '@/lib/user-data'
+import { generateQuoteFileName } from '@/lib/user-data'
+import { auth } from '@/lib/auth'
+import { getUserDataFromDB } from '@/lib/user-data'
 
 export async function GET(
   request: NextRequest,
@@ -12,9 +14,11 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+    console.log('PDF Generation started for quote ID:', id)
 
     // Check if database is available
     if (!process.env.DATABASE_URL) {
+      console.log('Running in demo mode (no database)')
       // Demo mode - generate PDF with mock data
       const mockQuote = {
         id,
@@ -29,7 +33,20 @@ export async function GET(
         clientCity: '90475 Nürnberg'
       }
 
-      const companyInfo = getCompanyInfoForPDF()
+      // Use default company info for demo mode
+      const companyInfo = {
+        name: 'Inatros GmbH',
+        address: 'Musterstraße 123\n90475 Nürnberg',
+        email: 'info@inatros.de',
+        phone: '+49 911 123456',
+        taxNumber: 'DE123456789',
+        vatNumber: 'DE123456789',
+        bankName: 'Musterbank AG',
+        bankAccount: 'DE89 3704 0044 0532 0130 00',
+        bankBic: 'COBADEFFXXX'
+      }
+      
+      console.log('Using demo company info:', companyInfo)
       const fileName = generateQuoteFileName(mockQuote.clientName, mockQuote.quoteNumber)
       
       const pdfBytes = await generatePDF({
@@ -52,6 +69,7 @@ export async function GET(
       })
     }
 
+    console.log('Running in database mode')
     // Database mode - fetch actual quote data
     const { PrismaClient } = await import('@prisma/client')
     const prisma = new PrismaClient()
@@ -61,11 +79,54 @@ export async function GET(
     })
 
     if (!quote) {
+      console.log('Quote not found:', id)
       return NextResponse.json({ error: 'Quote not found' }, { status: 404 })
     }
 
-    // Get company info from user data
-    const companyInfo = getCompanyInfoForPDF()
+    console.log('Found quote:', { id: quote.id, clientName: quote.clientName, userId: quote.userId })
+
+    // Get company info from user data in database
+    let companyInfo = {
+      name: 'Inatros GmbH',
+      address: 'Musterstraße 123\n90475 Nürnberg',
+      email: 'info@inatros.de',
+      phone: '+49 911 123456',
+      taxNumber: 'DE123456789',
+      vatNumber: 'DE123456789',
+      bankName: 'Musterbank AG',
+      bankAccount: 'DE89 3704 0044 0532 0130 00',
+      bankBic: 'COBADEFFXXX'
+    }
+
+    try {
+      console.log('Fetching user data for userId:', quote.userId)
+      // Try to get user data from database
+      const userData = await getUserDataFromDB(quote.userId)
+      console.log('User data fetched:', {
+        companyName: userData.companyName,
+        street: userData.street,
+        city: userData.city,
+        email: userData.email,
+        phone: userData.phone
+      })
+      
+      companyInfo = {
+        name: userData.companyName,
+        address: `${userData.street}\n${userData.city}`,
+        email: userData.email,
+        phone: userData.phone,
+        taxNumber: userData.taxNumber,
+        vatNumber: userData.vatNumber,
+        bankName: userData.bankName,
+        bankAccount: userData.bankAccount,
+        bankBic: userData.bankBic
+      }
+      
+      console.log('Company info for PDF:', companyInfo)
+    } catch (error) {
+      console.error('Error fetching user data for PDF:', error)
+      // Use default company info if user data fetch fails
+    }
 
     // Parse AI data if available
     let positions: Array<{ title: string; qty: number; unit: string; price: number }> = [];
@@ -92,6 +153,13 @@ export async function GET(
     const quoteNumber = quote.quoteNumber || quote.id
     const fileName = generateQuoteFileName(quote.clientName, quoteNumber)
 
+    console.log('Generating PDF with data:', {
+      clientName: quote.clientName,
+      quoteNumber,
+      companyName: companyInfo.name,
+      companyAddress: companyInfo.address
+    })
+
     // Generate PDF with actual data
     const pdfBytes = await generatePDF({
       clientName: quote.clientName,
@@ -105,6 +173,7 @@ export async function GET(
     })
 
     await prisma.$disconnect()
+    console.log('PDF generated successfully')
 
     return new NextResponse(Buffer.from(pdfBytes), {
       headers: {

@@ -1,3 +1,6 @@
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+
 export interface UserData {
   // Persönliche Informationen
   firstName: string;
@@ -51,6 +54,75 @@ const defaultUserData: UserData = {
   currentYear: new Date().getFullYear()
 };
 
+// Server-side function to get user data from database
+export async function getUserDataFromDB(userId: string): Promise<UserData> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    })
+
+    if (!user) {
+      return defaultUserData
+    }
+
+    // Helper function to check if a value is empty or null
+    const isEmpty = (value: any) => !value || value.trim() === ''
+
+    // Convert database user to UserData format
+    return {
+      firstName: isEmpty(user.name?.split(' ')[0]) ? defaultUserData.firstName : user.name?.split(' ')[0] || defaultUserData.firstName,
+      lastName: isEmpty(user.name?.split(' ').slice(1).join(' ')) ? defaultUserData.lastName : user.name?.split(' ').slice(1).join(' ') || defaultUserData.lastName,
+      companyName: isEmpty(user.companyName) ? defaultUserData.companyName : user.companyName || defaultUserData.companyName,
+      street: isEmpty(user.street) ? defaultUserData.street : user.street || defaultUserData.street,
+      city: isEmpty(user.city) ? defaultUserData.city : user.city || defaultUserData.city,
+      email: isEmpty(user.email) ? defaultUserData.email : user.email || defaultUserData.email,
+      phone: isEmpty(user.phone) ? defaultUserData.phone : user.phone || defaultUserData.phone,
+      companyLogo: '', // Not stored in DB yet
+      taxNumber: isEmpty(user.taxNumber) ? defaultUserData.taxNumber : user.taxNumber || defaultUserData.taxNumber,
+      vatNumber: isEmpty(user.vatNumber) ? defaultUserData.vatNumber : user.vatNumber || defaultUserData.vatNumber,
+      bankName: isEmpty(user.bankName) ? defaultUserData.bankName : user.bankName || defaultUserData.bankName,
+      bankAccount: isEmpty(user.bankAccount) ? defaultUserData.bankAccount : user.bankAccount || defaultUserData.bankAccount,
+      bankBic: isEmpty(user.bankBic) ? defaultUserData.bankBic : user.bankBic || defaultUserData.bankBic,
+      defaultQuotePrefix: 'AN', // Default value
+      defaultCurrency: 'EUR', // Default value
+      defaultPaymentTerms: '30 Tage netto', // Default value
+      defaultValidity: '30 Tage', // Default value
+      lastQuoteNumber: user.lastQuoteNumber || 0,
+      currentYear: user.currentYear || new Date().getFullYear()
+    }
+  } catch (error) {
+    console.error('Error fetching user data from database:', error)
+    return defaultUserData
+  }
+}
+
+// Server-side function to save user data to database
+export async function saveUserDataToDB(userId: string, data: UserData): Promise<void> {
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: `${data.firstName} ${data.lastName}`,
+        companyName: data.companyName,
+        street: data.street,
+        city: data.city,
+        phone: data.phone,
+        taxNumber: data.taxNumber,
+        vatNumber: data.vatNumber,
+        bankName: data.bankName,
+        bankAccount: data.bankAccount,
+        bankBic: data.bankBic,
+        lastQuoteNumber: data.lastQuoteNumber,
+        currentYear: data.currentYear
+      }
+    })
+  } catch (error) {
+    console.error('Error saving user data to database:', error)
+    throw error
+  }
+}
+
+// Client-side function (fallback to localStorage)
 export function getUserData(): UserData {
   if (typeof window === 'undefined') {
     return defaultUserData;
@@ -68,6 +140,7 @@ export function getUserData(): UserData {
   return defaultUserData;
 }
 
+// Client-side function (fallback to localStorage)
 export function saveUserData(data: UserData): void {
   if (typeof window === 'undefined') {
     return;

@@ -1,130 +1,256 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AngebotNow - KI-gestützte Angebotserstellung
 
-## Getting Started
+Eine moderne Web-Anwendung zur automatisierten Erstellung professioneller Angebote mit KI-Unterstützung.
 
-First, run the development server:
+## 🚀 Features
+
+- **KI-gestützte Angebotserstellung**: Automatische Generierung von Angeboten basierend auf Fotos und Beschreibungen
+- **PDF-Export**: Professionelle PDF-Angebote mit Firmenbranding
+- **Google OAuth**: Sichere Anmeldung mit Google-Konten
+- **Mobile-First Design**: Optimiert für alle Geräte
+- **Datenbank-Integration**: PostgreSQL mit Neon für zuverlässige Datenspeicherung
+- **Cloudinary Integration**: Sichere Bildverarbeitung und -speicherung
+
+## 🛠️ Technologie-Stack
+
+- **Frontend**: Next.js 15.5.0, React 18.3.1, TypeScript
+- **Styling**: Tailwind CSS, Manrope Font
+- **Authentication**: NextAuth.js mit Google OAuth
+- **Database**: PostgreSQL (Neon) mit Prisma ORM
+- **AI**: OpenAI GPT-4 für Angebotserstellung
+- **File Storage**: Cloudinary für Bildverarbeitung
+- **Deployment**: Vercel
+- **Monitoring**: Sentry für Error-Tracking
+
+## 📦 Installation
+
+### Voraussetzungen
+
+- Node.js 18+ 
+- npm oder yarn
+- PostgreSQL Datenbank (Neon empfohlen)
+- Google Cloud Console Account
+- OpenAI API Key
+- Cloudinary Account
+
+### Lokale Entwicklung
+
+1. **Repository klonen**
+   ```bash
+   git clone https://github.com/your-username/angebotnow.git
+   cd angebotnow
+   ```
+
+2. **Dependencies installieren**
+   ```bash
+   npm install --legacy-peer-deps
+   ```
+
+3. **Umgebungsvariablen konfigurieren**
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Fülle die folgenden Variablen in `.env.local` aus:
+   ```env
+   # Database
+   DATABASE_URL="postgresql://username:password@host:port/database?sslmode=require"
+   
+   # NextAuth.js
+   NEXTAUTH_SECRET="your-secret-key"
+   NEXTAUTH_URL="http://localhost:3000"
+   
+   # Google OAuth
+   GOOGLE_CLIENT_ID="your-google-client-id"
+   GOOGLE_CLIENT_SECRET="your-google-client-secret"
+   
+   # OpenAI
+   OPENAI_API_KEY="your-openai-api-key"
+   USE_OPENAI="true"
+   
+   # Cloudinary
+   CLOUDINARY_CLOUD_NAME="your-cloud-name"
+   CLOUDINARY_API_KEY="your-api-key"
+   CLOUDINARY_API_SECRET="your-api-secret"
+   ```
+
+4. **Datenbank-Migrationen ausführen**
+   ```bash
+   npx prisma migrate deploy
+   npx prisma generate
+   ```
+
+5. **Entwicklungsserver starten**
+   ```bash
+   npm run dev
+   ```
+
+6. **Anwendung öffnen**
+   ```
+   http://localhost:3000
+   ```
+
+## 🚀 Deployment auf Vercel
+
+### 1. Vercel CLI Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Vercel CLI installieren
+npm i -g vercel
+
+# Bei Vercel anmelden
+vercel login
+
+# Projekt deployen
+vercel --prod
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Umgebungsvariablen in Vercel setzen
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Gehe zu Vercel Dashboard → Project Settings → Environment Variables und setze:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `DATABASE_URL`: Deine Neon PostgreSQL URL
+- `NEXTAUTH_SECRET`: Ein sicherer Secret-Key
+- `NEXTAUTH_URL`: Deine Vercel-Domain (https://your-app.vercel.app)
+- `GOOGLE_CLIENT_ID`: Deine Google OAuth Client ID
+- `GOOGLE_CLIENT_SECRET`: Dein Google OAuth Client Secret
+- `OPENAI_API_KEY`: Dein OpenAI API Key
+- `CLOUDINARY_*`: Deine Cloudinary Credentials
 
-## Deployment & Environment Variables
+### 3. Google OAuth für Produktion konfigurieren
 
-### Required Environment Variables
+1. Gehe zu [Google Cloud Console](https://console.cloud.google.com/)
+2. Wähle dein Projekt
+3. Gehe zu "APIs & Services" → "Credentials"
+4. Bearbeite deine OAuth 2.0 Client ID
+5. Füge Produktions-Redirect URI hinzu:
+   ```
+   https://your-domain.vercel.app/api/auth/callback/google
+   ```
 
-For basic functionality, you need:
+### 4. Datenbank-Migrationen
 
 ```bash
-# Database (Required for full functionality)
-DATABASE_URL=postgresql://username:password@host:port/database
-SHADOW_DATABASE_URL=postgresql://username:password@host:port/shadow_database
+# Lokal testen
+npx prisma migrate deploy
 
-# Optional: Enhanced features
-CLOUDINARY_CLOUD_NAME=your-cloud-name
-CLOUDINARY_API_KEY=your-api-key
-CLOUDINARY_API_SECRET=your-api-secret
-
-OPENAI_API_KEY=sk-your-openai-api-key
-USE_OPENAI=true
-
-SENTRY_DSN=https://your-sentry-dsn
-NEXT_PUBLIC_SENTRY_DSN=https://your-sentry-dsn
+# In Vercel (falls nötig)
+vercel env pull .env.local
+npx prisma migrate deploy
 ```
 
-### Vercel Deployment
+## 🧪 Testing
 
-1. **Connect your repository** to Vercel
-2. **Set environment variables** in Vercel Dashboard:
-   - Go to Project Settings → Environment Variables
-   - Add all required variables above
-3. **Deploy**: Vercel will automatically build and deploy
-
-### Demo Mode
-
-If `DATABASE_URL` is not set, the app runs in demo mode:
-- Form submissions are simulated
-- No actual database operations
-- Placeholder images are used
-- Mock AI responses are generated
-
-## AI Provider Configuration
-
-The app supports two AI providers:
-
-### Mock AI (Default)
-- No configuration required
-- Generates sample offer positions
-- Used when `USE_OPENAI` is not set or `false`
-
-### OpenAI
-To enable OpenAI AI processing:
-
-1. Set environment variables:
+### Build-Test
 ```bash
-USE_OPENAI=true
-OPENAI_API_KEY=your-openai-api-key
+npm run build
 ```
 
-2. The app will use GPT-4o-mini to generate offer positions based on project descriptions.
-
-## Manueller Testplan (5min)
-
-### 1. Angebotserstellung testen
-1. `/dashboard` öffnen
-2. Bild hochladen (JPG/PNG, max. 10MB)
-3. Projektinfo eintragen (z.B. "Badrenovierung mit Fliesenarbeiten")
-4. Kundenname eingeben
-5. "Angebot erstellen" klicken
-6. **Erwartung**: Erfolgsmeldung, Weiterleitung zur Angebote-Übersicht
-
-### 2. PDF-Download testen
-1. `/angebote` → Angebot in der Liste finden
-2. "Details anzeigen" klicken
-3. "PDF herunterladen" klicken
-4. **Erwartung**: PDF-Datei öffnet sich im Browser/Download
-
-### 3. AI-Provider testen
-
-#### Mit Mock-AI (Standard)
-- `USE_OPENAI` nicht gesetzt oder `false`
-- **Erwartung**: Mock-Inhalte sichtbar ("Fliesenlegen", "Entsorgung")
-- **Gesamtbetrag**: 1746 € (fest vorgegeben)
-
-#### Mit OpenAI
-- `USE_OPENAI=true` und `OPENAI_API_KEY` gesetzt
-- **Erwartung**: Plausible, dynamische Inhalte basierend auf Projektinfo
-- **Server-Log**: Keine Fehler, erfolgreiche API-Calls
-
-### 4. PDF-Generierung testen
+### Linting
 ```bash
-# PDF-Test ausführen
-npx vitest --config vitest.pdf.config.ts --run src/test/pdf.generate.smoke.test.ts
+npm run lint
 ```
-**Erwartung**: ✅ PDF generated successfully: ~1459 bytes
 
-## Learn More
+### E2E Tests (Playwright)
+```bash
+npm run test:e2e
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Unit Tests (Vitest)
+```bash
+npm run test
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📁 Projektstruktur
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # API Routes
+│   ├── auth/              # Authentication Pages
+│   ├── dashboard/         # Main Dashboard
+│   ├── einstellungen/     # Settings Pages
+│   └── test-*/           # Test Pages
+├── components/            # React Components
+│   ├── ui/               # UI Components
+│   └── providers/        # Context Providers
+├── lib/                  # Utility Libraries
+│   ├── ai/              # AI Integration
+│   ├── auth.ts          # NextAuth Configuration
+│   ├── db/              # Database Configuration
+│   ├── pdf/             # PDF Generation
+│   └── user-data.ts     # User Data Management
+└── e2e/                 # End-to-End Tests
+```
 
-## Deploy on Vercel
+## 🔧 Konfiguration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Google OAuth Setup
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Google Cloud Console**: Erstelle ein neues Projekt
+2. **OAuth 2.0 Client ID**: Erstelle eine Web-Anwendung
+3. **Redirect URIs**: 
+   - Development: `http://localhost:3000/api/auth/callback/google`
+   - Production: `https://your-domain.vercel.app/api/auth/callback/google`
+
+### Datenbank Setup (Neon)
+
+1. **Neon Account**: Erstelle ein kostenloses Konto
+2. **Datenbank erstellen**: Wähle PostgreSQL
+3. **Connection String**: Kopiere die URL in `DATABASE_URL`
+4. **Migrationen**: Führe `npx prisma migrate deploy` aus
+
+## 🐛 Bekannte Issues
+
+### PDF-Generierung
+- **Problem**: Firmendaten werden nicht korrekt in PDFs angezeigt
+- **Status**: Wird nach Deployment behoben
+- **Workaround**: Verwende Debug-Tools unter `/test-pdf-data`
+
+### Lokale vs. Produktionsumgebung
+- **Problem**: Unterschiede in Datenverarbeitung
+- **Status**: Wird nach Deployment analysiert
+- **Workaround**: Teste mit echten Produktionsdaten
+
+## 📊 Monitoring
+
+### Vercel Analytics
+- Performance-Monitoring
+- Error-Tracking
+- User Analytics
+
+### Sentry Integration
+- Error-Reporting
+- Performance-Monitoring
+- Release-Tracking
+
+## 🤝 Contributing
+
+1. Fork das Repository
+2. Erstelle einen Feature-Branch (`git checkout -b feature/amazing-feature`)
+3. Committe deine Änderungen (`git commit -m 'Add amazing feature'`)
+4. Push zum Branch (`git push origin feature/amazing-feature`)
+5. Öffne einen Pull Request
+
+## 📄 Lizenz
+
+Dieses Projekt ist unter der MIT-Lizenz lizenziert. Siehe [LICENSE](LICENSE) für Details.
+
+## 🆘 Support
+
+Bei Fragen oder Problemen:
+
+1. Überprüfe die [Deployment-Checkliste](docs/DEPLOYMENT_CHECKLIST.md)
+2. Schaue in die [Dokumentation](docs/)
+3. Erstelle ein Issue auf GitHub
+4. Kontaktiere das Entwicklungsteam
+
+## 🎯 Roadmap
+
+- [ ] Echte Bild-Uploads implementieren
+- [ ] Angebotsnummern-System verbessern
+- [ ] Multi-User-Support erweitern
+- [ ] Status-System für Angebote
+- [ ] E-Mail-Benachrichtigungen
+- [ ] Offline-Support
+- [ ] Progressive Web App (PWA)
