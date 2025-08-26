@@ -12,17 +12,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    session: async ({ session, token }) => {
-      if (session?.user && token?.sub) {
-        session.user.id = token.sub
+    session: async ({ session, user }) => {
+      if (session?.user && user?.id) {
+        session.user.id = user.id
       }
       return session
-    },
-    jwt: async ({ user, token }) => {
-      if (user) {
-        token.uid = user.id
-      }
-      return token
     },
   },
   pages: {
@@ -30,7 +24,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: '/auth/error',
   },
   session: {
-    strategy: "jwt",
+    strategy: "database",
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',

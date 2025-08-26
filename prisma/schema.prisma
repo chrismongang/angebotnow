@@ -66,6 +66,7 @@ model User {
   phone         String?
   taxNumber     String?
   vatNumber     String?
+  taxOffice     String?   // Finanzamt
   bankName      String?
   bankAccount   String?
   bankBic       String?

@@ -6,10 +6,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "10mb",
     },
   },
-  // Fix Turbopack root directory warning
-  turbopack: {
-    root: process.cwd(),
-  },
+  // Turbopack deaktiviert um Chunk-Loading-Probleme zu vermeiden
 };
 
 export default nextConfig;

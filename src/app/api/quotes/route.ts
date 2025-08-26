@@ -3,6 +3,8 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 import { NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 
 // Helper function to calculate total from positions
 function calculateTotal(positions: Array<{ qty: number; price: number }>): number {
@@ -24,6 +26,12 @@ function calculateTotalWithVAT(total: number, vatRate: number = 0.19): number {
 
 export async function GET() {
   try {
+    const session = await auth()
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     // Check if database is available
     if (!process.env.DATABASE_URL) {
       // Demo mode - return mock data with AI data
@@ -71,125 +79,59 @@ export async function GET() {
               { qty: 45, price: 12 }
             ]))
           }
-        },
-        {
-          id: '0121',
-          clientName: 'Peter Weber',
-          projectInfo: 'Badezimmer Sanierung',
-          imagePath: '/api/placeholder/150/100',
-          createdAt: new Date('2024-08-11'),
-          quoteNumber: 'AN20250003',
-          aiData: {
-            description: 'Moderne Badezimmer-Gestaltung',
-            positions: [
-              { title: 'Fliesenarbeiten', qty: 15, unit: 'm²', price: 48 },
-              { title: 'Dusche komplett', qty: 1, unit: 'Stk', price: 1200 },
-              { title: 'Armaturen', qty: 1, unit: 'Psch', price: 450 }
-            ],
-            total: calculateTotalWithVAT(calculateTotal([
-              { qty: 15, price: 48 },
-              { qty: 1, price: 1200 },
-              { qty: 1, price: 450 }
-            ]))
-          }
-        },
-        {
-          id: '0120',
-          clientName: 'Maria Fischer',
-          projectInfo: 'Wand ausbessern',
-          imagePath: '/api/placeholder/150/100',
-          createdAt: new Date('2024-07-25'),
-          quoteNumber: 'AN20250004',
-          aiData: {
-            description: 'Wandreparatur und Ausbesserung',
-            positions: [
-              { title: 'Wandausbesserung', qty: 8, unit: 'm²', price: 25 },
-              { title: 'Spachtelarbeiten', qty: 8, unit: 'm²', price: 15 },
-              { title: 'Malerarbeiten', qty: 8, unit: 'm²', price: 12 }
-            ],
-            total: calculateTotalWithVAT(calculateTotal([
-              { qty: 8, price: 25 },
-              { qty: 8, price: 15 },
-              { qty: 8, price: 12 }
-            ]))
-          }
-        },
-        {
-          id: '0119',
-          clientName: 'Thomas Klein',
-          projectInfo: 'Sanitärarbeiten',
-          imagePath: '/api/placeholder/150/100',
-          createdAt: new Date('2024-07-07'),
-          quoteNumber: 'AN20250005',
-          aiData: {
-            description: 'Sanitäre Installation und Reparatur',
-            positions: [
-              { title: 'WC-Installation', qty: 1, unit: 'Stk', price: 350 },
-              { title: 'Wasseranschluss', qty: 1, unit: 'Psch', price: 180 },
-              { title: 'Dichtheitsprüfung', qty: 1, unit: 'Psch', price: 120 }
-            ],
-            total: calculateTotalWithVAT(calculateTotal([
-              { qty: 1, price: 350 },
-              { qty: 1, price: 180 },
-              { qty: 1, price: 120 }
-            ]))
-          }
-        },
-        {
-          id: '0118',
-          clientName: 'Lisa Wagner',
-          projectInfo: 'Fließenlegerarbeit',
-          imagePath: '/api/placeholder/150/100',
-          createdAt: new Date('2024-06-15'),
-          quoteNumber: 'AN20250006',
-          aiData: {
-            description: 'Professionelle Fliesenlegerarbeiten',
-            positions: [
-              { title: 'Fliesenarbeiten', qty: 18, unit: 'm²', price: 42 },
-              { title: 'Fugenmörtel', qty: 18, unit: 'm²', price: 8 },
-              { title: 'Entsorgung', qty: 1, unit: 'Psch', price: 100 }
-            ],
-            total: calculateTotalWithVAT(calculateTotal([
-              { qty: 18, price: 42 },
-              { qty: 18, price: 8 },
-              { qty: 1, price: 100 }
-            ]))
-          }
         }
       ]
       
       return NextResponse.json(mockQuotes)
     }
 
-    // Database mode - fetch actual data
-    const { PrismaClient } = await import('@prisma/client')
-    const prisma = new PrismaClient()
-
+    // Get user-specific quotes from database
     const quotes = await prisma.quote.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 50, // Limit to recent quotes
-      select: {
-        id: true,
-        clientName: true,
-        projectInfo: true,
-        imagePath: true,
-        aiData: true,
-        createdAt: true,
-        quoteNumber: true,
-        clientStreet: true,
-        clientCity: true
+      where: { userId: session.user.id },
+      orderBy: { createdAt: 'desc' }
+    })
+    
+    return NextResponse.json(quotes)
+  } catch (error) {
+    console.error('Error fetching quotes:', error)
+    return NextResponse.json({ error: 'Failed to fetch quotes' }, { status: 500 })
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const session = await auth()
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const formData = await request.formData()
+    const projectInfo = formData.get('projectInfo') as string
+    const clientName = formData.get('clientName') as string
+    const clientStreet = formData.get('clientStreet') as string
+    const clientCity = formData.get('clientCity') as string
+    const file = formData.get('file') as File
+
+    if (!projectInfo || !clientName || !file) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    // Create quote in database
+    const quote = await prisma.quote.create({
+      data: {
+        userId: session.user.id,
+        clientName,
+        projectInfo,
+        clientStreet: clientStreet || null,
+        clientCity: clientCity || null,
+        status: 'PENDING'
       }
     })
 
-    await prisma.$disconnect()
-
-    return NextResponse.json(quotes)
-
+    return NextResponse.json({ success: true, quoteId: quote.id })
   } catch (error) {
-    console.error('Error fetching quotes:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch quotes' },
-      { status: 500 }
-    )
+    console.error('Error creating quote:', error)
+    return NextResponse.json({ error: 'Failed to create quote' }, { status: 500 })
   }
 }

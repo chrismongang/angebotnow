@@ -93,9 +93,33 @@ export default function QuoteDetailPage({ params }: PageProps) {
   const subtotal = getSubtotal(currentPositions)
   const vat = getVAT(currentPositions)
 
-  const handleShare = () => {
-    // TODO: Implement share functionality
-    alert('Share-Funktionalität wird implementiert')
+  const handleShare = async () => {
+    try {
+      // Generate shareable link
+      const shareUrl = `${window.location.origin}/angebot/${id}`
+      
+      // Try to use native Web Share API first
+      if (navigator.share) {
+        await navigator.share({
+          title: `Angebot ${quote.quoteNumber || quote.id}`,
+          text: `Angebot für ${quote.clientName}`,
+          url: shareUrl
+        })
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(shareUrl)
+        alert('Link wurde in die Zwischenablage kopiert!')
+      }
+    } catch (error) {
+      console.error('Share error:', error)
+      // Fallback: Copy to clipboard
+      try {
+        await navigator.clipboard.writeText(`${window.location.origin}/angebot/${id}`)
+        alert('Link wurde in die Zwischenablage kopiert!')
+      } catch (clipboardError) {
+        alert('Fehler beim Teilen des Angebots')
+      }
+    }
   }
 
   const handleSaveToAccounting = () => {
@@ -152,6 +176,11 @@ export default function QuoteDetailPage({ params }: PageProps) {
       ...newPositions[index],
       [field]: field === 'qty' || field === 'price' ? Number(value) : value
     }
+    setEditedPositions(newPositions)
+  }
+
+  const removePosition = (index: number) => {
+    const newPositions = editedPositions.filter((_, i) => i !== index)
     setEditedPositions(newPositions)
   }
 
@@ -356,12 +385,22 @@ export default function QuoteDetailPage({ params }: PageProps) {
                             <div key={index} className="p-3 bg-muted/50 rounded-lg">
                               {isEditing ? (
                                 <div className="space-y-3">
-                                  <Input
-                                    value={position.title}
-                                    onChange={(e) => updatePosition(index, 'title', e.target.value)}
-                                    placeholder="Bezeichnung"
-                                    className="bg-white"
-                                  />
+                                  <div className="flex items-center justify-between">
+                                    <Input
+                                      value={position.title}
+                                      onChange={(e) => updatePosition(index, 'title', e.target.value)}
+                                      placeholder="Bezeichnung"
+                                      className="bg-white flex-1 mr-2"
+                                    />
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => removePosition(index)}
+                                      className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2"
+                                    >
+                                      <X size={16} />
+                                    </Button>
+                                  </div>
                                   <div className="grid grid-cols-3 gap-2">
                                     <Input
                                       type="number"

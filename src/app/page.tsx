@@ -34,8 +34,8 @@ export default function Home() {
           className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-[#F89813] to-[#FFB366] hover:from-[#E88A0F] hover:to-[#F89813] border-0 shadow-lg" 
           asChild
         >
-          <Link href="/dashboard">
-            Los geht&apos;s
+          <Link href="/auth/signin">
+            Jetzt anmelden
           </Link>
         </Button>
       </div>

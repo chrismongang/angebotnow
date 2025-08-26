@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { AuthGuard } from "@/components/auth-guard"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { MobileNavigation } from "@/components/mobile-navigation"
@@ -24,6 +25,14 @@ interface Quote {
 }
 
 export default function AngebotePage() {
+  return (
+    <AuthGuard>
+      <AngeboteContent />
+    </AuthGuard>
+  )
+}
+
+function AngeboteContent() {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [showFilter, setShowFilter] = useState(false)
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')

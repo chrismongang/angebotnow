@@ -17,6 +17,7 @@ export interface UserData {
   companyLogo: string;
   taxNumber: string;
   vatNumber: string;
+  taxOffice: string;
   bankName: string;
   bankAccount: string;
   bankBic: string;
@@ -43,6 +44,7 @@ const defaultUserData: UserData = {
   companyLogo: '',
   taxNumber: 'DE123456789',
   vatNumber: 'DE123456789',
+  taxOffice: 'Finanzamt Nürnberg',
   bankName: 'Musterbank AG',
   bankAccount: 'DE89 3704 0044 0532 0130 00',
   bankBic: 'COBADEFFXXX',
@@ -80,6 +82,7 @@ export async function getUserDataFromDB(userId: string): Promise<UserData> {
       companyLogo: '', // Not stored in DB yet
       taxNumber: isEmpty(user.taxNumber) ? defaultUserData.taxNumber : user.taxNumber || defaultUserData.taxNumber,
       vatNumber: isEmpty(user.vatNumber) ? defaultUserData.vatNumber : user.vatNumber || defaultUserData.vatNumber,
+      taxOffice: isEmpty(user.taxOffice) ? defaultUserData.taxOffice : user.taxOffice || defaultUserData.taxOffice,
       bankName: isEmpty(user.bankName) ? defaultUserData.bankName : user.bankName || defaultUserData.bankName,
       bankAccount: isEmpty(user.bankAccount) ? defaultUserData.bankAccount : user.bankAccount || defaultUserData.bankAccount,
       bankBic: isEmpty(user.bankBic) ? defaultUserData.bankBic : user.bankBic || defaultUserData.bankBic,
@@ -109,6 +112,7 @@ export async function saveUserDataToDB(userId: string, data: UserData): Promise<
         phone: data.phone,
         taxNumber: data.taxNumber,
         vatNumber: data.vatNumber,
+        taxOffice: data.taxOffice,
         bankName: data.bankName,
         bankAccount: data.bankAccount,
         bankBic: data.bankBic,
@@ -160,6 +164,7 @@ export function getCompanyInfoForPDF(): {
   phone?: string;
   taxNumber?: string;
   vatNumber?: string;
+  taxOffice?: string;
   bankName?: string;
   bankAccount?: string;
   bankBic?: string;
@@ -172,6 +177,7 @@ export function getCompanyInfoForPDF(): {
     phone: userData.phone,
     taxNumber: userData.taxNumber,
     vatNumber: userData.vatNumber,
+    taxOffice: userData.taxOffice,
     bankName: userData.bankName,
     bankAccount: userData.bankAccount,
     bankBic: userData.bankBic
@@ -188,6 +194,53 @@ export function getFirstName(): string {
   return userData.firstName;
 }
 
+// Server-side function to get next quote number from database
+export async function getNextQuoteNumberFromDB(userId: string): Promise<string> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    })
+
+    if (!user) {
+      throw new Error('User not found')
+    }
+
+    const currentYear = new Date().getFullYear();
+    
+    // Reset counter if year changed
+    if (user.currentYear !== currentYear) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          lastQuoteNumber: 0,
+          currentYear: currentYear
+        }
+      })
+    }
+    
+    // Increment quote number
+    const newQuoteNumber = (user.lastQuoteNumber || 0) + 1;
+    
+    // Update user's quote number in database
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        lastQuoteNumber: newQuoteNumber
+      }
+    })
+    
+    // Format: AN20250001 (prefix + year + 4-digit number)
+    const prefix = 'AN'; // Default prefix
+    return `${prefix}${currentYear}${newQuoteNumber.toString().padStart(4, '0')}`;
+  } catch (error) {
+    console.error('Error getting next quote number from database:', error)
+    // Fallback to timestamp-based number
+    const timestamp = Date.now().toString().slice(-6);
+    return `AN${new Date().getFullYear()}${timestamp}`;
+  }
+}
+
+// Client-side fallback function
 export function getNextQuoteNumber(): string {
   const userData = getUserData();
   const currentYear = new Date().getFullYear();

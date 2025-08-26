@@ -16,6 +16,7 @@ export type GeneratePDFInput = {
     phone?: string;
     taxNumber?: string;
     vatNumber?: string;
+    taxOffice?: string;
     bankName?: string;
     bankAccount?: string;
     bankBic?: string;
@@ -341,7 +342,7 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
   // Column 3 - Legal info
   if (input.company && isValidText(input.company.vatNumber)) drawText(`USt-ID: ${input.company.vatNumber}`, footerCol3X, footerY, 8);
   if (input.company && isValidText(input.company.taxNumber)) drawText(`Steuer-Nr.: ${input.company.taxNumber}`, footerCol3X, footerY - 12, 8);
-  drawText('Finanzamt Musterstadt', footerCol3X, footerY - 24, 8);
+  if (input.company && isValidText(input.company.taxOffice)) drawText(input.company.taxOffice, footerCol3X, footerY - 24, 8);
 
   return await pdfDoc.save();
 }

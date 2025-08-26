@@ -3,11 +3,12 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
+import { auth } from '@/lib/auth'
 import { USE_OPENAI } from '@/lib/ai/provider'
 import { processWithMockAI } from '@/lib/ai/mock'
 import { processWithOpenAI } from '@/lib/ai/openai'
 import { uploadImage } from '@/lib/cloudinary'
-import { getNextQuoteNumber } from '@/lib/user-data'
+import { getNextQuoteNumberFromDB } from '@/lib/user-data'
 import * as Sentry from '@sentry/nextjs'
 
 const uploadSchema = z.object({
@@ -28,6 +29,15 @@ const uploadSchemaWithAddress = z.object({
 export async function createQuote(formData: FormData) {
   try {
     console.log('=== Starting quote creation ===')
+    
+    // Get authenticated user
+    const session = await auth()
+    if (!session?.user?.id) {
+      console.log('No authenticated user found')
+      return { success: false, error: 'Nicht angemeldet' }
+    }
+    
+    console.log('Authenticated user:', session.user.id)
     
     // Validate form data
     const projectInfo = formData.get('projectInfo') as string
@@ -75,8 +85,8 @@ export async function createQuote(formData: FormData) {
       return { success: false, error: 'Nur Bilddateien erlaubt' }
     }
 
-    // Generate quote number
-    const quoteNumber = getNextQuoteNumber()
+    // Generate quote number for authenticated user
+    const quoteNumber = await getNextQuoteNumberFromDB(session.user.id)
     console.log('Generated quote number:', quoteNumber)
 
     console.log('Creating quote in database...')
@@ -93,20 +103,7 @@ export async function createQuote(formData: FormData) {
       }
     }
 
-    // Create quote in database
-    // First, ensure a mock user exists
-    let mockUser = await prisma.user.findUnique({
-      where: { email: 'mock@angebotnow.de' }
-    });
-
-    if (!mockUser) {
-      mockUser = await prisma.user.create({
-        data: {
-          email: 'mock@angebotnow.de',
-        }
-      });
-    }
-
+    // Create quote in database with authenticated user
     const quote = await prisma.quote.create({
       data: {
         clientName: validatedData.clientName,
@@ -114,7 +111,7 @@ export async function createQuote(formData: FormData) {
         clientStreet: includeAddress ? validatedData.clientStreet : null,
         clientCity: includeAddress ? validatedData.clientCity : null,
         status: 'PENDING',
-        userId: mockUser.id,
+        userId: session.user.id,
         quoteNumber: quoteNumber, // Store the structured quote number
       },
     })
@@ -237,6 +234,13 @@ export async function updateQuotePositions(quoteId: string, positions: Array<{ t
   try {
     console.log('=== Starting quote positions update ===')
     
+    // Get authenticated user
+    const session = await auth()
+    if (!session?.user?.id) {
+      console.log('No authenticated user found')
+      return { success: false, error: 'Nicht angemeldet' }
+    }
+    
     // Check if database is available
     if (!process.env.DATABASE_URL) {
       console.warn('DATABASE_URL not available, using mock mode')
@@ -246,17 +250,16 @@ export async function updateQuotePositions(quoteId: string, positions: Array<{ t
       }
     }
 
-    const { PrismaClient } = await import('@prisma/client')
-    const prisma = new PrismaClient()
-
-    // Get existing quote
-    const existingQuote = await prisma.quote.findUnique({
-      where: { id: quoteId }
+    // Get existing quote and verify ownership
+    const existingQuote = await prisma.quote.findFirst({
+      where: { 
+        id: quoteId,
+        userId: session.user.id // Only allow access to user's own quotes
+      }
     })
 
     if (!existingQuote) {
-      await prisma.$disconnect()
-      return { success: false, error: 'Angebot nicht gefunden' }
+      return { success: false, error: 'Angebot nicht gefunden oder Zugriff verweigert' }
     }
 
     // Calculate new total
@@ -278,8 +281,6 @@ export async function updateQuotePositions(quoteId: string, positions: Array<{ t
         aiData: updatedAiData,
       },
     })
-
-    await prisma.$disconnect()
 
     console.log('=== Quote positions update completed successfully ===')
     return { 

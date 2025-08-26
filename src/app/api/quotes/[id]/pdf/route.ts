@@ -86,13 +86,25 @@ export async function GET(
     console.log('Found quote:', { id: quote.id, clientName: quote.clientName, userId: quote.userId })
 
     // Get company info from user data in database
-    let companyInfo = {
+    let companyInfo: {
+      name: string;
+      address: string;
+      email: string;
+      phone: string;
+      taxNumber: string;
+      vatNumber: string;
+      taxOffice: string;
+      bankName: string;
+      bankAccount: string;
+      bankBic: string;
+    } = {
       name: 'Inatros GmbH',
       address: 'Musterstraße 123\n90475 Nürnberg',
       email: 'info@inatros.de',
       phone: '+49 911 123456',
       taxNumber: 'DE123456789',
       vatNumber: 'DE123456789',
+      taxOffice: 'Finanzamt Nürnberg',
       bankName: 'Musterbank AG',
       bankAccount: 'DE89 3704 0044 0532 0130 00',
       bankBic: 'COBADEFFXXX'
@@ -117,6 +129,7 @@ export async function GET(
         phone: userData.phone,
         taxNumber: userData.taxNumber,
         vatNumber: userData.vatNumber,
+        taxOffice: userData.taxOffice,
         bankName: userData.bankName,
         bankAccount: userData.bankAccount,
         bankBic: userData.bankBic
@@ -133,9 +146,8 @@ export async function GET(
     let total = 0;
     let description = quote.projectInfo;
 
-    if (quote.aiData && typeof quote.aiData === 'object') {
-      const aiData = quote.aiData as any;
-      
+    const aiData = quote.aiData as any;
+    if (aiData && typeof aiData === 'object') {
       if (aiData.positions && Array.isArray(aiData.positions)) {
         positions = aiData.positions;
       }

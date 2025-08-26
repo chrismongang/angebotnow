@@ -1,26 +1,35 @@
 'use client'
 
-import { signIn, getProviders } from 'next-auth/react'
+import { signIn, getProviders, useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft, Shield, CheckCircle } from 'lucide-react'
 
 export default function SignInPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [providers, setProviders] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    // Redirect authenticated users to dashboard
+    if (status === 'authenticated') {
+      router.push('/dashboard')
+      return
+    }
+
     const fetchProviders = async () => {
       const res = await getProviders()
       setProviders(res)
       setIsLoading(false)
     }
     fetchProviders()
-  }, [])
+  }, [status, router])
 
-  if (isLoading) {
+  if (isLoading || status === 'loading') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center p-4">
         <div className="text-center">
@@ -29,6 +38,11 @@ export default function SignInPage() {
         </div>
       </div>
     )
+  }
+
+  // Don't show signin page if already authenticated
+  if (status === 'authenticated') {
+    return null
   }
 
   return (
@@ -57,7 +71,7 @@ export default function SignInPage() {
             </div>
             <CardTitle className="text-2xl font-bold text-gray-800">Willkommen bei AngebotNow</CardTitle>
             <p className="text-gray-600 mt-2">
-              Melden Sie sich an, um Ihre Angebote zu verwalten
+              Melde dich an, um deine Angebote zu verwalten
             </p>
           </CardHeader>
           
@@ -94,35 +108,13 @@ export default function SignInPage() {
               </Button>
             ))}
 
-            {/* Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-gray-200" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-gray-500">oder</span>
-              </div>
-            </div>
 
-            {/* Demo Mode */}
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-3">
-                Kein Konto? Testen Sie die Demo-Version
-              </p>
-              <Button 
-                variant="ghost" 
-                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                asChild
-              >
-                <Link href="/">
-                  Demo-Modus starten
-                </Link>
-              </Button>
-            </div>
+
+
 
             {/* Features */}
             <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-4 space-y-3">
-              <h3 className="font-semibold text-gray-800 text-sm">Was Sie erwartet:</h3>
+              <h3 className="font-semibold text-gray-800 text-sm">Was dich erwartet:</h3>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <CheckCircle size={14} className="text-green-500 flex-shrink-0" />

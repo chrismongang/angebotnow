@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { AuthGuard } from "@/components/auth-guard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -15,6 +16,14 @@ import { useRouter } from 'next/navigation'
 import { generateQuoteFileName } from '@/lib/user-data'
 
 export default function DashboardPage() {
+  return (
+    <AuthGuard>
+      <DashboardContent />
+    </AuthGuard>
+  )
+}
+
+function DashboardContent() {
   const [projectInfo, setProjectInfo] = useState('')
   const [clientName, setClientName] = useState('')
   const [clientStreet, setClientStreet] = useState('')
