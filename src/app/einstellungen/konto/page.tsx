@@ -156,19 +156,19 @@ export default function KontoPage() {
         <div className="container mx-auto max-w-4xl">
           {/* Header with top spacing and back button */}
           <div className="pt-8 sm:pt-12 mb-6 sm:mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+              <div className="flex items-center min-w-0 flex-1">
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="mr-3 bg-[#F89813] hover:bg-[#E88A0F] text-white border-0 shadow-sm rounded-[14px]" 
+                  className="mr-3 bg-[#F89813] hover:bg-[#E88A0F] text-white border-0 shadow-sm rounded-[14px] flex-shrink-0" 
                   asChild
                 >
                   <Link href="/einstellungen">
                     <ArrowLeft size={20} className="text-white" />
                   </Link>
                 </Button>
-                <h1 className="text-2xl sm:text-3xl font-bold text-[#404040]">Dein Konto</h1>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#404040] truncate">Dein Konto</h1>
               </div>
               
               {/* Global Edit Button */}
@@ -177,13 +177,13 @@ export default function KontoPage() {
                   variant="outline" 
                   size="sm" 
                   onClick={() => setIsEditing(true)}
-                  className="text-[#F89813] border-[#F89813] hover:bg-[#F89813] hover:text-white flex items-center gap-2 rounded-[14px]"
+                  className="text-[#F89813] border-[#F89813] hover:bg-[#F89813] hover:text-white flex items-center gap-2 rounded-[14px] self-start sm:self-auto"
                 >
                   <Edit size={16} />
                   Bearbeiten
                 </Button>
               ) : (
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 self-start sm:self-auto">
                   <Button 
                     variant="outline" 
                     size="sm" 
@@ -215,7 +215,7 @@ export default function KontoPage() {
                 </div>
               )}
             </div>
-            <p className="text-[#676767]">Verwalten Sie Ihre Kontodaten und Firmeninformationen</p>
+            <p className="text-[#676767]">Verwalte hier deine Kontodaten und Firmeninformationen</p>
             
             {/* Save Status */}
             {saveStatus === 'success' && (
@@ -448,69 +448,7 @@ export default function KontoPage() {
             </CardContent>
           </Card>
 
-          {/* Quote Settings Card */}
-          <Card className="mb-6">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg sm:text-xl text-[#404040]">Angebot-Einstellungen</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-[#404040]">Angebots-Präfix</Label>
-                  {isEditing ? (
-                    <Input
-                      value={userData.defaultQuotePrefix}
-                      onChange={(e) => setUserData({...userData, defaultQuotePrefix: e.target.value})}
-                      className="bg-[#EDEDED] border-[#EDEDED] focus:border-[#F89813] focus:ring-[#F89813] rounded-[10px]"
-                    />
-                  ) : (
-                    <p className="text-[#676767] py-2">{userData.defaultQuotePrefix}</p>
-                  )}
-                </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-[#404040]">Währung</Label>
-                  {isEditing ? (
-                    <Input
-                      value={userData.defaultCurrency}
-                      onChange={(e) => setUserData({...userData, defaultCurrency: e.target.value})}
-                      className="bg-[#EDEDED] border-[#EDEDED] focus:border-[#F89813] focus:ring-[#F89813] rounded-[10px]"
-                    />
-                  ) : (
-                    <p className="text-[#676767] py-2">{userData.defaultCurrency}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-[#404040]">Zahlungsbedingungen</Label>
-                  {isEditing ? (
-                    <Input
-                      value={userData.defaultPaymentTerms}
-                      onChange={(e) => setUserData({...userData, defaultPaymentTerms: e.target.value})}
-                      className="bg-[#EDEDED] border-[#EDEDED] focus:border-[#F89813] focus:ring-[#F89813] rounded-[10px]"
-                    />
-                  ) : (
-                    <p className="text-[#676767] py-2">{userData.defaultPaymentTerms}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-[#404040]">Gültigkeit</Label>
-                  {isEditing ? (
-                    <Input
-                      value={userData.defaultValidity}
-                      onChange={(e) => setUserData({...userData, defaultValidity: e.target.value})}
-                      className="bg-[#EDEDED] border-[#EDEDED] focus:border-[#F89813] focus:ring-[#F89813] rounded-[10px]"
-                    />
-                  ) : (
-                    <p className="text-[#676767] py-2">{userData.defaultValidity}</p>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
       <MobileNavigation />

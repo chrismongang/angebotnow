@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { AuthGuard } from "@/components/auth-guard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,7 +10,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MobileNavigation } from "@/components/mobile-navigation"
 import { createQuote } from "@/lib/actions"
-import { getFirstName } from "@/lib/user-data"
 import { Image } from "@/components/ui/image"
 import { Upload, CheckCircle, AlertCircle, Loader2, Download, Share2, FileText, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -24,6 +24,7 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
+  const { data: session } = useSession()
   const [projectInfo, setProjectInfo] = useState('')
   const [clientName, setClientName] = useState('')
   const [clientStreet, setClientStreet] = useState('')
@@ -35,15 +36,18 @@ function DashboardContent() {
   const [progress, setProgress] = useState<'idle' | 'uploading' | 'processing' | 'success' | 'error'>('idle')
   const [progressMessage, setProgressMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [firstName, setFirstName] = useState('Max')
   const [createdQuoteId, setCreatedQuoteId] = useState<string | null>(null)
   const [createdQuoteNumber, setCreatedQuoteNumber] = useState<string | null>(null)
   const router = useRouter()
 
-  // Load user data on component mount
-  useEffect(() => {
-    setFirstName(getFirstName())
-  }, [])
+  // Get user's first name from session
+  const getUserFirstName = () => {
+    if (session?.user?.name) {
+      const nameParts = session.user.name.split(' ')
+      return nameParts[0] || null
+    }
+    return null
+  }
 
   const downloadPDF = async (quoteId: string) => {
     try {
@@ -314,7 +318,9 @@ function DashboardContent() {
           {/* Header with top spacing */}
           <div className="pt-8 sm:pt-12 mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-[#404040]">Willkommen!</h1>
-            <p className="text-lg sm:text-xl text-[#676767]">{firstName}</p>
+            {getUserFirstName() && (
+              <p className="text-lg sm:text-xl text-[#676767]">{getUserFirstName()}</p>
+            )}
           </div>
 
           {/* Progress Indicator */}

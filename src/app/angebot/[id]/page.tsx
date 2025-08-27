@@ -191,18 +191,18 @@ export default function QuoteDetailPage({ params }: PageProps) {
           {/* Header with back button and title */}
           <div className="pt-8 sm:pt-12 mb-6 sm:mb-8">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
+              <div className="flex items-center min-w-0 flex-1">
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="mr-3 bg-[#F89813] hover:bg-[#E88A0F] text-white border-0 shadow-sm rounded-[14px]" 
+                  className="mr-3 bg-[#F89813] hover:bg-[#E88A0F] text-white border-0 shadow-sm rounded-[14px] flex-shrink-0" 
                   asChild
                 >
                   <Link href="/angebote">
                     <ArrowLeft size={20} className="text-white" />
                   </Link>
                 </Button>
-                <h1 className="text-2xl sm:text-3xl font-bold text-[#404040]">Angebot #{quote.quoteNumber || quote.id}</h1>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#404040] truncate">Angebot #{quote.quoteNumber || quote.id}</h1>
               </div>
             </div>
           </div>
@@ -340,20 +340,20 @@ export default function QuoteDetailPage({ params }: PageProps) {
               {aiData && (
                 <Card>
                   <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg sm:text-xl">Angebotskalkulation</CardTitle>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <CardTitle className="text-base sm:text-lg lg:text-xl">Angebotskalkulation</CardTitle>
                       {!isEditing ? (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={handleEdit}
-                          className="text-[#F89813] border-[#F89813] hover:bg-[#F89813] hover:text-white flex items-center gap-2 rounded-[14px]"
+                          className="text-[#F89813] border-[#F89813] hover:bg-[#F89813] hover:text-white flex items-center gap-2 rounded-[14px] self-start sm:self-auto"
                         >
                           <Edit size={16} />
                           Bearbeiten
                         </Button>
                       ) : (
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2 self-start sm:self-auto">
                           <Button
                             variant="outline"
                             size="sm"
