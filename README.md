@@ -72,6 +72,9 @@ Eine moderne Web-Anwendung zur automatisierten Erstellung professioneller Angebo
    CLOUDINARY_CLOUD_NAME="your-cloud-name"
    CLOUDINARY_API_KEY="your-api-key"
    CLOUDINARY_API_SECRET="your-api-secret"
+   
+   # Resend (Email)
+   RESEND_API_KEY="your-resend-api-key"
    ```
 
 4. **Datenbank-Migrationen ausführen**
@@ -107,15 +110,7 @@ vercel --prod
 
 ### 2. Umgebungsvariablen in Vercel setzen
 
-Gehe zu Vercel Dashboard → Project Settings → Environment Variables und setze:
-
-- `DATABASE_URL`: Deine Neon PostgreSQL URL
-- `NEXTAUTH_SECRET`: Ein sicherer Secret-Key
-- `NEXTAUTH_URL`: Deine Vercel-Domain (https://your-app.vercel.app)
-- `GOOGLE_CLIENT_ID`: Deine Google OAuth Client ID
-- `GOOGLE_CLIENT_SECRET`: Dein Google OAuth Client Secret
-- `OPENAI_API_KEY`: Dein OpenAI API Key
-- `CLOUDINARY_*`: Deine Cloudinary Credentials
+Gehe zu Vercel Dashboard → Project Settings → Environment Variables und setze alle erforderlichen Umgebungsvariablen.
 
 ### 3. Google OAuth für Produktion konfigurieren
 
@@ -127,17 +122,6 @@ Gehe zu Vercel Dashboard → Project Settings → Environment Variables und setz
    ```
    https://your-domain.vercel.app/api/auth/callback/google
    ```
-
-### 4. Datenbank-Migrationen
-
-```bash
-# Lokal testen
-npx prisma migrate deploy
-
-# In Vercel (falls nötig)
-vercel env pull .env.local
-npx prisma migrate deploy
-```
 
 ## 🧪 Testing
 
@@ -199,18 +183,6 @@ src/
 2. **Datenbank erstellen**: Wähle PostgreSQL
 3. **Connection String**: Kopiere die URL in `DATABASE_URL`
 4. **Migrationen**: Führe `npx prisma migrate deploy` aus
-
-## 🐛 Bekannte Issues
-
-### PDF-Generierung
-- **Problem**: Firmendaten werden nicht korrekt in PDFs angezeigt
-- **Status**: Wird nach Deployment behoben
-- **Workaround**: Verwende Debug-Tools unter `/test-pdf-data`
-
-### Lokale vs. Produktionsumgebung
-- **Problem**: Unterschiede in Datenverarbeitung
-- **Status**: Wird nach Deployment analysiert
-- **Workaround**: Teste mit echten Produktionsdaten
 
 ## 📊 Monitoring
 

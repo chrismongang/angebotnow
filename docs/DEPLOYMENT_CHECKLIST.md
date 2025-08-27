@@ -40,17 +40,18 @@ vercel --prod
 Gehe zu Vercel Dashboard → Project Settings → Environment Variables:
 
 ```
-DATABASE_URL=postgresql://neondb_owner:npg_VsQ1MA7qGaLv@ep-misty-haze-a2kjgjen-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
-SHADOW_DATABASE_URL=postgresql://neondb_owner:npg_VsQ1MA7qGaLv@ep-misty-haze-a2kjgjen-pooler.eu-central-1.aws.neon.tech/neondb_shadow?sslmode=require&channel_binding=require
-NEXTAUTH_SECRET=0wG6ZRdJlWWWOi0yWc8xinYLzHU8G27G0A3AK+LRp8o=
+DATABASE_URL=postgresql://user:password@host/database
+SHADOW_DATABASE_URL=postgresql://user:password@host/shadow_database
+NEXTAUTH_SECRET=your-nextauth-secret
 NEXTAUTH_URL=https://your-domain.vercel.app
-GOOGLE_CLIENT_ID=951797947937-4umcvfvdrjqmj3riggc9v37acvr294el.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=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
-OPENAI_API_KEY=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
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+OPENAI_API_KEY=sk-your-openai-api-key
 USE_OPENAI=true
-CLOUDINARY_CLOUD_NAME=dwwzwktxv
-CLOUDINARY_API_KEY=385921687638286
-CLOUDINARY_API_SECRET=XECdrwEpb7N2dLOP-IXyPi3_MY0
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+RESEND_API_KEY=re_your-resend-api-key
 SENTRY_DSN=https://placeholder@placeholder.ingest.sentry.io/placeholder
 NEXT_PUBLIC_SENTRY_DSN=https://placeholder@placeholder.ingest.sentry.io/placeholder
 ```

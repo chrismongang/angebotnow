@@ -129,19 +129,19 @@ NEXTAUTH_URL="https://angebotnow.vercel.app"
 NEXTAUTH_SECRET="[generiert]"
 
 # Database
-DATABASE_URL="postgresql://neondb_owner:...@ep-misty-haze-a2kjgjen-pooler.eu-central-1.aws.neon.tech/neondb"
-SHADOW_DATABASE_URL="postgresql://neondb_owner:...@ep-misty-haze-a2kjgjen-pooler.eu-central-1.aws.neon.tech/neondb_shadow"
+DATABASE_URL="postgresql://user:password@host/database"
+SHADOW_DATABASE_URL="postgresql://user:password@host/shadow_database"
 
 # External Services
-OPENAI_API_KEY="sk-proj-..."
-CLOUDINARY_CLOUD_NAME="dwwzwktxv"
-CLOUDINARY_API_KEY="385921687638286"
-CLOUDINARY_API_SECRET="XECdrwEpb7N2dLOP-IXyPi3_MY0"
-RESEND_API_KEY="re_Prhutv1V_8bRvSRRJdseAtEzMSdep6HDT"
+OPENAI_API_KEY="sk-your-openai-api-key"
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
+RESEND_API_KEY="re_your-resend-api-key"
 
 # Google OAuth
-GOOGLE_CLIENT_ID="951797947937-4umcvfvdrjqmj3riggc9v37acvr294el.apps.googleusercontent.com"
-GOOGLE_CLIENT_SECRET="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"
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
 
 # Feature Flags
 USE_OPENAI=true
