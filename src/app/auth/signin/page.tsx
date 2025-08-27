@@ -1,14 +1,33 @@
 'use client'
 
 import { signIn, getProviders, useSession } from 'next-auth/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft, Shield, CheckCircle } from 'lucide-react'
+import dynamic from 'next/dynamic'
 
-export default function SignInPage() {
+// Dynamische Imports für bessere Chunk-Verwaltung
+const Card = dynamic(() => import('@/components/ui/card').then(mod => ({ default: mod.Card })), { ssr: false })
+const CardContent = dynamic(() => import('@/components/ui/card').then(mod => ({ default: mod.CardContent })), { ssr: false })
+const CardHeader = dynamic(() => import('@/components/ui/card').then(mod => ({ default: mod.CardHeader })), { ssr: false })
+const CardTitle = dynamic(() => import('@/components/ui/card').then(mod => ({ default: mod.CardTitle })), { ssr: false })
+const Button = dynamic(() => import('@/components/ui/button').then(mod => ({ default: mod.Button })), { ssr: false })
+
+// Loading-Komponente
+function LoadingSpinner() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center p-4">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+        <p className="text-gray-600">Lade Anmeldemethoden...</p>
+      </div>
+    </div>
+  )
+}
+
+// Hauptkomponente
+function SignInContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [providers, setProviders] = useState<any>(null)
@@ -22,22 +41,23 @@ export default function SignInPage() {
     }
 
     const fetchProviders = async () => {
-      const res = await getProviders()
-      setProviders(res)
-      setIsLoading(false)
+      try {
+        const res = await getProviders()
+        setProviders(res)
+      } catch (error) {
+        console.error('Error fetching providers:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
-    fetchProviders()
+    
+    if (status !== 'loading') {
+      fetchProviders()
+    }
   }, [status, router])
 
   if (isLoading || status === 'loading') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Lade Anmeldemethoden...</p>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   // Don't show signin page if already authenticated
@@ -108,10 +128,6 @@ export default function SignInPage() {
               </Button>
             ))}
 
-
-
-
-
             {/* Features */}
             <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-4 space-y-3">
               <h3 className="font-semibold text-gray-800 text-sm">Was dich erwartet:</h3>
@@ -153,5 +169,14 @@ export default function SignInPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+// Hauptexport mit Suspense
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <SignInContent />
+    </Suspense>
   )
 }
