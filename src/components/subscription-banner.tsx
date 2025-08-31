@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Crown, Check, X, AlertCircle, Zap } from 'lucide-react';
 import { STRIPE_PLANS } from '@/lib/stripe-client';
+import { trackEvent } from '@/lib/loops';
 
 interface SubscriptionInfo {
   tier: 'FREE' | 'PRO';
@@ -43,8 +44,22 @@ export function SubscriptionBanner() {
   };
 
   const handleUpgrade = async () => {
-    setLoading(true);
     try {
+      // Quotes-Anzahl für Loops Event ermitteln
+      const quotesCount = await fetch('/api/quotes').then(res => res.json()).then(quotes => Array.isArray(quotes) ? quotes.length : 0);
+
+      // Loops Event: clicked_upgrade
+      await trackEvent(session?.user?.email!, 'clicked_upgrade', {
+        userId: session?.user?.id,
+        plan: 'free',
+        quotesCount: quotesCount,
+        createdAt: new Date().toISOString(),
+        source: 'subscription_banner',
+        location: 'dashboard'
+      });
+
+      // Weiterleitung zum Checkout
+      setLoading(true);
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST'
       });
@@ -53,7 +68,16 @@ export function SubscriptionBanner() {
         window.location.href = url;
       }
     } catch (error) {
-      console.error('Upgrade failed:', error);
+      console.error('Upgrade tracking failed:', error);
+      // Trotzdem mit Upgrade fortfahren
+      setLoading(true);
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST'
+      });
+      const { url } = await response.json();
+      if (url) {
+        window.location.href = url;
+      }
     } finally {
       setLoading(false);
     }

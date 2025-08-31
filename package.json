@@ -29,6 +29,7 @@
     "class-variance-authority": "^0.7.0",
     "cloudinary": "^2.7.0",
     "clsx": "^2.1.0",
+    "loops": "^6.0.0",
     "lucide-react": "^0.344.0",
     "next": "15.5.0",
     "next-auth": "^5.0.0-beta.29",

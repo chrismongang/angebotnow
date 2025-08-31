@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { z } from 'zod'
 import { emailService } from '@/lib/email'
 import { createTokenRecord } from '@/lib/tokens'
+import { trackEvent, updateUserProperties } from '@/lib/loops'
 
 const registerSchema = z.object({
   firstName: z.string().min(2, 'Vorname muss mindestens 2 Zeichen lang sein'),
@@ -43,6 +44,30 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         emailVerified: null, // Email noch nicht verifiziert
       },
+    })
+
+    // Loops Event: signed_up
+    await trackEvent(email, 'signed_up', {
+      userId: user.id,
+      firstName,
+      lastName,
+      plan: 'free',
+      quotesCount: 0,
+      createdAt: user.createdAt.toISOString(),
+      source: 'email_password' // oder 'google_oauth', 'microsoft_oauth'
+    })
+
+    // User Properties in Loops setzen
+    await updateUserProperties(email, {
+      userId: user.id,
+      firstName,
+      lastName,
+      plan: 'free',
+      quotesCount: 0,
+      createdAt: user.createdAt.toISOString(),
+      emailVerified: false,
+      subscriptionStatus: 'FREE',
+      subscriptionTier: 'FREE'
     })
 
     // Email-Verifikation Token erstellen

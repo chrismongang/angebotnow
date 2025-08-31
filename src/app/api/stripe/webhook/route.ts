@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/db';
+import { trackEvent, updateUserProperties } from '@/lib/loops'
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -18,6 +19,11 @@ export async function POST(req: Request) {
     console.log('Stripe webhook event:', event.type);
 
     switch (event.type) {
+      case 'checkout.session.completed':
+        const completedSession = event.data.object
+        await handleCheckoutCompleted(completedSession)
+        break
+      
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
         const subscription = event.data.object;
@@ -76,19 +82,91 @@ async function updateUserSubscription(subscription: any) {
   console.log(`Updated subscription for customer ${customerId}: ${subscriptionStatus}`);
 }
 
-async function cancelUserSubscription(subscription: any) {
-  const customerId = subscription.customer;
-  
-  await prisma.user.updateMany({
-    where: { stripeCustomerId: customerId },
-    data: {
-      subscriptionStatus: 'CANCELED',
-      subscriptionTier: 'FREE',
-      subscriptionEndDate: new Date(subscription.canceled_at * 1000)
-    }
-  });
+async function handleCheckoutCompleted(session: any) {
+  try {
+    const user = await prisma.user.findFirst({
+      where: { stripeCustomerId: session.customer }
+    })
 
-  console.log(`Canceled subscription for customer ${customerId}`);
+    if (user) {
+      // Quotes-Anzahl für Loops Event ermitteln
+      const quotesCount = await prisma.quote.count({
+        where: { userId: user.id }
+      });
+
+      // Loops Event: checkout_completed
+      await trackEvent(user.email, 'checkout_completed', {
+        userId: user.id,
+        plan: 'pro',
+        quotesCount: quotesCount,
+        createdAt: new Date().toISOString(),
+        checkoutSessionId: session.id,
+        amount: session.amount_total,
+        currency: session.currency,
+        subscriptionId: session.subscription
+      })
+
+      // User Properties aktualisieren
+      await updateUserProperties(user.email, {
+        plan: 'pro',
+        subscriptionStatus: 'ACTIVE',
+        subscriptionTier: 'PRO',
+        upgradeDate: new Date().toISOString(),
+        lastPaymentDate: new Date().toISOString()
+      })
+    }
+  } catch (error) {
+    console.error('Checkout completed handling failed:', error)
+  }
+}
+
+async function cancelUserSubscription(subscription: any) {
+  try {
+    const user = await prisma.user.findFirst({
+      where: { stripeCustomerId: subscription.customer }
+    })
+
+    if (user) {
+      // Quotes-Anzahl für Loops Event ermitteln
+      const quotesCount = await prisma.quote.count({
+        where: { userId: user.id }
+      });
+
+      // Loops Event: subscription_canceled
+      await trackEvent(user.email, 'subscription_canceled', {
+        userId: user.id,
+        plan: 'free',
+        quotesCount: quotesCount,
+        createdAt: new Date().toISOString(),
+        subscriptionId: subscription.id,
+        cancelReason: subscription.cancellation_reason,
+        canceledAt: new Date(subscription.canceled_at * 1000).toISOString()
+      })
+
+      // User Properties aktualisieren
+      await updateUserProperties(user.email, {
+        plan: 'free',
+        subscriptionStatus: 'CANCELED',
+        subscriptionTier: 'FREE',
+        cancelDate: new Date().toISOString(),
+        previousPlan: 'pro'
+      })
+
+      // Update database
+      await prisma.user.updateMany({
+        where: { stripeCustomerId: subscription.customer },
+        data: {
+          subscriptionStatus: 'CANCELED',
+          subscriptionTier: 'FREE',
+          subscriptionEndDate: new Date(subscription.canceled_at * 1000)
+        }
+      });
+
+      console.log(`Canceled subscription for customer ${subscription.customer}`);
+    }
+  } catch (error) {
+    console.error('Subscription cancellation handling failed:', error)
+  }
 }
 
 async function handlePaymentFailure(invoice: any) {

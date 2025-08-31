@@ -5,6 +5,7 @@ export const revalidate = 0;
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { trackEvent, updateUserProperties } from '@/lib/loops'
 
 // Helper function to calculate total from positions
 function calculateTotal(positions: Array<{ qty: number; price: number }>): number {
@@ -128,6 +129,77 @@ export async function POST(request: Request) {
         status: 'PENDING'
       }
     })
+
+    // User mit subscriptionTier und monthlyQuoteCount aus der Datenbank abrufen
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { 
+        subscriptionTier: true,
+        monthlyQuoteCount: true,
+        quoteCountResetDate: true
+      }
+    })
+
+    // Monatliches Reset prüfen und monthlyQuoteCount aktualisieren
+    const now = new Date()
+    const resetDate = user?.quoteCountResetDate || now
+    const isNewMonth = now.getMonth() !== resetDate.getMonth() || now.getFullYear() !== resetDate.getFullYear()
+    
+    let currentMonthlyCount = user?.monthlyQuoteCount || 0
+    if (isNewMonth) {
+      currentMonthlyCount = 1 // Neuer Monat, erste Quote
+      // Reset-Datum aktualisieren
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { 
+          monthlyQuoteCount: 1,
+          quoteCountResetDate: now
+        }
+      })
+    } else {
+      // Monatlichen Count erhöhen
+      currentMonthlyCount += 1
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { monthlyQuoteCount: currentMonthlyCount }
+      })
+    }
+
+    // Loops Event: quote_created
+    await trackEvent(session.user.email!, 'quote_created', {
+      userId: session.user.id,
+      quoteId: quote.id,
+      plan: user?.subscriptionTier?.toLowerCase() || 'free',
+      quotesCount: currentMonthlyCount,
+      totalQuotesCreated: currentMonthlyCount,
+      createdAt: new Date().toISOString(),
+      projectType: projectInfo,
+      clientName,
+      isNewMonth: isNewMonth,
+      month: now.getMonth() + 1,
+      year: now.getFullYear()
+    })
+
+    // User Properties in Loops aktualisieren
+    await updateUserProperties(session.user.email!, {
+      monthlyQuotesCount: currentMonthlyCount,
+      lastQuoteDate: new Date().toISOString(),
+      totalQuotesCreated: currentMonthlyCount,
+      quoteCountResetDate: now.toISOString()
+    })
+
+    // Free-Limit Check (jetzt korrekt mit monatlichem Count)
+    if (user?.subscriptionTier === 'FREE' && currentMonthlyCount >= 5) {
+      await trackEvent(session.user.email!, 'hit_free_limit', {
+        userId: session.user.id,
+        plan: 'free',
+        quotesCount: currentMonthlyCount,
+        createdAt: new Date().toISOString(),
+        limit: 5,
+        month: now.getMonth() + 1,
+        year: now.getFullYear()
+      })
+    }
 
     return NextResponse.json({ success: true, quoteId: quote.id })
   } catch (error) {

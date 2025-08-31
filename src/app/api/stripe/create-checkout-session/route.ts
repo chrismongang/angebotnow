@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { trackEvent } from '@/lib/loops';
 
 // Extended user type with subscription fields
 type ExtendedUser = {
@@ -51,6 +52,22 @@ export async function POST(request: NextRequest) {
         address: 'auto',
         name: 'auto',
       }
+    });
+
+    // Quotes-Anzahl für Loops Event ermitteln
+    const quotesCount = await prisma.quote.count({
+      where: { userId: session.user.id }
+    });
+
+    // Loops Event: checkout_started
+    await trackEvent(session.user.email!, 'checkout_started', {
+      userId: session.user.id,
+      plan: 'free',
+      quotesCount: quotesCount,
+      createdAt: new Date().toISOString(),
+      checkoutSessionId: checkoutSession.id,
+      amount: checkoutSession.amount_total,
+      currency: checkoutSession.currency
     });
 
     return NextResponse.json({ url: checkoutSession.url });

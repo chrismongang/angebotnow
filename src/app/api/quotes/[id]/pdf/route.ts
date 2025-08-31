@@ -7,6 +7,7 @@ import { generatePDF } from '@/lib/pdf/generate'
 import { generateQuoteFileName } from '@/lib/user-data'
 import { auth } from '@/lib/auth'
 import { getUserDataFromDB } from '@/lib/user-data'
+import { trackEvent, updateUserProperties } from '@/lib/loops'
 
 export async function GET(
   request: NextRequest,
@@ -185,6 +186,34 @@ export async function GET(
       company: companyInfo,
       userSubscriptionTier: quote.user.subscriptionTier
     })
+
+    // Prüfen ob es die erste PDF für diesen User ist
+    const userQuotesWithPDF = await prisma.quote.count({
+      where: { 
+        userId: quote.user.id,
+        status: 'COMPLETED' // Annahme: PDF wird nur bei abgeschlossenen Quotes generiert
+      }
+    })
+
+    if (userQuotesWithPDF === 1) {
+      // Loops Event: activated_first_pdf
+      await trackEvent(quote.user.email, 'activated_first_pdf', {
+        userId: quote.user.id,
+        quoteId: quote.id,
+        plan: quote.user.subscriptionTier.toLowerCase(),
+        quotesCount: userQuotesWithPDF,
+        createdAt: new Date().toISOString(),
+        projectType: description,
+        clientName: quote.clientName
+      })
+
+      // User Properties aktualisieren
+      await updateUserProperties(quote.user.email, {
+        firstPdfCreated: true,
+        firstPdfDate: new Date().toISOString(),
+        quotesCount: userQuotesWithPDF
+      })
+    }
 
     await prisma.$disconnect()
     console.log('PDF generated successfully')
