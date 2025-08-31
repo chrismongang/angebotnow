@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { MobileNavigation } from "@/components/mobile-navigation"
+import { SubscriptionBanner } from "@/components/subscription-banner"
 import Link from 'next/link'
 import { ArrowLeft, LogOut, Send, CheckCircle, AlertCircle } from 'lucide-react'
 
@@ -78,6 +79,9 @@ export default function AppSettingsPage() {
             </div>
             <p className="text-[#676767]">Verwalte deine App-Einstellungen und gib uns Feedback</p>
           </div>
+
+          {/* Subscription Banner */}
+          <SubscriptionBanner />
 
           {/* Account Information Card */}
           <Card className="mb-6">

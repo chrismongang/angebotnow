@@ -9,6 +9,7 @@ import { processWithMockAI } from '@/lib/ai/mock'
 import { processWithOpenAI } from '@/lib/ai/openai'
 import { uploadImage } from '@/lib/cloudinary'
 import { getNextQuoteNumberFromDB } from '@/lib/user-data'
+import { checkQuoteLimit, incrementQuoteCount } from '@/lib/subscription'
 import * as Sentry from '@sentry/nextjs'
 
 const uploadSchema = z.object({
@@ -38,6 +39,17 @@ export async function createQuote(formData: FormData) {
     }
     
     console.log('Authenticated user:', session.user.id)
+    
+    // Check subscription limits
+    const { canCreate, remainingQuotes, tier } = await checkQuoteLimit(session.user.id);
+    
+    if (!canCreate) {
+      return { 
+        success: false, 
+        error: `Angebot-Limit erreicht. Sie haben ${remainingQuotes} Angebote übrig. Upgrade auf Pro für unbegrenzte Angebote.`,
+        requiresUpgrade: true
+      };
+    }
     
     // Validate form data
     const projectInfo = formData.get('projectInfo') as string
@@ -209,10 +221,15 @@ export async function createQuote(formData: FormData) {
     revalidatePath('/dashboard')
 
     console.log('=== Quote creation completed successfully ===')
+    // Increment quote count after successful creation
+    await incrementQuoteCount(session.user.id);
+
     return { 
       success: true, 
       quoteId: quote.id,
       quoteNumber: quoteNumber,
+      remainingQuotes: remainingQuotes === -1 ? 'unbegrenzt' : remainingQuotes - 1,
+      tier,
       message: 'Angebot erfolgreich erstellt'
     }
 

@@ -36,18 +36,18 @@ export interface UserData {
 const defaultUserData: UserData = {
   firstName: 'Max',
   lastName: 'Mustermann',
-  companyName: 'Inatros GmbH',
-  street: 'Musterstraße 123',
-  city: '90475 Nürnberg',
-  email: 'info@inatros.de',
-  phone: '+49 911 123456',
+  companyName: '',
+  street: '',
+  city: '',
+  email: '',
+  phone: '',
   companyLogo: '',
-  taxNumber: 'DE123456789',
-  vatNumber: 'DE123456789',
-  taxOffice: 'Finanzamt Nürnberg',
-  bankName: 'Musterbank AG',
-  bankAccount: 'DE89 3704 0044 0532 0130 00',
-  bankBic: 'COBADEFFXXX',
+  taxNumber: '',
+  vatNumber: '',
+  taxOffice: '',
+  bankName: '',
+  bankAccount: '',
+  bankBic: '',
   defaultQuotePrefix: 'AN',
   defaultCurrency: 'EUR',
   defaultPaymentTerms: '30 Tage netto',
@@ -64,7 +64,29 @@ export async function getUserDataFromDB(userId: string): Promise<UserData> {
     })
 
     if (!user) {
-      return defaultUserData
+      // Return empty user data for new users
+      return {
+        firstName: '',
+        lastName: '',
+        companyName: '',
+        street: '',
+        city: '',
+        email: '',
+        phone: '',
+        companyLogo: '',
+        taxNumber: '',
+        vatNumber: '',
+        taxOffice: '',
+        bankName: '',
+        bankAccount: '',
+        bankBic: '',
+        defaultQuotePrefix: 'AN',
+        defaultCurrency: 'EUR',
+        defaultPaymentTerms: '30 Tage netto',
+        defaultValidity: '30 Tage',
+        lastQuoteNumber: 0,
+        currentYear: new Date().getFullYear()
+      }
     }
 
     // Helper function to check if a value is empty or null
@@ -72,20 +94,20 @@ export async function getUserDataFromDB(userId: string): Promise<UserData> {
 
     // Convert database user to UserData format
     return {
-      firstName: isEmpty(user.name?.split(' ')[0]) ? defaultUserData.firstName : user.name?.split(' ')[0] || defaultUserData.firstName,
-      lastName: isEmpty(user.name?.split(' ').slice(1).join(' ')) ? defaultUserData.lastName : user.name?.split(' ').slice(1).join(' ') || defaultUserData.lastName,
-      companyName: isEmpty(user.companyName) ? defaultUserData.companyName : user.companyName || defaultUserData.companyName,
-      street: isEmpty(user.street) ? defaultUserData.street : user.street || defaultUserData.street,
-      city: isEmpty(user.city) ? defaultUserData.city : user.city || defaultUserData.city,
-      email: isEmpty(user.email) ? defaultUserData.email : user.email || defaultUserData.email,
-      phone: isEmpty(user.phone) ? defaultUserData.phone : user.phone || defaultUserData.phone,
+      firstName: isEmpty(user.name?.split(' ')[0]) ? '' : user.name?.split(' ')[0] || '',
+      lastName: isEmpty(user.name?.split(' ').slice(1).join(' ')) ? '' : user.name?.split(' ').slice(1).join(' ') || '',
+      companyName: user.companyName || '',
+      street: user.street || '',
+      city: user.city || '',
+      email: user.email || '',
+      phone: user.phone || '',
       companyLogo: '', // Not stored in DB yet
-      taxNumber: isEmpty(user.taxNumber) ? defaultUserData.taxNumber : user.taxNumber || defaultUserData.taxNumber,
-      vatNumber: isEmpty(user.vatNumber) ? defaultUserData.vatNumber : user.vatNumber || defaultUserData.vatNumber,
-      taxOffice: isEmpty(user.taxOffice) ? defaultUserData.taxOffice : user.taxOffice || defaultUserData.taxOffice,
-      bankName: isEmpty(user.bankName) ? defaultUserData.bankName : user.bankName || defaultUserData.bankName,
-      bankAccount: isEmpty(user.bankAccount) ? defaultUserData.bankAccount : user.bankAccount || defaultUserData.bankAccount,
-      bankBic: isEmpty(user.bankBic) ? defaultUserData.bankBic : user.bankBic || defaultUserData.bankBic,
+      taxNumber: user.taxNumber || '',
+      vatNumber: user.vatNumber || '',
+      taxOffice: user.taxOffice || '',
+      bankName: user.bankName || '',
+      bankAccount: user.bankAccount || '',
+      bankBic: user.bankBic || '',
       defaultQuotePrefix: 'AN', // Default value
       defaultCurrency: 'EUR', // Default value
       defaultPaymentTerms: '30 Tage netto', // Default value
@@ -95,7 +117,29 @@ export async function getUserDataFromDB(userId: string): Promise<UserData> {
     }
   } catch (error) {
     console.error('Error fetching user data from database:', error)
-    return defaultUserData
+    // Return empty user data on error
+    return {
+      firstName: '',
+      lastName: '',
+      companyName: '',
+      street: '',
+      city: '',
+      email: '',
+      phone: '',
+      companyLogo: '',
+      taxNumber: '',
+      vatNumber: '',
+      taxOffice: '',
+      bankName: '',
+      bankAccount: '',
+      bankBic: '',
+      defaultQuotePrefix: 'AN',
+      defaultCurrency: 'EUR',
+      defaultPaymentTerms: '30 Tage netto',
+      defaultValidity: '30 Tage',
+      lastQuoteNumber: 0,
+      currentYear: new Date().getFullYear()
+    }
   }
 }
 

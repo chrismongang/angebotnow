@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import { useSearchParams } from 'next/navigation'
 import { AuthGuard } from "@/components/auth-guard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,11 +10,15 @@ import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MobileNavigation } from "@/components/mobile-navigation"
+import { PlanStatusMini } from "@/components/plan-status-mini"
+import { PlanStatusBadge } from "@/components/plan-status-badge"
+import { UpgradeSuccessModal } from "@/components/upgrade-success-modal"
 import { createQuote } from "@/lib/actions"
 import { Image } from "@/components/ui/image"
 import { Upload, CheckCircle, AlertCircle, Loader2, Download, Share2, FileText, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { generateQuoteFileName } from '@/lib/user-data'
+import { CompanyInfoModal } from '@/components/company-info-modal'
 
 export default function DashboardPage() {
   return (
@@ -24,7 +29,8 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+  const searchParams = useSearchParams()
   const [projectInfo, setProjectInfo] = useState('')
   const [clientName, setClientName] = useState('')
   const [clientStreet, setClientStreet] = useState('')
@@ -33,15 +39,57 @@ function DashboardContent() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
-  const [progress, setProgress] = useState<'idle' | 'uploading' | 'processing' | 'success' | 'error'>('idle')
+  const [progress, setProgress] = useState<'idle' | 'uploading' | 'processing' | 'success' | 'error' | 'upgrade-required'>('idle')
   const [progressMessage, setProgressMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [createdQuoteId, setCreatedQuoteId] = useState<string | null>(null)
   const [createdQuoteNumber, setCreatedQuoteNumber] = useState<string | null>(null)
+  const [showUpgradeSuccess, setShowUpgradeSuccess] = useState(false)
   const router = useRouter()
+  const [showCompanyModal, setShowCompanyModal] = useState(false)
+
+  // Check for upgrade success URL parameter
+  useEffect(() => {
+    const success = searchParams.get('success')
+    if (success === 'true') {
+      setShowUpgradeSuccess(true)
+      // Clean up URL parameter
+      router.replace('/dashboard', { scroll: false })
+      
+      // Force refresh of subscription data to show updated plan status
+      if (session?.user?.id) {
+        // Trigger a page refresh to show updated subscription status
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000) // Small delay to show the modal first
+      }
+    }
+  }, [searchParams, router, session?.user?.id])
+
+  // Company Info Modal für neue User
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user?.id) {
+      // Prüfen ob User den Modal bereits gesehen hat
+      const hasSeenModal = localStorage.getItem('company-info-modal-seen')
+      if (!hasSeenModal) {
+        // Verzögerung für bessere UX
+        const timer = setTimeout(() => {
+          setShowCompanyModal(true)
+        }, 1000)
+        return () => clearTimeout(timer)
+      }
+    }
+  }, [status, session])
 
   // Get user's first name from session
   const getUserFirstName = () => {
+    // Try to get firstName from session user data first (with type assertion)
+    const userWithFirstName = session?.user as any;
+    if (userWithFirstName?.firstName) {
+      return userWithFirstName.firstName;
+    }
+    
+    // Fallback to parsing name field
     if (session?.user?.name) {
       const nameParts = session.user.name.split(' ')
       return nameParts[0] || null
@@ -219,6 +267,11 @@ function DashboardContent() {
       } else {
         setProgress('error')
         setProgressMessage(result.error || 'Ein Fehler ist aufgetreten')
+        
+        // Check if upgrade is required
+        if (result.requiresUpgrade) {
+          setProgress('upgrade-required')
+        }
       }
     } catch (error) {
       console.error('Error creating quote:', error)
@@ -319,9 +372,15 @@ function DashboardContent() {
           <div className="pt-8 sm:pt-12 mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-[#404040]">Willkommen!</h1>
             {getUserFirstName() && (
-              <p className="text-lg sm:text-xl text-[#676767]">{getUserFirstName()}</p>
+              <div className="flex items-center gap-3">
+                <p className="text-lg sm:text-xl text-[#676767]">{getUserFirstName()}</p>
+                <PlanStatusBadge />
+              </div>
             )}
           </div>
+
+          {/* Plan Status Mini */}
+          <PlanStatusMini />
 
           {/* Progress Indicator */}
           {progress !== 'idle' && progress !== 'success' && (
@@ -331,12 +390,14 @@ function DashboardContent() {
                   {progress === 'uploading' && <Loader2 className="h-5 w-5 animate-spin text-[#F89813]" />}
                   {progress === 'processing' && <Loader2 className="h-5 w-5 animate-spin text-[#F89813]" />}
                   {progress === 'error' && <AlertCircle className="h-5 w-5 text-red-600" />}
+                  {progress === 'upgrade-required' && <AlertCircle className="h-5 w-5 text-orange-600" />}
                   
                   <div className="flex-1">
                     <p className="font-medium text-[#404040]">
                       {progress === 'uploading' && 'Bild-Upload läuft...'}
                       {progress === 'processing' && 'KI-Verarbeitung läuft...'}
                       {progress === 'error' && 'Fehler aufgetreten'}
+                      {progress === 'upgrade-required' && 'Angebot-Limit erreicht'}
                     </p>
                     <p className="text-sm text-[#676767]">{progressMessage}</p>
                   </div>
@@ -349,6 +410,17 @@ function DashboardContent() {
                       className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
                     >
                       Erneut versuchen
+                    </Button>
+                  )}
+                  
+                  {progress === 'upgrade-required' && (
+                    <Button
+                      onClick={() => router.push('/einstellungen/app')}
+                      variant="outline"
+                      size="sm"
+                      className="text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-white"
+                    >
+                      Jetzt upgraden
                     </Button>
                   )}
                 </div>
@@ -539,8 +611,23 @@ function DashboardContent() {
               Neues Angebot erstellen
             </Button>
           )}
+
+
         </div>
       </div>
+      
+      {/* Upgrade Success Modal */}
+      <UpgradeSuccessModal 
+        isOpen={showUpgradeSuccess}
+        onClose={() => setShowUpgradeSuccess(false)}
+      />
+      
+      {/* Company Info Modal */}
+      <CompanyInfoModal 
+        isOpen={showCompanyModal}
+        onClose={() => setShowCompanyModal(false)}
+      />
+      
       <MobileNavigation />
     </>
   )

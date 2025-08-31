@@ -55,22 +55,22 @@ export default function KontoPage() {
       if (stored) {
         setUserData(JSON.parse(stored))
       } else {
-        // Use default data
+        // Leere Standardwerte für neue User
         setUserData({
-          firstName: 'Max',
-          lastName: 'Mustermann',
-          companyName: 'Inatros GmbH',
-          street: 'Musterstraße 123',
-          city: '90475 Nürnberg',
-          email: 'info@inatros.de',
-          phone: '+49 911 123456',
+          firstName: (session?.user as any)?.firstName || '',
+          lastName: (session?.user as any)?.lastName || '',
+          companyName: '',
+          street: '',
+          city: '',
+          email: session?.user?.email || '',
+          phone: '',
           companyLogo: '',
-          taxNumber: 'DE123456789',
-          vatNumber: 'DE123456789',
-          taxOffice: 'Finanzamt Nürnberg',
-          bankName: 'Musterbank AG',
-          bankAccount: 'DE89 3704 0044 0532 0130 00',
-          bankBic: 'COBADEFFXXX',
+          taxNumber: '',
+          vatNumber: '',
+          taxOffice: '',
+          bankName: '',
+          bankAccount: '',
+          bankBic: '',
           defaultQuotePrefix: 'AN',
           defaultCurrency: 'EUR',
           defaultPaymentTerms: '30 Tage netto',
@@ -81,6 +81,29 @@ export default function KontoPage() {
       }
     } catch (error) {
       console.error('Error loading from localStorage:', error)
+      // Fallback auf leere Werte
+      setUserData({
+        firstName: (session?.user as any)?.firstName || '',
+        lastName: (session?.user as any)?.lastName || '',
+        companyName: '',
+        street: '',
+        city: '',
+        email: session?.user?.email || '',
+        phone: '',
+        companyLogo: '',
+        taxNumber: '',
+        vatNumber: '',
+        taxOffice: '',
+        bankName: '',
+        bankAccount: '',
+        bankBic: '',
+        defaultQuotePrefix: 'AN',
+        defaultCurrency: 'EUR',
+        defaultPaymentTerms: '30 Tage netto',
+        defaultValidity: '30 Tage',
+        lastQuoteNumber: 0,
+        currentYear: new Date().getFullYear()
+      })
     } finally {
       setIsLoading(false)
     }

@@ -1,10 +1,10 @@
-# 🚀 AngebotNow - Finaler MVP-Bericht v1.0
+# 🚀 AngebotNow - Finaler MVP-Bericht v1.1
 
 ## 📋 **Projektübersicht**
 
 **Projektname:** AngebotNow  
-**Version:** MVP v1.0  
-**Status:** ✅ **BEREIT FÜR TEST-USER**  
+**Version:** MVP v1.1  
+**Status:** ✅ **BEREIT FÜR PRODUCTION DEPLOYMENT**  
 **Deployment-URL:** https://angebotnow.vercel.app  
 **GitHub:** https://github.com/chrismongang/angebotnow  
 
@@ -14,15 +14,29 @@
 
 AngebotNow ist eine KI-gestützte Plattform zur automatischen Generierung von Angeboten für Handwerker und Dienstleister. Die App ermöglicht es Benutzern, durch einfaches Hochladen eines Projektfotos und Eingabe von Projektinformationen professionelle PDF-Angebote zu erstellen.
 
+**NEU:** Vollständiges Subscription-System mit Stripe für kommerziellen Betrieb!
+
 ---
 
 ## ✅ **Implementierte Features**
 
 ### **🔐 Authentifizierung & Sicherheit**
 - **Google OAuth Integration** - Sichere Anmeldung über Google
+- **Microsoft OAuth Integration** - Zusätzliche Anmeldemethode
 - **NextAuth.js** - Robuste Session-Verwaltung
 - **Middleware Protection** - Geschützte Routen
 - **Prisma Adapter** - Sichere Datenbank-Integration
+
+### **💳 Subscription System (NEU)**
+- **Stripe Integration** - Vollständiges Payment-System
+- **FREE/PRO Tiers** - Klare Funktionsunterscheidung
+- **Pro-User Features:**
+  - Unbegrenzte Angebote
+  - Positionen bearbeiten
+  - PDF ohne AngebotNow Branding
+  - Prioritäts-Support
+- **Customer Portal** - Gesetzeskonforme Abo-Verwaltung
+- **Quote-Limits** - 5 Angebote/Monat für Free-User
 
 ### **📱 User Experience**
 - **Responsive Design** - Optimiert für Mobile & Desktop
@@ -30,6 +44,7 @@ AngebotNow ist eine KI-gestützte Plattform zur automatischen Generierung von An
 - **Loading States** - Benutzerfreundliche Feedback-Loops
 - **Error Handling** - Klare Fehlermeldungen
 - **Mobile-First Design** - Optimiert für Smartphone-Nutzung
+- **Upgrade Success Modal** - Positive Feedback nach Upgrade
 
 ### **🤖 KI-Integration**
 - **OpenAI GPT-4 Integration** - Intelligente Angebotsanalyse
@@ -42,18 +57,21 @@ AngebotNow ist eine KI-gestützte Plattform zur automatischen Generierung von An
 - **Dynamische Inhalte** - Automatische Datenintegration
 - **Download-Funktion** - Einfacher PDF-Export
 - **Share-Funktion** - Direktes Teilen mit Kunden
+- **Pro-User Features** - PDF ohne AngebotNow Branding
 
 ### **🏢 Firmenverwaltung**
 - **Kontodaten** - Vollständige Firmeninformationen
 - **PDF-Integration** - Automatische Einbindung in Angebote
 - **Einstellungen** - Benutzerfreundliche Konfiguration
 - **Datenspeicherung** - Sichere Datenbank-Integration
+- **Company Info Modal** - Hinweis für neue User
 
 ### **📊 Angebotsverwaltung**
 - **CRUD-Operationen** - Vollständige Angebotsverwaltung
 - **Status-Tracking** - Transparente Prozessverfolgung
-- **Bearbeitung** - Manuelle Anpassung von Angeboten
+- **Bearbeitung** - Pro-User können Positionen bearbeiten
 - **Archivierung** - Übersichtliche Angebotshistorie
+- **Quote-Limits** - Free-User: 5 Angebote/Monat
 
 ### **💬 Feedback-System**
 - **User-Feedback** - Direkte Kommunikation
@@ -66,6 +84,7 @@ AngebotNow ist eine KI-gestützte Plattform zur automatischen Generierung von An
 - **Session-Management** - Sichere Abmeldung
 - **Feedback-Formular** - Benutzerfreundliche Kommunikation
 - **Responsive Design** - Optimierte Mobile-Ansicht
+- **Subscription Management** - Abo-Status und Upgrade-Optionen
 
 ---
 
@@ -83,23 +102,35 @@ AngebotNow ist eine KI-gestützte Plattform zur automatischen Generierung von An
 - **Prisma ORM** - Datenbank-Abstraktion
 - **PostgreSQL** - Robuste Datenbank (Neon)
 - **NextAuth.js** - Authentifizierung
+- **Stripe API** - Payment Processing
 
 ### **Externe Services**
 - **OpenAI API** - KI-Verarbeitung
 - **Cloudinary** - Bild-Upload & -Verwaltung
 - **Resend** - E-Mail-Versand
 - **Vercel** - Hosting & Deployment
+- **Stripe** - Subscription Management
+- **Google OAuth** - Authentication
+- **Microsoft OAuth** - Authentication
 
 ### **Datenbank-Schema**
 ```sql
--- User Management
-User (id, name, email, companyName, street, city, phone, taxNumber, vatNumber, taxOffice, bankName, bankAccount, bankBic, lastQuoteNumber, currentYear)
+-- User Management (Erweitert)
+User (
+  id, name, email, companyName, street, city, phone, 
+  taxNumber, vatNumber, taxOffice, bankName, bankAccount, 
+  bankBic, lastQuoteNumber, currentYear,
+  -- Neue Stripe-Felder
+  stripeCustomerId, subscriptionId, subscriptionStatus, 
+  subscriptionTier, subscriptionEndDate, monthlyQuoteCount, 
+  quoteCountResetDate
+)
 
 -- Quote Management
 Quote (id, userId, clientName, projectInfo, status, imagePath, pdfPath, aiData, quoteNumber, clientStreet, clientCity, createdAt, updatedAt)
 
--- Authentication (NextAuth)
-Account, Session, VerificationToken
+-- Verification Tokens (Neu)
+VerificationToken (identifier, token, expires, type)
 ```
 
 ---
@@ -143,6 +174,10 @@ RESEND_API_KEY="re_your-resend-api-key"
 GOOGLE_CLIENT_ID="your-google-client-id"
 GOOGLE_CLIENT_SECRET="your-google-client-secret"
 
+# Microsoft OAuth
+MICROSOFT_CLIENT_ID="your-microsoft-client-id"
+MICROSOFT_CLIENT_SECRET="your-microsoft-client-secret"
+
 # Feature Flags
 USE_OPENAI=true
 ```
@@ -150,6 +185,7 @@ USE_OPENAI=true
 ### **Domain-Konfiguration**
 - **Produktions-URL**: https://angebotnow.vercel.app
 - **Google OAuth**: Für Produktions-URL konfiguriert
+- **Microsoft OAuth**: Für Produktions-URL konfiguriert
 - **E-Mail-Domain**: angebotnow.de (verifiziert bei Resend)
 
 ---
@@ -229,7 +265,7 @@ USE_OPENAI=true
 
 ## 🎉 **Fazit**
 
-**AngebotNow MVP v1.0 ist vollständig funktional und bereit für Test-User!**
+**AngebotNow MVP v1.1 ist vollständig funktional und bereit für Test-User!**
 
 ### **Erreichte Ziele:**
 - ✅ **Vollständige Kern-Funktionalität** implementiert
@@ -251,5 +287,5 @@ USE_OPENAI=true
 ---
 
 **Erstellt:** 27. August 2025  
-**Version:** MVP v1.0  
-**Status:** ✅ **BEREIT FÜR TEST-USER**
+**Version:** MVP v1.1  
+**Status:** ✅ **BEREIT FÜR PRODUCTION DEPLOYMENT**

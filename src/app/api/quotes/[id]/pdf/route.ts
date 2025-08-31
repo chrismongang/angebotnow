@@ -75,7 +75,8 @@ export async function GET(
     const prisma = new PrismaClient()
 
     const quote = await prisma.quote.findUnique({
-      where: { id }
+      where: { id },
+      include: { user: true }
     })
 
     if (!quote) {
@@ -181,7 +182,8 @@ export async function GET(
       quoteNumber: quoteNumber,
       clientStreet: quote.clientStreet || undefined,
       clientCity: quote.clientCity || undefined,
-      company: companyInfo
+      company: companyInfo,
+      userSubscriptionTier: quote.user.subscriptionTier
     })
 
     await prisma.$disconnect()

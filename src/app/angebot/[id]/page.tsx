@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { use } from 'react'
+import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,9 +13,10 @@ import { formatDate, calculateTotal, calculateTotalWithVAT, formatPrice } from '
 import { AIResult } from '@/lib/ai/provider'
 import { updateQuotePositions } from '@/lib/actions'
 import { MobileNavigation } from "@/components/mobile-navigation"
-import { ArrowLeft, FileText, Download, Share2, Edit, Save, X } from 'lucide-react'
+import { ArrowLeft, FileText, Download, Share2, Edit, Save, X, Crown } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Input } from "@/components/ui/input"
+
 
 interface PageProps {
   params: Promise<{
@@ -24,12 +26,14 @@ interface PageProps {
 
 export default function QuoteDetailPage({ params }: PageProps) {
   const { id } = use(params)
+  const { data: session } = useSession()
   const [quote, setQuote] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [editedPositions, setEditedPositions] = useState<Array<{ title: string; qty: number; unit: string; price: number }>>([])
   const [isUpdating, setIsUpdating] = useState(false)
+  const [canEdit, setCanEdit] = useState(false)
 
   useEffect(() => {
     const fetchQuote = async () => {
@@ -48,8 +52,24 @@ export default function QuoteDetailPage({ params }: PageProps) {
       }
     }
 
+    const checkEditPermissions = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch('/api/subscription/can-edit-positions')
+          if (response.ok) {
+            const data = await response.json()
+            setCanEdit(data.canEdit)
+          }
+        } catch (error) {
+          console.error('Error checking edit permissions:', error)
+          setCanEdit(false)
+        }
+      }
+    }
+
     fetchQuote()
-  }, [id])
+    checkEditPermissions()
+  }, [id, session])
 
   if (isLoading) {
     return (
@@ -343,15 +363,29 @@ export default function QuoteDetailPage({ params }: PageProps) {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <CardTitle className="text-base sm:text-lg lg:text-xl">Angebotskalkulation</CardTitle>
                       {!isEditing ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleEdit}
-                          className="text-[#F89813] border-[#F89813] hover:bg-[#F89813] hover:text-white flex items-center gap-2 rounded-[14px] self-start sm:self-auto"
-                        >
-                          <Edit size={16} />
-                          Bearbeiten
-                        </Button>
+                        <div className="flex flex-col gap-2 self-start sm:self-auto">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={!canEdit}
+                            onClick={canEdit ? handleEdit : undefined}
+                            className={`flex items-center gap-2 rounded-[14px] ${
+                              canEdit 
+                                ? 'text-[#F89813] border-[#F89813] hover:bg-[#F89813] hover:text-white' 
+                                : 'text-gray-400 border-gray-300 bg-gray-50 cursor-not-allowed'
+                            }`}
+                          >
+                            <Edit size={16} />
+                            Bearbeiten
+                          </Button>
+                          
+                          {!canEdit && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600 bg-orange-50 px-3 py-2 rounded-lg border border-orange-200">
+                              <Crown className="w-4 h-4 text-orange-600" />
+                              <span>Bearbeiten nur im Pro-Plan verfügbar</span>
+                            </div>
+                          )}
+                        </div>
                       ) : (
                         <div className="flex flex-col sm:flex-row gap-2 self-start sm:self-auto">
                           <Button

@@ -21,6 +21,7 @@ export type GeneratePDFInput = {
     bankAccount?: string;
     bankBic?: string;
   };
+  userSubscriptionTier?: 'FREE' | 'PRO';
 };
 
 export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> {
@@ -89,11 +90,15 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
     });
   };
 
-  // Branding left side (AngebotNow + Tagline) - Orange color
-  const brandingX = 40;
-  const brandingY = height - 40;
-  drawText('AngebotNow', brandingX, brandingY, 18, true, rgb(0.973, 0.596, 0.075)); // Orange color
-  drawText('Professionelle Angebotserstellung', brandingX, brandingY - 20, 10, false, grayscale(0.5));
+  // Branding left side (AngebotNow + Tagline) - Only show for Free users
+  const shouldShowBranding = input.userSubscriptionTier !== 'PRO';
+  
+  if (shouldShowBranding) {
+    const brandingX = 40;
+    const brandingY = height - 40;
+    drawText('AngebotNow', brandingX, brandingY, 18, true, rgb(0.973, 0.596, 0.075)); // Orange color
+    drawText('Professionelle Angebotserstellung', brandingX, brandingY - 20, 10, false, grayscale(0.5));
+  }
 
   // Sender information (top right)
   const senderX = width - 200;
@@ -298,17 +303,17 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
   const totalTextWidth = fontBold.widthOfTextAtSize(totalText, 12);
   drawText(totalText, totalSectionRight - totalTextWidth, currentY, 12, true);
 
-  // Closing remarks
+  // Closing remarks - Entfernt den unerwünschten Text
   const closingY = currentY - 60;
-  drawText('Ist unser Angebot für Sie interessant? Dann freuen wir uns über Ihren Auftrag!', recipientX, closingY, 10);
-  drawText('Zögern Sie bitte nicht, uns bei Fragen zu kontaktieren.', recipientX, closingY - 16, 10);
+  // drawText('Ist unser Angebot für Sie interessant? Dann freuen wir uns über Ihren Auftrag!', recipientX, closingY, 10);
+  // drawText('Zögern Sie bitte nicht, uns bei Fragen zu kontaktieren.', recipientX, closingY - 16, 10);
   
-  if (input.company && isValidText(input.company.phone)) {
-    drawText(`Sie erreichen uns jederzeit unter der Telefonnummer: ${input.company.phone}`, recipientX, closingY - 32, 10);
-  }
+  // if (input.company && isValidText(input.company.phone)) {
+  //   drawText(`Sie erreichen uns jederzeit unter der Telefonnummer: ${input.company.phone}`, recipientX, closingY - 32, 10);
+  // }
 
-  // Signature
-  const signatureY = closingY - 80;
+  // Signature - Direkt nach den Totals
+  const signatureY = currentY - 40; // Reduzierter Abstand da Text entfernt wurde
   drawText('Mit freundlichen Grüßen', recipientX, signatureY, 11);
   drawText(input.company && isValidText(input.company.name) ? input.company.name : 'AngebotNow', recipientX, signatureY - 20, 11, true);
 
