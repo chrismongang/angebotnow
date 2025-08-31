@@ -1,22 +1,13 @@
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background with gradient -->
-  <defs>
-    <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#FFB366;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#F89813;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  
-  <!-- Rounded square background -->
-  <rect x="2" y="2" width="28" height="28" rx="6" fill="url(#orangeGradient)" stroke="none"/>
-  
-  <!-- Document icon -->
-  <g transform="translate(8, 6)">
-    <!-- Document shape with folded corner -->
-    <path d="M12 1.5 L12 13.5 L1.5 13.5 L1.5 1.5 Z M12 1.5 L10.5 3 L10.5 4.5 L12 3 Z" fill="white" stroke="white" stroke-width="0.5"/>
-    
-    <!-- Document lines -->
-    <rect x="3" y="4.5" width="7.5" height="0.75" fill="white" rx="0.375"/>
-    <rect x="3" y="6" width="7.5" height="0.75" fill="white" rx="0.375"/>
-  </g>
+<svg width="1000" height="1000" viewBox="0 0 1000 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="1000" height="1000" fill="url(#paint0_linear_55_352)"/>
+<path d="M536.026 223.25H407.75C349.767 223.25 320.776 223.25 302.763 241.263C284.75 259.276 284.75 288.267 284.75 346.25V653.75C284.75 711.733 284.75 740.724 302.763 758.737C320.776 776.75 349.767 776.75 407.75 776.75H592.25C650.233 776.75 679.224 776.75 697.237 758.737C715.25 740.724 715.25 711.733 715.25 653.75V402.474C715.25 389.905 715.25 383.621 712.909 377.97C710.569 372.319 706.125 367.875 697.237 358.987L579.513 241.263C570.625 232.375 566.181 227.931 560.53 225.591C554.879 223.25 548.595 223.25 536.026 223.25Z" stroke="white" stroke-width="44"/>
+<path d="M407.75 530.75L592.25 530.75" stroke="white" stroke-width="44" stroke-linecap="round"/>
+<path d="M407.75 653.75L530.75 653.75" stroke="white" stroke-width="44" stroke-linecap="round"/>
+<path d="M530.75 223.25V346.25C530.75 375.241 530.75 389.737 539.756 398.744C548.763 407.75 563.259 407.75 592.25 407.75H715.25" stroke="white" stroke-width="44"/>
+<defs>
+<linearGradient id="paint0_linear_55_352" x1="500" y1="0" x2="500" y2="1000" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FFA200"/>
+<stop offset="1" stop-color="#FFD387"/>
+</linearGradient>
+</defs>
 </svg>
