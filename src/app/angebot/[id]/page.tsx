@@ -115,30 +115,60 @@ export default function QuoteDetailPage({ params }: PageProps) {
 
   const handleShare = async () => {
     try {
-      // Generate shareable link
-      const shareUrl = `${window.location.origin}/angebot/${id}`
+      // Create personalized message
+      const clientName = quote.clientName || 'Kunde'
+      const projectDescription = quote.aiData?.description || 'Projekt'
+      const personalizedMessage = `Hallo ${clientName}, hier ist Ihr Angebot zu folgendem Projekt: ${projectDescription}`
       
-      // Try to use native Web Share API first
-      if (navigator.share) {
-        await navigator.share({
-          title: `Angebot ${quote.quoteNumber || quote.id}`,
-          text: `Angebot für ${quote.clientName}`,
-          url: shareUrl
-        })
+      // Fetch PDF for sharing
+      const response = await fetch(`/api/quotes/${id}/pdf`)
+      if (response.ok) {
+        const blob = await response.blob()
+        const fileName = quote.quoteNumber ? `Angebot_${quote.quoteNumber}.pdf` : `Angebot_${id}.pdf`
+        const file = new File([blob], fileName, { type: 'application/pdf' })
+        
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: `Angebot ${quote.quoteNumber || quote.id}`,
+              text: personalizedMessage,
+              files: [file]
+            })
+          } catch (shareError) {
+            // Handle AbortError (user cancelled) and other share errors gracefully
+            if (shareError instanceof Error && shareError.name === 'AbortError') {
+              // User cancelled sharing - this is normal, no need to show error
+              return
+            }
+            console.log('Share API failed, falling back to clipboard:', shareError)
+            // Fallback to clipboard
+            await fallbackToClipboard(personalizedMessage)
+          }
+        } else {
+          // Fallback: copy link to clipboard
+          await fallbackToClipboard(personalizedMessage)
+        }
       } else {
-        // Fallback: Copy to clipboard
-        await navigator.clipboard.writeText(shareUrl)
-        alert('Link wurde in die Zwischenablage kopiert!')
+        console.error('Failed to fetch PDF for sharing')
+        alert('Fehler beim Laden der PDF für das Teilen.')
       }
     } catch (error) {
-      console.error('Share error:', error)
-      // Fallback: Copy to clipboard
-      try {
-        await navigator.clipboard.writeText(`${window.location.origin}/angebot/${id}`)
-        alert('Link wurde in die Zwischenablage kopiert!')
-      } catch (clipboardError) {
-        alert('Fehler beim Teilen des Angebots')
+      console.error('Error sharing PDF:', error)
+      alert('Fehler beim Teilen der PDF.')
+    }
+  }
+
+  const fallbackToClipboard = async (personalizedMessage: string) => {
+    try {
+      if (typeof window !== 'undefined' && navigator.clipboard) {
+        const url = `${window.location.origin}/api/quotes/${id}/pdf`
+        const fullMessage = `${personalizedMessage}\n\nLink zum Angebot: ${url}`
+        await navigator.clipboard.writeText(fullMessage)
+        alert('Personalisierten Text mit Link zum Angebot wurde in die Zwischenablage kopiert!')
       }
+    } catch (clipboardError) {
+      console.error('Clipboard fallback failed:', clipboardError)
+      alert('Fehler beim Kopieren des Links. Bitte laden Sie die PDF manuell herunter.')
     }
   }
 

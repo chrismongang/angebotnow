@@ -1,21 +1,70 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
 import { MobileNavigation } from "@/components/mobile-navigation"
 import { SubscriptionBanner } from "@/components/subscription-banner"
 import Link from 'next/link'
-import { ArrowLeft, LogOut, Send, CheckCircle, AlertCircle } from 'lucide-react'
+import { ArrowLeft, LogOut, Send, CheckCircle, AlertCircle, Gift, Share2, Users, Zap } from 'lucide-react'
+
+interface SubscriptionInfo {
+  tier: 'FREE' | 'PRO';
+  status: string;
+  monthlyQuoteCount: number;
+  remainingQuotes: number;
+  limit: number;
+  canEditPositions: boolean;
+  canCustomizeLogo: boolean;
+  referralCredits: number;
+}
 
 export default function AppSettingsPage() {
   const { data: session } = useSession()
   const [feedback, setFeedback] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null)
+  const [referralCode, setReferralCode] = useState('')
+  const [referralCredits, setReferralCredits] = useState(0)
+  const [referralCount, setReferralCount] = useState(0)
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      loadSubscriptionInfo()
+      loadReferralInfo()
+    }
+  }, [session])
+
+  const loadSubscriptionInfo = async () => {
+    try {
+      const response = await fetch('/api/subscription')
+      if (response.ok) {
+        const data = await response.json()
+        setSubscriptionInfo(data)
+      }
+    } catch (error) {
+      console.error('Error loading subscription info:', error)
+    }
+  }
+
+  const loadReferralInfo = async () => {
+    try {
+      const response = await fetch('/api/referral/info')
+      if (response.ok) {
+        const data = await response.json()
+        setReferralCode(data.referralCode || '')
+        setReferralCredits(data.referralCredits || 0)
+        setReferralCount(data.referralCount || 0)
+      }
+    } catch (error) {
+      console.error('Error loading referral info:', error)
+    }
+  }
 
   const handleFeedbackSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,6 +107,33 @@ export default function AppSettingsPage() {
     signOut({ callbackUrl: '/' })
   }
 
+  const handleNativeShare = async () => {
+    if (!referralCode) return
+
+    const shareData = {
+      title: `${session?.user?.name || 'Ein Freund'} lädt dich zu AngebotNow ein!`,
+      text: `Du bekommst 2 GRATIS-Angebote! Registriere dich mit Code: ${referralCode}`,
+      url: `${window.location.origin}/auth/signin?referral=${referralCode}`
+    }
+
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData)
+      } else {
+        // Fallback: Kopiere Link in Zwischenablage
+        await navigator.clipboard.writeText(shareData.url)
+        alert('Referral-Link wurde in die Zwischenablage kopiert!')
+      }
+    } catch (error) {
+      console.error('Share failed:', error)
+      // Fallback bei Fehlern
+      await navigator.clipboard.writeText(shareData.url)
+      alert('Referral-Link wurde in die Zwischenablage kopiert!')
+    }
+  }
+
+  const isFreeUser = subscriptionInfo?.tier === 'FREE'
+
   return (
     <>
       <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
@@ -82,30 +158,6 @@ export default function AppSettingsPage() {
 
           {/* Subscription Banner */}
           <SubscriptionBanner />
-
-          {/* Account Information Card */}
-          <Card className="mb-6">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg sm:text-xl text-[#404040]">Account-Informationen</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-[#404040]">Angemeldet als</Label>
-                <p className="text-[#676767] py-2">{session?.user?.email || 'Nicht verfügbar'}</p>
-              </div>
-              
-              <div className="pt-4">
-                <Button 
-                  variant="outline" 
-                  onClick={handleLogout}
-                  className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white flex items-center gap-2 rounded-[14px]"
-                >
-                  <LogOut size={16} />
-                  Sitzung beenden
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Feedback Card */}
           <Card className="mb-6">
@@ -164,6 +216,137 @@ export default function AppSettingsPage() {
                   )}
                 </Button>
               </form>
+            </CardContent>
+          </Card>
+
+          {/* Referral Program Card - Only for Free Users */}
+          {isFreeUser && (
+            <Card className="mb-6">
+                             <CardHeader className="pb-4">
+                 <CardTitle className="text-lg sm:text-xl text-[#404040] flex items-center gap-2">
+                   <Gift className="w-5 h-5 text-[#F89813]" />
+                   Referral-Programm
+                 </CardTitle>
+               </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Program Description */}
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                  <div className="text-center space-y-3">
+                    <h3 className="text-lg font-semibold text-blue-900">
+                      Verdiene Gratis-Credits durch Empfehlungen!
+                    </h3>
+                    <p className="text-blue-700 text-sm">
+                      Lade Freunde ein und ihr bekommt beide 2 zusätzliche Angebote pro Monat!
+                    </p>
+                  </div>
+                </div>
+
+                                 {/* Current Status */}
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <div className="text-center p-4 bg-gray-50 rounded-lg">
+                     <div className="text-2xl font-bold text-blue-600">{referralCount}</div>
+                     <div className="text-sm text-gray-600">Erfolgreiche Empfehlungen</div>
+                   </div>
+                   <div className="text-center p-4 bg-gray-50 rounded-lg">
+                     <div className="text-2xl font-bold text-green-600">{subscriptionInfo?.remainingQuotes || 0}</div>
+                     <div className="text-sm text-gray-600">Verbleibende Angebote</div>
+                   </div>
+                 </div>
+
+                {/* Referral Code */}
+                {referralCode && (
+                  <div className="p-4 bg-white border border-gray-200 rounded-lg">
+                    <Label className="text-sm font-medium text-[#404040] mb-2 block">
+                      Dein Referral-Code
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 bg-gray-100 px-3 py-2 rounded text-sm font-mono">
+                        {referralCode}
+                      </code>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          if (typeof window !== 'undefined' && navigator.clipboard) {
+                            try {
+                              await navigator.clipboard.writeText(referralCode)
+                              setSubmitStatus('success')
+                              setTimeout(() => setSubmitStatus('idle'), 2000)
+                            } catch (error) {
+                              console.error('Failed to copy to clipboard:', error)
+                            }
+                          }
+                        }}
+                        className="text-[#F89813] border-[#F89813] hover:bg-[#F89813] hover:text-white"
+                      >
+                        Kopieren
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Share Button */}
+                <div className="space-y-3">
+                  <Button
+                    onClick={handleNativeShare}
+                    className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-0 shadow-lg rounded-[14px]"
+                  >
+                    <Share2 className="w-5 h-5 mr-2" />
+                    Freund einladen & Credits sichern
+                  </Button>
+                  
+                  <p className="text-xs text-gray-500 text-center">
+                    Teile deinen Referral-Code mit Freunden und verdiene Credits
+                  </p>
+                </div>
+
+                {/* How it works */}
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold text-[#404040] mb-3">So funktioniert es:</h4>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-start gap-2">
+                      <div className="w-2 h-2 bg-[#F89813] rounded-full mt-2 flex-shrink-0"></div>
+                      <span>Teile deinen Referral-Code mit Freunden</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <div className="w-2 h-2 bg-[#F89813] rounded-full mt-2 flex-shrink-0"></div>
+                      <span>Freunde registrieren sich mit deinem Code</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <div className="w-2 h-2 bg-[#F89813] rounded-full mt-2 flex-shrink-0"></div>
+                      <span>Ihr bekommt beide 2 Gratis-Credits</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <div className="w-2 h-2 bg-[#F89813] rounded-full mt-2 flex-shrink-0"></div>
+                      <span>Credits können für zusätzliche Angebote verwendet werden</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Account Information Card */}
+          <Card className="mb-6">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg sm:text-xl text-[#404040]">Account-Informationen</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-[#404040]">Angemeldet als</Label>
+                <p className="text-[#676767] py-2">{session?.user?.email || 'Nicht verfügbar'}</p>
+              </div>
+              
+              <div className="pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={handleLogout}
+                  className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white flex items-center gap-2 rounded-[14px]"
+                >
+                  <LogOut size={16} />
+                  Sitzung beenden
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

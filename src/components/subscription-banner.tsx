@@ -17,6 +17,7 @@ interface SubscriptionInfo {
   limit: number;
   canEditPositions: boolean;
   canCustomizeLogo: boolean;
+  referralCredits: number;
 }
 
 export function SubscriptionBanner() {

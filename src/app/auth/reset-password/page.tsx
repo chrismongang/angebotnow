@@ -42,6 +42,27 @@ export default function ResetPasswordPage() {
   const token = searchParams.get('token')
 
   useEffect(() => {
+    const validateToken = async () => {
+      try {
+        const response = await fetch(`/api/auth/reset-password?token=${token}`)
+        const data = await response.json()
+
+        if (response.ok && data.valid) {
+          setState({ status: 'valid', user: data.user })
+        } else {
+          if (data.error?.includes('abgelaufen')) {
+            setState({ status: 'expired', error: data.error })
+          } else if (data.error?.includes('Google')) {
+            setState({ status: 'invalid', error: 'Dieses Konto wurde über Google angemeldet. Passwort-Reset ist nicht verfügbar.' })
+          } else {
+            setState({ status: 'invalid', error: data.error || 'Ungültiger Token' })
+          }
+        }
+      } catch (error) {
+        setState({ status: 'error', error: 'Fehler bei der Token-Validierung' })
+      }
+    }
+
     if (!token) {
       setState({ status: 'invalid', error: 'Kein Token gefunden' })
       return
@@ -50,27 +71,6 @@ export default function ResetPasswordPage() {
     // Token validieren
     validateToken()
   }, [token])
-
-  const validateToken = async () => {
-    try {
-      const response = await fetch(`/api/auth/reset-password?token=${token}`)
-      const data = await response.json()
-
-      if (response.ok && data.valid) {
-        setState({ status: 'valid', user: data.user })
-      } else {
-        if (data.error?.includes('abgelaufen')) {
-          setState({ status: 'expired', error: data.error })
-        } else if (data.error?.includes('Google')) {
-          setState({ status: 'invalid', error: 'Dieses Konto wurde über Google angemeldet. Passwort-Reset ist nicht verfügbar.' })
-        } else {
-          setState({ status: 'invalid', error: data.error || 'Ungültiger Token' })
-        }
-      }
-    } catch (error) {
-      setState({ status: 'error', error: 'Fehler bei der Token-Validierung' })
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -30,10 +30,30 @@ export default function VerifyEmailPage() {
   const router = useRouter()
   const [state, setState] = useState<VerificationState>({ status: 'loading' })
   const [isVerifying, setIsVerifying] = useState(false)
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const token = searchParams.get('token')
 
   useEffect(() => {
+    const validateToken = async () => {
+      try {
+        const response = await fetch(`/api/auth/verify-email?token=${token}`)
+        const data = await response.json()
+
+        if (response.ok && data.valid) {
+          setState({ status: 'valid', user: data.user })
+        } else {
+          if (data.error?.includes('abgelaufen')) {
+            setState({ status: 'expired', error: data.error })
+          } else {
+            setState({ status: 'invalid', error: data.error || 'Ungültiger Token' })
+          }
+        }
+      } catch (error) {
+        setState({ status: 'error', error: 'Fehler bei der Token-Validierung' })
+      }
+    }
+
     if (!token) {
       setState({ status: 'invalid', error: 'Kein Token gefunden' })
       return
@@ -42,25 +62,6 @@ export default function VerifyEmailPage() {
     // Token validieren
     validateToken()
   }, [token])
-
-  const validateToken = async () => {
-    try {
-      const response = await fetch(`/api/auth/verify-email?token=${token}`)
-      const data = await response.json()
-
-      if (response.ok && data.valid) {
-        setState({ status: 'valid', user: data.user })
-      } else {
-        if (data.error?.includes('abgelaufen')) {
-          setState({ status: 'expired', error: data.error })
-        } else {
-          setState({ status: 'invalid', error: data.error || 'Ungültiger Token' })
-        }
-      }
-    } catch (error) {
-      setState({ status: 'error', error: 'Fehler bei der Token-Validierung' })
-    }
-  }
 
   const verifyEmail = async () => {
     if (!token) return
@@ -255,6 +256,17 @@ export default function VerifyEmailPage() {
               Email-Verifikation
             </CardTitle>
           </CardHeader>
+          
+          {/* Notifications */}
+          {notification && (
+            <div className={`mx-6 p-3 rounded-lg text-sm ${
+              notification.type === 'success' 
+                ? 'bg-green-50 text-green-800 border border-green-200' 
+                : 'bg-red-50 text-red-800 border border-red-200'
+            }`}>
+              {notification.message}
+            </div>
+          )}
           
           <CardContent className="space-y-6">
             {renderContent()}

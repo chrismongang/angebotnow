@@ -249,18 +249,14 @@ export async function createQuote(formData: FormData) {
 
 export async function updateQuotePositions(quoteId: string, positions: Array<{ title: string; qty: number; unit: string; price: number }>) {
   try {
-    console.log('=== Starting quote positions update ===')
-    
     // Get authenticated user
     const session = await auth()
     if (!session?.user?.id) {
-      console.log('No authenticated user found')
       return { success: false, error: 'Nicht angemeldet' }
     }
     
     // Check if database is available
     if (!process.env.DATABASE_URL) {
-      console.warn('DATABASE_URL not available, using mock mode')
       return { 
         success: true, 
         message: 'Demo-Modus: Angebot wurde simuliert (keine Datenbank verfügbar)'
@@ -299,17 +295,12 @@ export async function updateQuotePositions(quoteId: string, positions: Array<{ t
       },
     })
 
-    console.log('=== Quote positions update completed successfully ===')
     return { 
       success: true, 
       message: 'Angebot erfolgreich aktualisiert'
     }
 
   } catch (error) {
-    console.error('=== Error in updateQuotePositions ===')
-    console.error('Error details:', error)
-    Sentry.captureException(error)
-    
     return { success: false, error: 'Ein Fehler ist aufgetreten: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler') }
   }
 }

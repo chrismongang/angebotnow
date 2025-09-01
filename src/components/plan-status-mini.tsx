@@ -12,6 +12,7 @@ interface PlanStatusInfo {
   monthlyQuoteCount: number;
   remainingQuotes: number;
   limit: number;
+  referralCredits: number;
 }
 
 export function PlanStatusMini() {
@@ -34,7 +35,8 @@ export function PlanStatusMini() {
           tier: data.tier,
           monthlyQuoteCount: data.monthlyQuoteCount,
           remainingQuotes: data.remainingQuotes,
-          limit: data.limit
+          limit: data.limit,
+          referralCredits: data.referralCredits
         });
       }
     } catch (error) {

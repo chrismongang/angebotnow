@@ -283,5 +283,136 @@ export const emailService = {
       console.error('Error sending welcome email:', error)
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
     }
+  },
+
+  async sendReferralInvite(
+    inviteeEmail: string, 
+    inviteCode: string, 
+    inviterEmail: string
+  ): Promise<void> {
+    const subject = `${inviterEmail} lädt dich zu AngebotNow ein!`;
+    
+    const html = `
+      <div style="font-family: 'Manrope', sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #f97316, #ea580c); padding: 40px 20px; text-align: center; color: white;">
+          <h1 style="margin: 0; font-size: 28px; font-weight: 700;">AngebotNow</h1>
+          <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">
+            Dein Freund ${inviterEmail} lädt dich ein!
+          </p>
+        </div>
+        
+        <div style="padding: 40px 20px; background: white;">
+          <h2 style="color: #1f2937; margin-bottom: 20px;">
+            🎁 Du bekommst 2 Gratis-Angebote!
+          </h2>
+          
+          <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+            ${inviterEmail} hat dich zu AngebotNow eingeladen - der KI-gestützten Plattform 
+            für professionelle Angebotserstellung. Wenn du dich registrierst, bekommt ihr 
+            beide 2 zusätzliche Gratis-Angebote!
+          </p>
+          
+          <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 15px 0;">Was du bekommst:</h3>
+            <ul style="color: #4b5563; margin: 0; padding-left: 20px;">
+              <li>2 Gratis-Angebote (zusätzlich zu den 5 monatlichen)</li>
+              <li>KI-gestützte Angebotserstellung</li>
+              <li>Professionelle PDF-Exporte</li>
+              <li>Einfache Bedienung</li>
+            </ul>
+          </div>
+          
+          <div style="text-align: center;">
+            <a href="${process.env.NEXTAUTH_URL}/auth/signin?referral=${inviteCode}" 
+               style="display: inline-block; background: #f97316; color: white; padding: 16px 32px; 
+                      text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+              Jetzt registrieren & 2 Gratis-Angebote sichern
+            </a>
+          </div>
+          
+          <p style="color: #6b7280; font-size: 14px; margin-top: 30px; text-align: center;">
+            Diese Einladung läuft in 7 Tagen ab.
+          </p>
+        </div>
+      </div>
+    `;
+
+    await resend.emails.send({
+      from: 'AngebotNow <info@angebotnow.de>',
+      to: inviteeEmail,
+      subject: subject,
+      html: html,
+    });
+  }
+}
+
+// NEU: Multi-Channel Referral Service
+export class MultiChannelReferralService {
+  // Sendet Referral-Einladung über den gewählten Kanal
+  static async sendReferralInvite(data: {
+    channel: 'whatsapp' | 'sms' | 'email' | 'share';
+    contact: string;
+    inviteCode: string;
+    inviterName: string;
+    inviterEmail: string;
+  }): Promise<{
+    success: boolean;
+    shareLinks?: any;
+    error?: string;
+  }> {
+    try {
+      switch (data.channel) {
+        case 'email':
+          await emailService.sendReferralInvite(data.contact, data.inviteCode, data.inviterEmail);
+          return { success: true };
+          
+        case 'whatsapp':
+        case 'sms':
+        case 'share':
+          // Diese Kanäle generieren nur Links, keine E-Mails
+          return { success: true };
+          
+        default:
+          return { success: false, error: 'Unsupported channel' };
+      }
+    } catch (error) {
+      console.error('Error sending referral invite:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  // Generiert alle verfügbaren Share-Links für einen Referral
+  static generateAllShareLinks(data: {
+    inviteCode: string;
+    inviterName: string;
+    inviterEmail: string;
+  }): {
+    whatsapp?: string;
+    sms?: string;
+    email?: string;
+    social: {
+      twitter: string;
+      facebook: string;
+      linkedin: string;
+    };
+    qrCode: string;
+    directLink: string;
+  } {
+    const { WhatsAppService } = require('./whatsapp');
+    
+    const baseUrl = `${process.env.NEXTAUTH_URL || 'https://angebotnow.de'}/auth/signin?referral=${data.inviteCode}`;
+    
+    return {
+      social: {
+        twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`🎁 ${data.inviterName} lädt dich zu AngebotNow ein! Du bekommst 2 GRATIS-Angebote! ${baseUrl}`)}`,
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(baseUrl)}`,
+        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(baseUrl)}`
+      },
+      qrCode: baseUrl, // Für QR-Code Generator
+      directLink: baseUrl
+    };
   }
 }

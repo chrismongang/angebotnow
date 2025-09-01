@@ -73,9 +73,16 @@ model User {
   subscriptionId      String?
   subscriptionStatus  SubscriptionStatus @default(FREE)
   subscriptionTier    SubscriptionTier   @default(FREE)
+  referralCode        String?            @unique // Eindeutiger Referral-Code
+  referredBy          String?            // Wer hat diesen User eingeladen
+  referralCredits     Int                @default(0) // Gratis-Credits für Referrals
+  referralCount       Int                @default(0) // Anzahl erfolgreicher Referrals
   accounts            Account[]
   quotes              Quote[]
   sessions            Session[]
+  referrals           User[]             @relation("UserReferrals") // Users die dieser User eingeladen hat
+  referredByUser      User?              @relation("UserReferrals", fields: [referredBy], references: [id])
+  referralInvites     ReferralInvite[]   // Einladungen die dieser User gesendet hat
 }
 
 model Quote {
@@ -113,4 +120,23 @@ enum SubscriptionStatus {
 enum SubscriptionTier {
   FREE
   PRO
+}
+
+model ReferralInvite {
+  id              String    @id @default(cuid())
+  inviterId       String    // Wer lädt ein
+  inviteeEmail    String    // E-Mail des Eingeladenen
+  inviteCode      String    @unique // Eindeutiger Einladungscode
+  status          ReferralStatus @default(PENDING)
+  createdAt       DateTime  @default(now())
+  expiresAt       DateTime  // Einladung läuft ab
+  acceptedAt      DateTime? // Wann wurde akzeptiert
+  
+  inviter         User      @relation(fields: [inviterId], references: [id])
+}
+
+enum ReferralStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
 }

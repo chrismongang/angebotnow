@@ -19,6 +19,7 @@ import { Upload, CheckCircle, AlertCircle, Loader2, Download, Share2, FileText, 
 import { useRouter } from 'next/navigation'
 import { generateQuoteFileName } from '@/lib/user-data'
 import { CompanyInfoModal } from '@/components/company-info-modal'
+import { HardPaywallModal } from '@/components/hard-paywall-modal'
 
 export default function DashboardPage() {
   return (
@@ -45,6 +46,7 @@ function DashboardContent() {
   const [createdQuoteId, setCreatedQuoteId] = useState<string | null>(null)
   const [createdQuoteNumber, setCreatedQuoteNumber] = useState<string | null>(null)
   const [showUpgradeSuccess, setShowUpgradeSuccess] = useState(false)
+  const [showHardPaywall, setShowHardPaywall] = useState(false)
   const router = useRouter()
   const [showCompanyModal, setShowCompanyModal] = useState(false)
 
@@ -131,16 +133,30 @@ function DashboardContent() {
 
   const sharePDF = async (quoteId: string) => {
     try {
+      // First fetch quote data to get client name and project description
+      const quoteResponse = await fetch(`/api/quotes/${quoteId}`)
+      if (!quoteResponse.ok) {
+        throw new Error('Failed to fetch quote data')
+      }
+      const quoteData = await quoteResponse.json()
+      
+      // Create personalized message
+      const clientName = quoteData.clientName || 'Kunde'
+      const projectDescription = quoteData.aiData?.description || 'Projekt'
+      const personalizedMessage = `Hallo ${clientName}, hier ist Ihr Angebot zu folgendem Projekt: ${projectDescription}`
+      
+      // Fetch PDF for sharing
       const response = await fetch(`/api/quotes/${quoteId}/pdf`)
       if (response.ok) {
         const blob = await response.blob()
-        const file = new File([blob], `angebot_${quoteId}.pdf`, { type: 'application/pdf' })
+        const fileName = quoteData.quoteNumber ? `Angebot_${quoteData.quoteNumber}.pdf` : `Angebot_${quoteId}.pdf`
+        const file = new File([blob], fileName, { type: 'application/pdf' })
         
         if (navigator.share) {
           try {
             await navigator.share({
-              title: 'Angebot',
-              text: 'Hier ist Ihr Angebot',
+              title: `Angebot ${quoteData.quoteNumber || quoteId}`,
+              text: personalizedMessage,
               files: [file]
             })
           } catch (shareError) {
@@ -151,11 +167,11 @@ function DashboardContent() {
             }
             console.log('Share API failed, falling back to clipboard:', shareError)
             // Fallback to clipboard
-            await fallbackToClipboard(quoteId)
+            await fallbackToClipboard(quoteId, personalizedMessage)
           }
         } else {
           // Fallback: copy link to clipboard
-          await fallbackToClipboard(quoteId)
+          await fallbackToClipboard(quoteId, personalizedMessage)
         }
       } else {
         console.error('Failed to fetch PDF for sharing')
@@ -167,11 +183,12 @@ function DashboardContent() {
     }
   }
 
-  const fallbackToClipboard = async (quoteId: string) => {
+  const fallbackToClipboard = async (quoteId: string, personalizedMessage: string) => {
     try {
       const url = `${window.location.origin}/api/quotes/${quoteId}/pdf`
-      await navigator.clipboard.writeText(url)
-      alert('Link zum Angebot wurde in die Zwischenablage kopiert!')
+      const fullMessage = `${personalizedMessage}\n\nLink zum Angebot: ${url}`
+      await navigator.clipboard.writeText(fullMessage)
+      alert('Personalisierten Text mit Link zum Angebot wurde in die Zwischenablage kopiert!')
     } catch (clipboardError) {
       console.error('Clipboard fallback failed:', clipboardError)
       alert('Fehler beim Kopieren des Links. Bitte laden Sie die PDF manuell herunter.')
@@ -180,13 +197,17 @@ function DashboardContent() {
 
   const saveToAccounting = async (quoteId: string) => {
     // TODO: Implement integration with accounting tools like LexWare, sevDesk, etc.
-    alert('Diese Funktion wird in Zukunft implementiert. Die PDF wird dann automatisch in Ihr verknüpftes Buchhaltungstool gespeichert.')
+    // Verwende eine benutzerfreundliche Benachrichtigung statt alert
+    setUploadError('Diese Funktion wird in Zukunft implementiert. Die PDF wird dann automatisch in Ihr verknüpftes Buchhaltungstool gespeichert.')
+    setTimeout(() => setUploadError(null), 5000)
   }
 
   const saveAsDraft = async (quoteId: string) => {
     try {
       // TODO: Update quote status to 'DRAFT' in database
-      alert('Angebot wurde als Entwurf gespeichert. Sie können es später in der Angebotsübersicht bearbeiten.')
+      // Verwende eine benutzerfreundliche Benachrichtigung statt alert
+      setUploadError('Angebot wurde als Entwurf gespeichert. Sie können es später in der Angebotsübersicht bearbeiten.')
+      setTimeout(() => setUploadError(null), 3000)
       router.push('/angebote')
     } catch (error) {
       console.error('Error saving as draft:', error)
@@ -271,6 +292,7 @@ function DashboardContent() {
         // Check if upgrade is required
         if (result.requiresUpgrade) {
           setProgress('upgrade-required')
+          setShowHardPaywall(true)
         }
       }
     } catch (error) {
@@ -615,6 +637,21 @@ function DashboardContent() {
 
         </div>
       </div>
+      
+      {/* Hard Paywall Modal */}
+      <HardPaywallModal
+        isOpen={showHardPaywall}
+        onClose={() => setShowHardPaywall(false)}
+        onUpgrade={() => {
+          setShowHardPaywall(false)
+          // Redirect to upgrade page
+          window.location.href = '/einstellungen/app'
+        }}
+        remainingQuotes={0}
+        limit={5}
+        userEmail={session?.user?.email || undefined}
+        userName={getUserFirstName() || session?.user?.name || undefined}
+      />
       
       {/* Upgrade Success Modal */}
       <UpgradeSuccessModal 
