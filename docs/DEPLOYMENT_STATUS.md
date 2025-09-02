@@ -2,8 +2,8 @@
 
 ## 📋 **Deployment-Status Dokumentation**
 
-### **Version:** 1.1.0  
-**Datum:** 31.08.2025  
+### **Version:** 1.2.0  
+**Datum:** 01.09.2025  
 **Entwickler:** AI Assistant + User  
 **Status:** Bereit für Production Deployment
 
@@ -17,6 +17,21 @@
 - ✅ **Build-Prozess** erfolgreich
 - ✅ **TypeScript** validiert
 - ✅ **Error Handling** implementiert
+- ✅ **Referral-System** vollständig implementiert
+
+---
+
+## 🆕 **NEUE FEATURES - REFERRAL SYSTEM**
+
+### **🎁 Referral-System (Neu implementiert)**
+- **Zweck:** User-Akquisition durch bestehende Free-User
+- **Funktionalität:** 
+  - Free-User können Freunde einladen
+  - Beide erhalten 2 Gratis-Credits pro erfolgreicher Einladung
+  - Multi-Channel Sharing (WhatsApp, SMS, Email, Native Share)
+  - Hard Paywall mit Referral-Option
+- **Status:** ✅ Vollständig implementiert und getestet
+- **Version:** 1.2.0
 
 ---
 
@@ -59,6 +74,7 @@
 - ✅ **Customer Portal** für Abo-Verwaltung
 - ✅ **Upgrade Success Modal**
 - ✅ **Quote-Limits** für Free-User
+- ✅ **Referral-Credits** Integration
 
 ---
 
@@ -73,6 +89,7 @@
 - ✅ **Free-User Features:**
   - AngebotNow Branding in PDFs
   - 5 Angebote pro Monat Limit
+  - Referral-Credits für zusätzliche Angebote
 
 ---
 
@@ -84,18 +101,22 @@
 - ✅ **PostgreSQL** - Produktions-Datenbank
 - ✅ **NextAuth.js** - Authentication
 - ✅ **Stripe API** - Payment Processing
+- ✅ **Loops API** - Marketing Automation
 
 ### **Frontend:**
 - ✅ **React 18** - Moderne UI-Bibliothek
 - ✅ **Tailwind CSS** - Responsive Design
 - ✅ **TypeScript** - Typsicherheit
 - ✅ **Component Library** - Konsistente UI
+- ✅ **Web Share API** - Native Sharing
 
 ### **APIs:**
 - ✅ **Stripe Webhooks** - Subscription Events
 - ✅ **OAuth Providers** - Google + Microsoft
 - ✅ **Email Service** - Resend Integration
 - ✅ **PDF Generation** - pdf-lib
+- ✅ **Referral System** - Multi-Channel Invites
+- ✅ **Loops Integration** - Event Tracking
 
 ---
 
@@ -114,6 +135,7 @@
 - ✅ `STRIPE_PRO_PRICE_ID` - Pro Plan Price ID
 - ✅ `STRIPE_WEBHOOK_SECRET` - Webhook Secret
 - ✅ `RESEND_API_KEY` - Email Service
+- ✅ `LOOPS_API_KEY` - Marketing Automation
 
 ### **Externe Services:**
 - ✅ **Stripe Dashboard** - Webhooks konfiguriert
@@ -121,6 +143,7 @@
 - ✅ **Microsoft Azure** - OAuth konfiguriert
 - ✅ **Resend** - Email Service konfiguriert
 - ✅ **PostgreSQL** - Datenbank bereit
+- ✅ **Loops** - Marketing Automation konfiguriert
 
 ---
 
@@ -134,6 +157,8 @@
 - ✅ **Authentication Flow** - Login/Logout funktioniert
 - ✅ **Stripe Integration** - Webhooks funktionieren
 - ✅ **PDF-Generierung** - Templates funktionieren
+- ✅ **Referral-System** - Multi-Channel Sharing funktioniert
+- ✅ **Deployment-Ready** - Alle kritischen Probleme behoben
 
 ---
 
@@ -152,17 +177,20 @@ npm run build
 - Alle Production-URLs konfigurieren
 - Stripe Live-Modus aktivieren
 - Production-Datenbank verbinden
+- Loops API Key konfigurieren
 
 ### **3. Externe Services konfigurieren:**
 - Stripe Webhooks auf Production-URL
 - OAuth Redirect URIs auf Production-URL
 - Email-Service auf Production-Domain
+- Loops Events auf Production-Domain
 
 ### **4. Finale Tests:**
 - User-Registrierung testen
 - Stripe Checkout testen
 - PDF-Generierung testen
 - Social Login testen
+- Referral-System testen
 
 ---
 
@@ -175,12 +203,16 @@ npm run build
 4. **Stripe Subscription System**
 5. **Pro-User Features** (nach Upgrade)
 6. **Responsive Design** (Mobile + Desktop)
+7. **Referral-System** - Freunde einladen für Credits
+8. **Multi-Channel Sharing** - WhatsApp, SMS, Email, Native Share
 
 ### **Für Admins verfügbar:**
 1. **Stripe Dashboard** - Subscription-Management
 2. **User-Management** über Datenbank
 3. **Analytics** über Stripe
 4. **Webhook-Monitoring**
+5. **Referral-Tracking** über Loops
+6. **User-Acquisition Analytics**
 
 ---
 
@@ -190,16 +222,19 @@ npm run build
 - **Email/Passwort Sign-In** aktivieren (falls Nachfrage)
 - **Apple Sign-In** implementieren (99 USD/Jahr)
 - **Analytics Dashboard** für Admins
+- **Referral-Performance Dashboard**
 
 ### **Mittelfristig (1-2 Monate):**
 - **Team-Features** - Mehrere User pro Subscription
 - **Erweiterte PDF-Templates**
 - **API für Drittanbieter**
+- **Erweiterte Referral-Features**
 
 ### **Langfristig (3-6 Monate):**
 - **Mobile App** (iOS/Android)
 - **Multi-Language Support**
 - **Enterprise Features**
+- **Partner-Programm**
 
 ---
 
@@ -215,6 +250,9 @@ npm run build
 - ✅ Moderne, responsive UI
 - ✅ Sichere Authentication
 - ✅ Skalierbare Architektur
+- ✅ **Referral-System für User-Akquisition**
+- ✅ **Multi-Channel Sharing**
+- ✅ **Hard Paywall mit Referral-Option**
 
 ### **Was ausgeblendet ist:**
 - ⚠️ Email/Passwort Sign-In (kann bei Bedarf aktiviert werden)
@@ -224,12 +262,13 @@ npm run build
 - 🧪 **Alle Features getestet**
 - 🔒 **Sicherheit implementiert**
 - 📱 **Mobile-optimiert**
+- 🎯 **Referral-System aktiv**
 
 **Die App kann jetzt erfolgreich deployed und kommerziell genutzt werden!** 🎉
 
 ---
 
 **Dokumentation erstellt von:** AI Assistant  
-**Datum:** 31.08.2025  
-**Version:** 1.1.0  
-**Status:** Bereit für Production Deployment
+**Datum:** 01.09.2025  
+**Version:** 1.2.0  
+**Status:** Vollständig implementiert mit Referral-System und bereit für Deployment

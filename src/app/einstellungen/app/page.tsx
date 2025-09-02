@@ -40,6 +40,11 @@ export default function AppSettingsPage() {
     }
   }, [session])
 
+  // Debug: Log referralCode changes
+  useEffect(() => {
+    console.log('referralCode state changed:', referralCode)
+  }, [referralCode])
+
   const loadSubscriptionInfo = async () => {
     try {
       const response = await fetch('/api/subscription')
@@ -54,12 +59,16 @@ export default function AppSettingsPage() {
 
   const loadReferralInfo = async () => {
     try {
+      console.log('Loading referral info...')
       const response = await fetch('/api/referral/info')
       if (response.ok) {
         const data = await response.json()
+        console.log('Referral info loaded:', data)
         setReferralCode(data.referralCode || '')
         setReferralCredits(data.referralCredits || 0)
         setReferralCount(data.referralCount || 0)
+      } else {
+        console.error('Failed to load referral info:', response.status, response.statusText)
       }
     } catch (error) {
       console.error('Error loading referral info:', error)
@@ -108,7 +117,11 @@ export default function AppSettingsPage() {
   }
 
   const handleNativeShare = async () => {
-    if (!referralCode) return
+    console.log('handleNativeShare called, referralCode:', referralCode, 'window:', typeof window)
+    if (!referralCode || typeof window === 'undefined') {
+      console.log('Early return: referralCode missing or window undefined')
+      return
+    }
 
     const shareData = {
       title: `${session?.user?.name || 'Ein Freund'} lädt dich zu AngebotNow ein!`,
@@ -116,19 +129,61 @@ export default function AppSettingsPage() {
       url: `${window.location.origin}/auth/signin?referral=${referralCode}`
     }
 
+    console.log('Share data prepared:', shareData)
+    console.log('navigator.share available:', !!navigator.share)
+
     try {
-      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      if (navigator.share) {
+        console.log('Attempting to share...')
         await navigator.share(shareData)
+        console.log('Share successful')
+        
+        // Loops Event: referral_shared
+        try {
+          const response = await fetch('/api/loops/track-event', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: session?.user?.email || 'user@example.com',
+              eventName: 'referral_shared',
+              properties: {
+                method: 'native_share',
+                source: 'referral_program',
+                inviteCode: referralCode
+              }
+            }),
+          });
+        } catch (loopsError) {
+          console.error('Loops tracking failed:', loopsError);
+        }
       } else {
-        // Fallback: Kopiere Link in Zwischenablage
-        await navigator.clipboard.writeText(shareData.url)
-        alert('Referral-Link wurde in die Zwischenablage kopiert!')
+        console.log('Web Share API not available, using clipboard fallback')
+        // Fallback für Browser ohne Web Share API
+        if (navigator.clipboard) {
+          const link = shareData.url;
+          await navigator.clipboard.writeText(link);
+          console.log('Link copied to clipboard:', link)
+          setSubmitStatus('success')
+          setTimeout(() => setSubmitStatus('idle'), 2000)
+        } else {
+          console.log('Clipboard not available either')
+        }
       }
     } catch (error) {
       console.error('Share failed:', error)
       // Fallback bei Fehlern
-      await navigator.clipboard.writeText(shareData.url)
-      alert('Referral-Link wurde in die Zwischenablage kopiert!')
+      if (navigator.clipboard) {
+        try {
+          await navigator.clipboard.writeText(shareData.url)
+          console.log('Error fallback: Link copied to clipboard')
+          setSubmitStatus('success')
+          setTimeout(() => setSubmitStatus('idle'), 2000)
+        } catch (clipboardError) {
+          console.error('Clipboard fallback failed:', clipboardError)
+        }
+      }
     }
   }
 
@@ -253,37 +308,7 @@ export default function AppSettingsPage() {
                    </div>
                  </div>
 
-                {/* Referral Code */}
-                {referralCode && (
-                  <div className="p-4 bg-white border border-gray-200 rounded-lg">
-                    <Label className="text-sm font-medium text-[#404040] mb-2 block">
-                      Dein Referral-Code
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <code className="flex-1 bg-gray-100 px-3 py-2 rounded text-sm font-mono">
-                        {referralCode}
-                      </code>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={async () => {
-                          if (typeof window !== 'undefined' && navigator.clipboard) {
-                            try {
-                              await navigator.clipboard.writeText(referralCode)
-                              setSubmitStatus('success')
-                              setTimeout(() => setSubmitStatus('idle'), 2000)
-                            } catch (error) {
-                              console.error('Failed to copy to clipboard:', error)
-                            }
-                          }
-                        }}
-                        className="text-[#F89813] border-[#F89813] hover:bg-[#F89813] hover:text-white"
-                      >
-                        Kopieren
-                      </Button>
-                    </div>
-                  </div>
-                )}
+
 
                 {/* Share Button */}
                 <div className="space-y-3">
@@ -292,11 +317,11 @@ export default function AppSettingsPage() {
                     className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-0 shadow-lg rounded-[14px]"
                   >
                     <Share2 className="w-5 h-5 mr-2" />
-                    Freund einladen & Credits sichern
+                    Jetzt Freund einladen
                   </Button>
                   
                   <p className="text-xs text-gray-500 text-center">
-                    Teile deinen Referral-Code mit Freunden und verdiene Credits
+                    Teile deinen Referral-Link mit Freunden und verdiene Credits
                   </p>
                 </div>
 

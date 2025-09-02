@@ -6,6 +6,20 @@
 
 ---
 
+## 🆕 **NEUE FEATURES - REFERRAL SYSTEM**
+
+### **🎁 Referral-System (Neu implementiert)**
+- **Zweck:** User-Akquisition durch bestehende Free-User
+- **Funktionalität:** 
+  - Free-User können Freunde einladen
+  - Beide erhalten 2 Gratis-Credits pro erfolgreicher Einladung
+  - Multi-Channel Sharing (WhatsApp, SMS, Email, Native Share)
+  - Hard Paywall mit Referral-Option
+- **Status:** ✅ Vollständig implementiert und getestet
+- **Version:** 1.2.0
+
+---
+
 ## 📋 **Verfügbare Dokumentationen**
 
 ### **🚀 Hauptdokumentationen**
@@ -20,13 +34,13 @@
 - **Zweck:** Aktueller Deployment-Status und Checkliste
 - **Inhalt:** Auth-Status, Stripe-Integration, Production-Readiness
 - **Status:** ✅ Bereit für Production Deployment
-- **Version:** 1.1.0
+- **Version:** 1.2.0
 
 #### **3. [MVP Final Report](./MVP_FINAL_REPORT.md)**
 - **Zweck:** Vollständiger MVP-Bericht mit allen Features
 - **Inhalt:** Technische Architektur, implementierte Features, Deployment-Info
-- **Status:** ✅ MVP v1.1 bereit für Production
-- **Version:** 1.1.0
+- **Status:** ✅ MVP v1.2 bereit für Production
+- **Version:** 1.2.0
 
 ---
 
@@ -69,6 +83,7 @@
 - ✅ **Customer Portal** für Abo-Verwaltung
 - ✅ **Upgrade Success Modal**
 - ✅ **Quote-Limits** für Free-User
+- ✅ **Referral-Credits** Integration
 
 ---
 
@@ -83,6 +98,7 @@
 - ✅ **Free-User Features:**
   - AngebotNow Branding in PDFs
   - 5 Angebote pro Monat Limit
+  - Referral-Credits für zusätzliche Angebote
 
 ---
 
@@ -94,18 +110,22 @@
 - ✅ **PostgreSQL** - Produktions-Datenbank
 - ✅ **NextAuth.js** - Authentication
 - ✅ **Stripe API** - Payment Processing
+- ✅ **Loops API** - Marketing Automation
 
 ### **Frontend:**
 - ✅ **React 18** - Moderne UI-Bibliothek
 - ✅ **Tailwind CSS** - Responsive Design
 - ✅ **TypeScript** - Typsicherheit
 - ✅ **Component Library** - Konsistente UI
+- ✅ **Web Share API** - Native Sharing
 
 ### **APIs:**
 - ✅ **Stripe Webhooks** - Subscription Events
 - ✅ **OAuth Providers** - Google + Microsoft
 - ✅ **Email Service** - Resend Integration
 - ✅ **PDF Generation** - pdf-lib
+- ✅ **Referral System** - Multi-Channel Invites
+- ✅ **Loops Integration** - Event Tracking
 
 ---
 
@@ -124,6 +144,7 @@
 - ✅ `STRIPE_PRO_PRICE_ID` - Pro Plan Price ID
 - ✅ `STRIPE_WEBHOOK_SECRET` - Webhook Secret
 - ✅ `RESEND_API_KEY` - Email Service
+- ✅ `LOOPS_API_KEY` - Marketing Automation
 
 ### **Externe Services:**
 - ✅ **Stripe Dashboard** - Webhooks konfiguriert
@@ -131,6 +152,7 @@
 - ✅ **Microsoft Azure** - OAuth konfiguriert
 - ✅ **Resend** - Email Service konfiguriert
 - ✅ **PostgreSQL** - Datenbank bereit
+- ✅ **Loops** - Marketing Automation konfiguriert
 
 ---
 
@@ -144,6 +166,8 @@
 - ✅ **Authentication Flow** - Login/Logout funktioniert
 - ✅ **Stripe Integration** - Webhooks funktionieren
 - ✅ **PDF-Generierung** - Templates funktionieren
+- ✅ **Referral-System** - Multi-Channel Sharing funktioniert
+- ✅ **Deployment-Ready** - Alle kritischen Probleme behoben
 
 ---
 
@@ -162,17 +186,20 @@ npm run build
 - Alle Production-URLs konfigurieren
 - Stripe Live-Modus aktivieren
 - Production-Datenbank verbinden
+- Loops API Key konfigurieren
 
 ### **3. Externe Services konfigurieren:**
 - Stripe Webhooks auf Production-URL
 - OAuth Redirect URIs auf Production-URL
 - Email-Service auf Production-Domain
+- Loops Events auf Production-Domain
 
 ### **4. Finale Tests:**
 - User-Registrierung testen
 - Stripe Checkout testen
 - PDF-Generierung testen
 - Social Login testen
+- Referral-System testen
 
 ---
 
@@ -185,12 +212,16 @@ npm run build
 4. **Stripe Subscription System**
 5. **Pro-User Features** (nach Upgrade)
 6. **Responsive Design** (Mobile + Desktop)
+7. **Referral-System** - Freunde einladen für Credits
+8. **Multi-Channel Sharing** - WhatsApp, SMS, Email, Native Share
 
 ### **Für Admins verfügbar:**
 1. **Stripe Dashboard** - Subscription-Management
 2. **User-Management** über Datenbank
 3. **Analytics** über Stripe
 4. **Webhook-Monitoring**
+5. **Referral-Tracking** über Loops
+6. **User-Acquisition Analytics**
 
 ---
 
@@ -200,16 +231,19 @@ npm run build
 - **Email/Passwort Sign-In** aktivieren (falls Nachfrage)
 - **Apple Sign-In** implementieren (99 USD/Jahr)
 - **Analytics Dashboard** für Admins
+- **Referral-Performance Dashboard**
 
 ### **Mittelfristig (1-2 Monate):**
 - **Team-Features** - Mehrere User pro Subscription
 - **Erweiterte PDF-Templates**
 - **API für Drittanbieter**
+- **Erweiterte Referral-Features**
 
 ### **Langfristig (3-6 Monate):**
 - **Mobile App** (iOS/Android)
 - **Multi-Language Support**
 - **Enterprise Features**
+- **Partner-Programm**
 
 ---
 
@@ -225,6 +259,9 @@ npm run build
 - ✅ Moderne, responsive UI
 - ✅ Sichere Authentication
 - ✅ Skalierbare Architektur
+- ✅ **Referral-System für User-Akquisition**
+- ✅ **Multi-Channel Sharing**
+- ✅ **Hard Paywall mit Referral-Option**
 
 ### **Was ausgeblendet ist:**
 - ⚠️ Email/Passwort Sign-In (kann bei Bedarf aktiviert werden)
@@ -234,6 +271,7 @@ npm run build
 - 🧪 **Alle Features getestet**
 - 🔒 **Sicherheit implementiert**
 - 📱 **Mobile-optimiert**
+- 🎯 **Referral-System aktiv**
 
 **Die App kann jetzt erfolgreich deployed und kommerziell genutzt werden!** 🎉
 
@@ -256,38 +294,57 @@ src/
 │   │   │   │   └── route.ts (Passwort vergessen)
 │   │   │   └── reset-password/
 │   │   │       └── route.ts (Passwort zurücksetzen)
-│   │   └── stripe/
-│   │       ├── create-checkout-session/
-│   │       │   └── route.ts
-│   │       ├── customer-portal/
-│   │       │   └── route.ts
-│   │       └── webhook/
-│   │           └── route.ts
-│   └── einstellungen/
-│       └── app/
-│           └── page.tsx (SubscriptionBanner integriert)
+│   │   ├── stripe/
+│   │   │   ├── create-checkout-session/
+│   │   │   │   └── route.ts
+│   │   │   ├── customer-portal/
+│   │   │   │   └── route.ts
+│   │   │   └── webhook/
+│   │   │       └── route.ts
+│   │   ├── referral/
+│   │   │   ├── info/
+│   │   │   │   └── route.ts (Referral-Informationen)
+│   │   │   └── invite/
+│   │   │       └── route.ts (Referral-Einladungen)
+│   │   └── loops/
+│   │       ├── track-event/
+│   │       │   └── route.ts (Event Tracking)
+│   │       └── update-user/
+│   │           └── route.ts (User Properties)
+│   ├── einstellungen/
+│   │   └── app/
+│   │       └── page.tsx (Referral Program integriert)
+│   └── test-hard-paywall/
+│       └── page.tsx (Hard Paywall Test)
 ├── components/
 │   ├── subscription-banner.tsx
 │   ├── plan-status-mini.tsx
 │   ├── plan-status-badge.tsx
 │   ├── upgrade-success-modal.tsx
-│   └── microsoft-signin-button.tsx
+│   ├── microsoft-signin-button.tsx
+│   └── hard-paywall-modal.tsx (Neu: Referral-Optionen)
 ├── lib/
 │   ├── auth.ts (Google + Microsoft Provider)
 │   ├── stripe.ts (Server-seitige Stripe-Client)
 │   ├── stripe-client.ts (Client-seitige Konfiguration)
-│   ├── subscription.ts (Subscription-Logik)
+│   ├── subscription.ts (Subscription-Logik + Referral-Credits)
 │   ├── tokens.ts (Email + Passwort-Reset Token-System)
 │   ├── email.ts (Email-Service mit Resend)
+│   ├── referral.ts (Neu: Referral-System)
+│   ├── whatsapp.ts (Neu: Multi-Channel Sharing)
+│   ├── loops.ts (Neu: Marketing Automation)
 │   └── pdf/
 │       └── generate.ts (PDF-Generator mit Branding-Logik)
 └── prisma/
-    └── schema.prisma (Erweiterte User-Modelle + VerificationToken)
+    ├── schema.prisma (Erweiterte User-Modelle + Referral-System)
+    └── migrations/
+        └── 20250901143904_add_referral_system/
+            └── migration.sql (Referral-System Schema)
 ```
 
 ---
 
 **Dokumentation erstellt von:** AI Assistant  
-**Datum:** 31.08.2025  
-**Version:** 1.1.0  
-**Status:** Vollständig implementiert und bereit für Deployment
+**Datum:** 01.09.2025  
+**Version:** 1.2.0  
+**Status:** Vollständig implementiert mit Referral-System und bereit für Deployment

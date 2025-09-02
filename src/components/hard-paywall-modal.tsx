@@ -135,7 +135,7 @@ export function HardPaywallModal({
               
               <div>
                 <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                  🎁 2 Gratis-Credits für dich & deinen Freund!
+                  2 Gratis-Credits für dich & deinen Freund!
                 </h3>
                 <p className="text-blue-700 text-sm mb-6">
                   Lade einen Freund ein und ihr bekommt beide 2 zusätzliche Angebote!
@@ -148,7 +148,7 @@ export function HardPaywallModal({
                 className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg"
               >
                 <Share2 className="w-5 h-5 mr-2" />
-                Freund einladen & 2 Credits sichern
+                Jetzt Freund einladen
               </Button>
 
               <p className="text-xs text-blue-600">
@@ -171,7 +171,7 @@ export function HardPaywallModal({
                   Jetzt auf Pro upgraden
                 </h3>
                 <p className="text-orange-700 text-sm">
-                  Unbegrenzte Angebote, Positionen bearbeiten & mehr!
+                  Unbegrenzte Angebote, Positionen bearbeiten & mehr - für 19,99€/Monat
                 </p>
               </div>
 
@@ -179,7 +179,7 @@ export function HardPaywallModal({
                 onClick={onUpgrade}
                 className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 text-lg"
               >
-                Jetzt upgraden - 19,99€/Monat
+                Jetzt upgraden!
               </Button>
             </div>
           </div>

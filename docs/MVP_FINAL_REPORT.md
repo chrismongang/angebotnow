@@ -1,9 +1,9 @@
-# 🚀 AngebotNow - Finaler MVP-Bericht v1.1
+# 🚀 AngebotNow - Finaler MVP-Bericht v1.2
 
 ## 📋 **Projektübersicht**
 
 **Projektname:** AngebotNow  
-**Version:** MVP v1.1  
+**Version:** MVP v1.2  
 **Status:** ✅ **BEREIT FÜR PRODUCTION DEPLOYMENT**  
 **Deployment-URL:** https://angebotnow.vercel.app  
 **GitHub:** https://github.com/chrismongang/angebotnow  
@@ -15,6 +15,7 @@
 AngebotNow ist eine KI-gestützte Plattform zur automatischen Generierung von Angeboten für Handwerker und Dienstleister. Die App ermöglicht es Benutzern, durch einfaches Hochladen eines Projektfotos und Eingabe von Projektinformationen professionelle PDF-Angebote zu erstellen.
 
 **NEU:** Vollständiges Subscription-System mit Stripe für kommerziellen Betrieb!
+**NEU:** Referral-System für User-Akquisition durch bestehende Free-User!
 
 ---
 
@@ -37,6 +38,15 @@ AngebotNow ist eine KI-gestützte Plattform zur automatischen Generierung von An
   - Prioritäts-Support
 - **Customer Portal** - Gesetzeskonforme Abo-Verwaltung
 - **Quote-Limits** - 5 Angebote/Monat für Free-User
+- **Referral-Credits** - Zusätzliche Angebote durch Freunde einladen
+
+### **🎁 Referral System (NEU)**
+- **User-Akquisition** - Free-User können Freunde einladen
+- **Credit-System** - Beide erhalten 2 Gratis-Credits pro erfolgreicher Einladung
+- **Multi-Channel Sharing** - WhatsApp, SMS, Email, Native Share
+- **Hard Paywall** - Referral-Optionen wenn Limit erreicht
+- **Referral Program** - Dedizierte Sektion in App-Einstellungen
+- **Loops Integration** - Marketing Automation und Analytics
 
 ### **📱 User Experience**
 - **Responsive Design** - Optimiert für Mobile & Desktop
@@ -45,6 +55,7 @@ AngebotNow ist eine KI-gestützte Plattform zur automatischen Generierung von An
 - **Error Handling** - Klare Fehlermeldungen
 - **Mobile-First Design** - Optimiert für Smartphone-Nutzung
 - **Upgrade Success Modal** - Positive Feedback nach Upgrade
+- **Native Share API** - Moderne Sharing-Funktionalität
 
 ### **🤖 KI-Integration**
 - **OpenAI GPT-4 Integration** - Intelligente Angebotsanalyse
@@ -58,6 +69,7 @@ AngebotNow ist eine KI-gestützte Plattform zur automatischen Generierung von An
 - **Download-Funktion** - Einfacher PDF-Export
 - **Share-Funktion** - Direktes Teilen mit Kunden
 - **Pro-User Features** - PDF ohne AngebotNow Branding
+- **Referral-Credits** - Zusätzliche Angebote für Free-User
 
 ### **🏢 Firmenverwaltung**
 - **Kontodaten** - Vollständige Firmeninformationen
@@ -71,7 +83,7 @@ AngebotNow ist eine KI-gestützte Plattform zur automatischen Generierung von An
 - **Status-Tracking** - Transparente Prozessverfolgung
 - **Bearbeitung** - Pro-User können Positionen bearbeiten
 - **Archivierung** - Übersichtliche Angebotshistorie
-- **Quote-Limits** - Free-User: 5 Angebote/Monat
+- **Quote-Limits** - Free-User: 5 Angebote/Monat + Referral-Credits
 
 ### **💬 Feedback-System**
 - **User-Feedback** - Direkte Kommunikation
@@ -85,6 +97,7 @@ AngebotNow ist eine KI-gestützte Plattform zur automatischen Generierung von An
 - **Feedback-Formular** - Benutzerfreundliche Kommunikation
 - **Responsive Design** - Optimierte Mobile-Ansicht
 - **Subscription Management** - Abo-Status und Upgrade-Optionen
+- **Referral Program** - Freunde einladen für Credits
 
 ---
 
@@ -96,6 +109,7 @@ AngebotNow ist eine KI-gestützte Plattform zur automatischen Generierung von An
 - **Tailwind CSS** - Moderne Styling-Lösung
 - **Radix UI** - Zugängliche Komponenten
 - **Lucide React** - Konsistente Icons
+- **Web Share API** - Native Sharing-Funktionalität
 
 ### **Backend**
 - **Next.js API Routes** - Serverless Functions

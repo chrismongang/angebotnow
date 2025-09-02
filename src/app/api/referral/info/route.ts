@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { ReferralSystem } from '@/lib/referral';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Hole Referral-Informationen des Users
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
         referralCode: true,
@@ -23,8 +24,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Stelle sicher, dass der User einen Referral-Code hat
+    let referralCode = user.referralCode;
+    if (!referralCode) {
+      referralCode = await ReferralSystem.createReferralCode(session.user.id);
+    }
+
     return NextResponse.json({
-      referralCode: user.referralCode,
+      referralCode: referralCode,
       referralCredits: user.referralCredits || 0,
       referralCount: user.referralCount || 0,
     });
