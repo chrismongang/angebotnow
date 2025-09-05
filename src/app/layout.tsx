@@ -19,6 +19,13 @@ export const metadata: Metadata = {
     shortcut: '/favicon.svg',
     apple: '/favicon.svg',
   },
+  other: {
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'default',
+    'apple-mobile-web-app-title': 'AngebotNow',
+    'mobile-web-app-capable': 'yes',
+    'theme-color': '#ffffff',
+  },
 };
 
 export default function RootLayout({
