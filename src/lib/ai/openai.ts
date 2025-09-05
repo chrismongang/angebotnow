@@ -54,6 +54,13 @@ export async function processWithOpenAI(input: AIInput): Promise<AIResult> {
 
 WICHTIG: Antworte NUR mit einem gültigen JSON-Objekt. Keine zusätzlichen Texte oder Erklärungen.
 
+BILDANALYSE:
+- Analysiere das hochgeladene Bild detailliert
+- Erkenne Materialien, Oberflächen, Zustand
+- Schätze Projektumfang und Komplexität
+- Identifiziere potenzielle Herausforderungen
+- Erkenne Gewerke-spezifische Arbeiten
+
 PREISKALKULATION:
 - Berücksichtige aktuelle Materialpreise (2024/2025)
 - Kalkuliere realistische Arbeitszeiten basierend auf Projektumfang
@@ -95,7 +102,14 @@ JSON-Format:
       "price": 100.00
     }
   ],
-  "total": 500.00
+  "total": 500.00,
+  "imageAnalysis": {
+    "detectedElements": ["Fliesen", "Sanitäranlagen", "Wasseranschlüsse"],
+    "projectType": "Badezimmer-Sanierung",
+    "complexity": 7,
+    "confidence": 85,
+    "recommendations": ["Entfernung alter Fliesen erforderlich", "Wasseranschlüsse prüfen"]
+  }
 }
 
 BEISPIEL FÜR BADEZIMMER-SANIERUNG:
@@ -195,30 +209,50 @@ BEISPIEL FÜR MALERARBEITEN:
     const userPrompt = `PROJEKTANALYSE:
 Projektinformationen: ${input.projectInfo}
 ${input.clientCity ? `Standort: ${input.clientCity} (regionale Preise berücksichtigen)` : 'Standort: Deutschland (Standard-Preise)'}
-${input.imageUrl ? `Bild-URL: ${input.imageUrl}` : ''}
 
 AUFGABE:
-Erstelle ein detailliertes, professionelles Angebot basierend auf den Projektinformationen. 
+Erstelle ein detailliertes, professionelles Angebot basierend auf den Projektinformationen und der Bildanalyse.
 ${input.clientCity ? `Berücksichtige dabei die lokalen Marktpreise für ${input.clientCity}.` : ''}
 
 WICHTIG:
+- Analysiere das Bild detailliert für Materialien und Zustand
 - Verwende realistische Materialmengen und Arbeitszeiten
 - Kalkuliere korrekte Einzelpreise pro Position
 - Berücksichtige alle notwendigen Materialien und Arbeiten
 - Erstelle eine präzise Gesamtsumme`;
 
+    // NEU: Vision API Integration
+    const messages: any[] = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ];
+
+    // Bild hinzufügen wenn verfügbar
+    if (input.imageUrl && input.includeImageAnalysis !== false) {
+      messages[1] = {
+        role: 'user',
+        content: [
+          { type: 'text', text: userPrompt },
+          { 
+            type: 'image_url', 
+            image_url: { 
+              url: input.imageUrl,
+              detail: input.imageAnalysisMode === 'detailed' ? 'high' : 'auto'
+            } 
+          }
+        ]
+      };
+    }
+
     const response = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-      ],
-      max_tokens: 1500,
+      model: 'gpt-4o', // NEU: Vision-fähiges Modell
+      messages,
+      max_tokens: 2500, // Erhöht für detailliertere Analyse (+25% für bessere Qualität)
       response_format: { type: "json_object" }
     });
 
     const text = response.choices[0]?.message?.content;
-    console.log('Raw AI response:', text);
+    console.log('Raw AI response with image analysis:', text);
 
     if (!text) {
       throw new Error('No response from OpenAI');
@@ -238,22 +272,10 @@ WICHTIG:
       };
     }
 
-    // Validate the response structure
-    if (!parsedData.positions || !Array.isArray(parsedData.positions)) {
-      console.error('Invalid positions array in AI response');
-      return {
-        description: input.projectInfo || 'Arbeitsleistung',
-        positions: [
-          { title: 'Arbeitsleistung', qty: 1, unit: 'Psch', price: 500 }
-        ],
-        total: 500
-      };
-    }
-
-    // Validate each position
-    const validPositions = parsedData.positions.filter((pos: any) => 
+    // NEU: Erweiterte Validierung mit Bildanalyse
+    const validPositions = parsedData.positions?.filter((pos: any) => 
       pos.title && typeof pos.qty === 'number' && pos.unit && typeof pos.price === 'number'
-    );
+    ) || [];
 
     if (validPositions.length === 0) {
       console.error('No valid positions found in AI response');
@@ -279,11 +301,16 @@ WICHTIG:
       total = calculatedTotal;
     }
 
-    return {
+    // NEU: Bildanalyse-Ergebnisse hinzufügen
+    const result: AIResult = {
       description: parsedData.description || input.projectInfo || 'Arbeitsleistung',
       positions: validPositions,
-      total: total
+      total: total,
+      imageAnalysis: parsedData.imageAnalysis || undefined
     };
+
+    console.log('AI processing completed with image analysis:', result);
+    return result;
 
   } catch (error) {
     console.error('Error processing with OpenAI:', error);

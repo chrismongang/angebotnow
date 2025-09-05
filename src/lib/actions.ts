@@ -179,11 +179,14 @@ export async function createQuote(formData: FormData) {
       const shouldUseOpenAI = process.env.USE_OPENAI === 'true' || USE_OPENAI;
       
       if (shouldUseOpenAI) {
-        console.log('Using OpenAI for AI processing...')
+        console.log('Using OpenAI for AI processing with image analysis...')
         aiResult = await processWithOpenAI({ 
           projectInfo: validatedData.projectInfo, 
           imageUrl,
-          clientCity: includeAddress ? validatedData.clientCity : undefined
+          clientCity: includeAddress ? validatedData.clientCity : undefined,
+          // NEU: Bildanalyse-Optionen
+          includeImageAnalysis: true,
+          imageAnalysisMode: 'detailed' // oder 'basic' für schnellere Verarbeitung
         })
       } else {
         console.log('Using Mock AI for AI processing...')
