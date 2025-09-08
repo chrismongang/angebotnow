@@ -4,6 +4,7 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { RefreshCw, AlertTriangle } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 interface ErrorBoundaryState {
   hasError: boolean
@@ -49,6 +50,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
 function DefaultErrorFallback({ error, resetError }: { error?: Error; resetError: () => void }) {
   const isChunkError = error?.message?.includes('chunk') || error?.message?.includes('ChunkLoadError')
+  const router = useRouter()
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center p-4">
@@ -84,7 +86,7 @@ function DefaultErrorFallback({ error, resetError }: { error?: Error; resetError
             
             <Button 
               variant="outline" 
-              onClick={() => window.location.href = '/'}
+              onClick={() => router.push('/')}
               className="w-full"
             >
               Zur Startseite

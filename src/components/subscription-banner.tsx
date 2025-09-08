@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Crown, Check, X, AlertCircle, Zap } from 'lucide-react';
 import { STRIPE_PLANS } from '@/lib/stripe-client';
 import { trackEvent } from '@/lib/loops';
+import { useRouter } from 'next/navigation';
 
 interface SubscriptionInfo {
   tier: 'FREE' | 'PRO';
@@ -25,6 +26,7 @@ export function SubscriptionBanner() {
   const [loading, setLoading] = useState(false);
   const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -66,7 +68,8 @@ export function SubscriptionBanner() {
       });
       const { url } = await response.json();
       if (url) {
-        window.location.href = url;
+        // For external URLs (Stripe), use window.open to maintain PWA context
+        window.open(url, '_blank');
       }
     } catch (error) {
       console.error('Upgrade tracking failed:', error);
@@ -77,7 +80,8 @@ export function SubscriptionBanner() {
       });
       const { url } = await response.json();
       if (url) {
-        window.location.href = url;
+        // For external URLs (Stripe), use window.open to maintain PWA context
+        window.open(url, '_blank');
       }
     } finally {
       setLoading(false);
@@ -93,7 +97,8 @@ export function SubscriptionBanner() {
       
       if (response.ok) {
         const { url } = await response.json();
-        window.location.href = url; // Redirect to Stripe Customer Portal
+        // For external URLs (Stripe), use window.open to maintain PWA context
+        window.open(url, '_blank');
       } else {
         console.error('Failed to create customer portal session');
       }

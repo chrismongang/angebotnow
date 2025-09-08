@@ -644,8 +644,8 @@ function DashboardContent() {
         onClose={() => setShowHardPaywall(false)}
         onUpgrade={() => {
           setShowHardPaywall(false)
-          // Redirect to upgrade page
-          window.location.href = '/einstellungen/app'
+          // Redirect to upgrade page using Next.js router to maintain PWA context
+          router.push('/einstellungen/app')
         }}
         remainingQuotes={0}
         limit={5}
