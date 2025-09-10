@@ -46,8 +46,11 @@ export function SubscriptionBanner() {
     }
   };
 
+
   const handleUpgrade = async () => {
     try {
+      setLoading(true);
+      
       // Quotes-Anzahl für Loops Event ermitteln
       const quotesCount = await fetch('/api/quotes').then(res => res.json()).then(quotes => Array.isArray(quotes) ? quotes.length : 0);
 
@@ -58,52 +61,63 @@ export function SubscriptionBanner() {
         quotesCount: quotesCount,
         createdAt: new Date().toISOString(),
         source: 'subscription_banner',
-        location: 'dashboard'
+        location: 'einstellungen'
       });
 
       // Weiterleitung zum Checkout
-      setLoading(true);
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST'
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Stripe checkout failed:', errorData);
+        alert(`Upgrade fehlgeschlagen: ${errorData.details || errorData.error || 'Unbekannter Fehler'}`);
+        return;
+      }
+      
       const { url } = await response.json();
       if (url) {
         // For external URLs (Stripe), use window.open to maintain PWA context
         window.open(url, '_blank');
+      } else {
+        console.error('No checkout URL received');
+        alert('Upgrade fehlgeschlagen: Keine Checkout-URL erhalten');
       }
     } catch (error) {
-      console.error('Upgrade tracking failed:', error);
-      // Trotzdem mit Upgrade fortfahren
-      setLoading(true);
-      const response = await fetch('/api/stripe/create-checkout-session', {
-        method: 'POST'
-      });
-      const { url } = await response.json();
-      if (url) {
-        // For external URLs (Stripe), use window.open to maintain PWA context
-        window.open(url, '_blank');
-      }
+      console.error('Upgrade failed:', error);
+      alert(`Upgrade fehlgeschlagen: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
     } finally {
       setLoading(false);
     }
   };
 
   const handleManageSubscription = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
+      
       const response = await fetch('/api/stripe/customer-portal', {
         method: 'POST',
       });
       
-      if (response.ok) {
-        const { url } = await response.json();
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Customer portal failed:', errorData);
+        alert(`Abo-Verwaltung fehlgeschlagen: ${errorData.details || errorData.error || 'Unbekannter Fehler'}`);
+        return;
+      }
+      
+      const { url } = await response.json();
+      if (url) {
         // For external URLs (Stripe), use window.open to maintain PWA context
         window.open(url, '_blank');
       } else {
-        console.error('Failed to create customer portal session');
+        console.error('No customer portal URL received');
+        alert('Abo-Verwaltung fehlgeschlagen: Keine Portal-URL erhalten');
       }
     } catch (error) {
       console.error('Error managing subscription:', error);
+      alert(`Abo-Verwaltung fehlgeschlagen: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
     } finally {
       setLoading(false);
     }
@@ -239,6 +253,7 @@ export function SubscriptionBanner() {
                 </Button>
               </div>
             )}
+
           </div>
         </CardContent>
       </Card>

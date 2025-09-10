@@ -17,7 +17,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user?.stripeCustomerId) {
-      return NextResponse.json({ error: 'No Stripe customer found' }, { status: 400 });
+      return NextResponse.json({ 
+        error: 'No Stripe customer found',
+        details: 'Bitte führe zuerst ein Upgrade durch, um dein Abo zu verwalten'
+      }, { status: 400 });
     }
 
     // Create Stripe Customer Portal session
@@ -29,6 +32,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url: portalSession.url });
   } catch (error) {
     console.error('Stripe customer portal error:', error);
+    
+    // Handle specific Stripe errors
+    if (error instanceof Error && error.message.includes('No configuration provided')) {
+      return NextResponse.json({ 
+        error: 'Customer portal not configured',
+        details: 'Das Customer Portal ist noch nicht konfiguriert. Bitte kontaktiere den Support.'
+      }, { status: 500 });
+    }
+    
     return NextResponse.json({ 
       error: 'Failed to create customer portal session', 
       details: error instanceof Error ? error.message : 'Unknown error'
