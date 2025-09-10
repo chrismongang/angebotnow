@@ -1,0 +1,61 @@
+{
+  "meta": {
+    "title": "AngebotNow - KI-gestützte Angebotserstellung",
+    "description": "Erstelle professionelle Angebote in Minuten statt Stunden. KI-gestützte Angebotserstellung für Handwerker.",
+    "ogImage": "/images/og-default.png"
+  },
+  "variant": "default",
+  "sections": [
+    {
+      "type": "Hero",
+      "props": {
+        "eyebrow": "Für Handwerker & Dienstleister",
+        "title": "Schneller zu Aufträgen mit KI-gestützten Angeboten",
+        "subtitle": "Erstelle professionelle Angebote in Minuten statt Stunden",
+        "description": "AngebotNow nutzt künstliche Intelligenz, um aus deinen Fotos und kurzen Informationen automatisch detaillierte Angebote zu erstellen.",
+        "primaryCta": {
+          "label": "Kostenlos starten",
+          "href": "/auth/signin"
+        },
+        "badges": [
+          "DSGVO-konform",
+          "Made in Germany"
+        ]
+      }
+    },
+    {
+      "type": "FeatureGrid",
+      "props": {
+        "title": "Warum AngebotNow?",
+        "features": [
+          {
+            "icon": "clock",
+            "title": "Zeit sparen",
+            "description": "Reduziere deine Angebotserstellung von Stunden auf Minuten."
+          },
+          {
+            "icon": "brain",
+            "title": "KI-gestützt",
+            "description": "Automatische Erkennung von Details aus deinen Fotos."
+          },
+          {
+            "icon": "shield",
+            "title": "Sicher",
+            "description": "DSGVO-konform und in Deutschland gehostet."
+          }
+        ]
+      }
+    },
+    {
+      "type": "CTA",
+      "props": {
+        "title": "Bereit loszulegen?",
+        "subtitle": "Starte noch heute und erlebe die Zukunft der Angebotserstellung.",
+        "primaryCta": {
+          "label": "Kostenlos starten",
+          "href": "/auth/signin"
+        }
+      }
+    }
+  ]
+}

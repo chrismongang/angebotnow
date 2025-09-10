@@ -61,25 +61,30 @@ export async function POST(req: Request) {
 
 async function updateUserSubscription(subscription: any) {
   const customerId = subscription.customer;
-  const status = subscription.status;
   
-  // Map Stripe status to our enum
-  let subscriptionStatus: 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'UNPAID' = 'ACTIVE';
-  if (status === 'past_due') subscriptionStatus = 'PAST_DUE';
-  else if (status === 'canceled') subscriptionStatus = 'CANCELED';
-  else if (status === 'unpaid') subscriptionStatus = 'UNPAID';
+  try {
+    const user = await prisma.user.findFirst({
+      where: { stripeCustomerId: customerId }
+    });
 
-  await prisma.user.updateMany({
-    where: { stripeCustomerId: customerId },
-    data: {
-      subscriptionId: subscription.id,
-      subscriptionStatus,
-      subscriptionTier: 'PRO',
-      subscriptionEndDate: new Date(subscription.current_period_end * 1000)
+    if (user) {
+      const subscriptionStatus = subscription.status === 'active' ? 'ACTIVE' : 'INACTIVE';
+      
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          subscriptionStatus,
+          subscriptionTier: subscriptionStatus === 'ACTIVE' ? 'PRO' : 'FREE',
+          stripeSubscriptionId: subscription.id,
+          subscriptionCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        }
+      });
+
+      console.log(`User ${user.email} subscription updated to ${subscriptionStatus}`);
     }
-  });
-
-  console.log(`Updated subscription for customer ${customerId}: ${subscriptionStatus}`);
+  } catch (error) {
+    console.error('Error updating user subscription:', error);
+  }
 }
 
 async function handleCheckoutCompleted(session: any) {
@@ -106,6 +111,34 @@ async function handleCheckoutCompleted(session: any) {
         subscriptionId: session.subscription
       })
 
+      // Meta Pixel Event: Purchase
+      try {
+        await fetch(`${process.env.NEXTAUTH_URL}/api/analytics/meta-pixel`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'Purchase',
+            userData: {
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              userId: user.id,
+            },
+            eventData: {
+              value: session.amount_total / 100, // Convert from cents
+              currency: session.currency?.toUpperCase() || 'EUR',
+              plan: 'pro',
+              checkoutSessionId: session.id,
+              subscriptionId: session.subscription,
+              quotesCount: quotesCount,
+            }
+          }),
+        });
+      } catch (error) {
+        console.error('Meta Pixel Purchase tracking failed:', error);
+        // Don't fail webhook if tracking fails
+      }
+
       // User Properties aktualisieren
       await updateUserProperties(user.email, {
         plan: 'pro',
@@ -122,78 +155,92 @@ async function handleCheckoutCompleted(session: any) {
 
 async function cancelUserSubscription(subscription: any) {
   try {
+    const customerId = subscription.customer;
+    
     const user = await prisma.user.findFirst({
-      where: { stripeCustomerId: subscription.customer }
-    })
+      where: { stripeCustomerId: customerId }
+    });
 
     if (user) {
-      // Quotes-Anzahl für Loops Event ermitteln
-      const quotesCount = await prisma.quote.count({
-        where: { userId: user.id }
-      });
-
-      // Loops Event: subscription_canceled
-      await trackEvent(user.email, 'subscription_canceled', {
-        userId: user.id,
-        plan: 'free',
-        quotesCount: quotesCount,
-        createdAt: new Date().toISOString(),
-        subscriptionId: subscription.id,
-        cancelReason: subscription.cancellation_reason,
-        canceledAt: new Date(subscription.canceled_at * 1000).toISOString()
-      })
-
-      // User Properties aktualisieren
-      await updateUserProperties(user.email, {
-        plan: 'free',
-        subscriptionStatus: 'CANCELED',
-        subscriptionTier: 'FREE',
-        cancelDate: new Date().toISOString(),
-        previousPlan: 'pro'
-      })
-
-      // Update database
-      await prisma.user.updateMany({
-        where: { stripeCustomerId: subscription.customer },
+      await prisma.user.update({
+        where: { id: user.id },
         data: {
-          subscriptionStatus: 'CANCELED',
+          subscriptionStatus: 'CANCELLED',
           subscriptionTier: 'FREE',
-          subscriptionEndDate: new Date(subscription.canceled_at * 1000)
+          stripeSubscriptionId: null,
+          subscriptionCurrentPeriodEnd: null,
         }
       });
 
-      console.log(`Canceled subscription for customer ${subscription.customer}`);
+      // Loops Event: subscription_cancelled
+      await trackEvent(user.email, 'subscription_cancelled', {
+        userId: user.id,
+        plan: 'free',
+        cancelledAt: new Date().toISOString(),
+        subscriptionId: subscription.id,
+      });
+
+      console.log(`User ${user.email} subscription cancelled`);
     }
   } catch (error) {
-    console.error('Subscription cancellation handling failed:', error)
+    console.error('Error cancelling user subscription:', error);
   }
 }
 
 async function handlePaymentFailure(invoice: any) {
-  const customerId = invoice.customer;
-  
-  await prisma.user.updateMany({
-    where: { stripeCustomerId: customerId },
-    data: {
-      subscriptionStatus: 'PAST_DUE'
-    }
-  });
+  try {
+    const customerId = invoice.customer;
+    
+    const user = await prisma.user.findFirst({
+      where: { stripeCustomerId: customerId }
+    });
 
-  console.log(`Payment failed for customer ${customerId}`);
+    if (user) {
+      // Loops Event: payment_failed
+      await trackEvent(user.email, 'payment_failed', {
+        userId: user.id,
+        invoiceId: invoice.id,
+        amount: invoice.amount_due,
+        currency: invoice.currency,
+        failedAt: new Date().toISOString(),
+      });
+
+      console.log(`Payment failed for user ${user.email}, invoice ${invoice.id}`);
+    }
+  } catch (error) {
+    console.error('Error handling payment failure:', error);
+  }
 }
 
 async function handlePaymentSuccess(invoice: any) {
-  const customerId = invoice.customer;
-  
-  // Only update if it's a subscription invoice
-  if (invoice.subscription) {
-    await prisma.user.updateMany({
-      where: { stripeCustomerId: customerId },
-      data: {
-        subscriptionStatus: 'ACTIVE'
-      }
+  try {
+    const customerId = invoice.customer;
+    
+    const user = await prisma.user.findFirst({
+      where: { stripeCustomerId: customerId }
     });
 
-    console.log(`Payment succeeded for customer ${customerId}`);
+    if (user) {
+      // Loops Event: payment_succeeded
+      await trackEvent(user.email, 'payment_succeeded', {
+        userId: user.id,
+        invoiceId: invoice.id,
+        amount: invoice.amount_paid,
+        currency: invoice.currency,
+        paidAt: new Date().toISOString(),
+      });
+
+      // Update last payment date
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          lastPaymentDate: new Date(),
+        }
+      });
+
+      console.log(`Payment succeeded for user ${user.email}, invoice ${invoice.id}`);
+    }
+  } catch (error) {
+    console.error('Error handling payment success:', error);
   }
 }

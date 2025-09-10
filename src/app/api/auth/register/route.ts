@@ -57,6 +57,31 @@ export async function POST(request: NextRequest) {
       source: 'email_password' // oder 'google_oauth', 'microsoft_oauth'
     })
 
+    // Meta Pixel Event: CompleteRegistration
+    try {
+      await fetch(`${process.env.NEXTAUTH_URL}/api/analytics/meta-pixel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'CompleteRegistration',
+          userData: {
+            email,
+            firstName,
+            lastName,
+            userId: user.id,
+          },
+          eventData: {
+            plan: 'free',
+            source: 'email_password',
+            registration_time: user.createdAt.toISOString(),
+          }
+        }),
+      });
+    } catch (error) {
+      console.error('Meta Pixel CompleteRegistration tracking failed:', error);
+      // Don't fail registration if tracking fails
+    }
+
     // User Properties in Loops setzen
     await updateUserProperties(email, {
       userId: user.id,

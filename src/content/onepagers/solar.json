@@ -1,0 +1,180 @@
+{
+  "meta": {
+    "title": "AngebotNow für Solar-Installateure - KI-gestützte Angebotserstellung",
+    "description": "Speziell für Solar-Installateure: Erstelle professionelle Solar-Angebote in Minuten. Dachanalyse, Materialbedarf und Preiskalkulation automatisch.",
+    "ogImage": "/images/og-solar.png"
+  },
+  "variant": "solar",
+  "sections": [
+    {
+      "type": "Hero",
+      "props": {
+        "eyebrow": "Für Solar-Installateure",
+        "title": "Solar-Angebote in Minuten statt Stunden",
+        "subtitle": "KI-gestützte Dachanalyse und automatische Angebotserstellung",
+        "description": "Analysiere Dächer automatisch, berechne Solar-Potential und erstelle professionelle Angebote. Perfekt für Solar-Installateure und Energieberater.",
+        "primaryCta": {
+          "label": "Für Solar starten",
+          "href": "/auth/signin?utm_source=solar&utm_medium=landing&utm_campaign=solar"
+        },
+        "badges": [
+          "Dachanalyse per KI",
+          "Solar-Potential berechnen",
+          "DSGVO-konform"
+        ],
+        "image": {
+          "src": "/images/solar-hero.jpg",
+          "alt": "Solar-Installation mit AngebotNow"
+        }
+      }
+    },
+    {
+      "type": "ProblemSolution",
+      "props": {
+        "title": "Solar-Angebote sind komplex und zeitaufwändig",
+        "problem": {
+          "title": "Manuelle Dachanalyse und Angebotserstellung dauert Stunden",
+          "description": "Solar-Installateure müssen Dächer vermessen, Schatten analysieren, Materialbedarf berechnen und komplexe Angebote erstellen.",
+          "painPoints": [
+            "Stundenlange Dachvermessung vor Ort",
+            "Komplexe Schattenanalyse",
+            "Materialbedarf manuell berechnen",
+            "Preiskalkulation für verschiedene Komponenten",
+            "Weniger Zeit für neue Kunden"
+          ]
+        },
+        "solution": {
+          "title": "KI analysiert Dächer und erstellt Solar-Angebote automatisch",
+          "description": "Ein Foto genügt: Die KI analysiert Dachfläche, Ausrichtung, Schatten und erstellt automatisch ein detailliertes Solar-Angebot.",
+          "benefits": [
+            "Dachanalyse in Sekunden",
+            "Automatische Schattenberechnung",
+            "Präzise Materialbedarfsberechnung",
+            "Professionelle Solar-Angebote",
+            "Mehr Zeit für Kundenberatung"
+          ]
+        }
+      }
+    },
+    {
+      "type": "FeatureGrid",
+      "props": {
+        "title": "Speziell für Solar-Installateure entwickelt",
+        "features": [
+          {
+            "icon": "sun",
+            "title": "Dachanalyse per KI",
+            "description": "Automatische Erkennung von Dachfläche, Ausrichtung und Neigung aus Fotos.",
+            "highlight": true
+          },
+          {
+            "icon": "cloud",
+            "title": "Schattenanalyse",
+            "description": "KI erkennt Bäume, Gebäude und andere Schattenquellen für optimale Panel-Platzierung.",
+            "highlight": true
+          },
+          {
+            "icon": "calculator",
+            "title": "Solar-Potential",
+            "description": "Automatische Berechnung des Solar-Potentials und Energieertrags.",
+            "highlight": true
+          },
+          {
+            "icon": "package",
+            "title": "Materialbedarf",
+            "description": "Präzise Berechnung von Panels, Wechselrichtern und Zubehör.",
+            "highlight": false
+          },
+          {
+            "icon": "euro",
+            "title": "Preiskalkulation",
+            "description": "Automatische Preiskalkulation mit aktuellen Marktpreisen.",
+            "highlight": false
+          },
+          {
+            "icon": "file-text",
+            "title": "Angebotserstellung",
+            "description": "Professionelle Solar-Angebote mit allen technischen Details.",
+            "highlight": false
+          }
+        ]
+      }
+    },
+    {
+      "type": "Steps",
+      "props": {
+        "title": "So einfach funktioniert Solar-Angebotserstellung",
+        "steps": [
+          {
+            "number": 1,
+            "title": "Dach fotografieren",
+            "description": "Mache ein Foto des Dachs von verschiedenen Winkeln. Die KI analysiert automatisch alle wichtigen Parameter.",
+            "icon": "camera"
+          },
+          {
+            "number": 2,
+            "title": "Details ergänzen",
+            "description": "Füge Informationen zu Dachtyp, gewünschter Anlagengröße und besonderen Anforderungen hinzu.",
+            "icon": "edit"
+          },
+          {
+            "number": 3,
+            "title": "Solar-Angebot erhalten",
+            "description": "Erhalte ein detailliertes Solar-Angebot mit Dachanalyse, Materialbedarf und Preiskalkulation.",
+            "icon": "download"
+          }
+        ]
+      }
+    },
+    {
+      "type": "SocialProof",
+      "props": {
+        "title": "Solar-Installateure vertrauen AngebotNow",
+        "testimonials": [
+          {
+            "text": "Die Dachanalyse per KI ist genial. Was früher 2 Stunden gedauert hat, mache ich jetzt in 10 Minuten. Die Genauigkeit ist beeindruckend.",
+            "author": "Thomas Müller",
+            "role": "Solar-Installateur",
+            "company": "Müller Solar",
+            "rating": 5
+          },
+          {
+            "text": "AngebotNow hat meine Solar-Angebote revolutioniert. Die Kunden sind begeistert von der professionellen Darstellung und schnellen Bearbeitung.",
+            "author": "Lisa Schmidt",
+            "role": "Energieberaterin",
+            "company": "Schmidt Energie",
+            "rating": 5
+          }
+        ]
+      }
+    },
+    {
+      "type": "CTA",
+      "props": {
+        "title": "Bereit für die Zukunft der Solar-Angebotserstellung?",
+        "subtitle": "Schließe dich den führenden Solar-Installateuren an, die bereits KI nutzen.",
+        "primaryCta": {
+          "label": "Jetzt für Solar starten",
+          "href": "/auth/signin?utm_source=solar&utm_medium=landing&utm_campaign=solar"
+        },
+        "socialProof": {
+          "text": "Über 200 Solar-Installateure nutzen bereits AngebotNow",
+          "stats": [
+            {
+              "value": "200+",
+              "label": "Solar-Installateure"
+            },
+            {
+              "value": "95%",
+              "label": "Zeitersparnis"
+            },
+            {
+              "value": "98%",
+              "label": "Genauigkeit"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

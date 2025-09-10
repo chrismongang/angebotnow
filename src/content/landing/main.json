@@ -1,0 +1,466 @@
+{
+  "meta": {
+    "title": "AngebotNow - KI-gestützte Angebotserstellung für Handwerker",
+    "description": "Erstelle professionelle Angebote in Minuten statt Stunden. KI-gestützte Angebotserstellung für Handwerker, Maler, Elektriker und mehr.",
+    "keywords": [
+      "Angebot erstellen",
+      "KI Angebotserstellung",
+      "Handwerk Angebote",
+      "PDF Angebote",
+      "Digitale Angebote",
+      "Automatisierung"
+    ]
+  },
+  "sections": [
+    {
+      "type": "Hero",
+      "props": {
+        "eyebrow": "Für Handwerker & Dienstleister",
+        "title": "Schneller zu Aufträgen mit KI-gestützten Angeboten",
+        "subtitle": "Erstelle professionelle Angebote in Minuten statt Stunden",
+        "description": "AngebotNow nutzt künstliche Intelligenz, um aus deinen Fotos und kurzen Informationen automatisch detaillierte Angebote zu erstellen. Perfekt für Handwerker, Maler, Elektriker und alle Dienstleister.",
+        "primaryCta": {
+          "label": "Kostenlos starten",
+          "href": "/auth/signin"
+        },
+        "secondaryCta": {
+          "label": "Demo ansehen",
+          "href": "#demo"
+        },
+        "badges": [
+          "DSGVO-konform",
+          "Made in Germany",
+          "Keine Vorkenntnisse nötig"
+        ],
+        "image": {
+          "src": "/images/hero-dashboard.png",
+          "alt": "AngebotNow Dashboard mit KI-gestützter Angebotserstellung"
+        }
+      }
+    },
+    {
+      "type": "SocialProof",
+      "props": {
+        "title": "Vertraut von Handwerkern in ganz Deutschland",
+        "logos": [
+          {
+            "src": "/images/logos/meisterbetrieb.png",
+            "alt": "Meisterbetrieb Logo"
+          },
+          {
+            "src": "/images/logos/innung.png",
+            "alt": "Innung Logo"
+          },
+          {
+            "src": "/images/logos/handwerk.png",
+            "alt": "Handwerk Logo"
+          }
+        ],
+        "stats": [
+          {
+            "value": "500+",
+            "label": "Aktive Nutzer"
+          },
+          {
+            "value": "10.000+",
+            "label": "Erstellte Angebote"
+          },
+          {
+            "value": "95%",
+            "label": "Zeitersparnis"
+          }
+        ],
+        "testimonials": [
+          {
+            "text": "AngebotNow hat meine Arbeitsweise komplett verändert. Was früher 2 Stunden gedauert hat, mache ich jetzt in 10 Minuten.",
+            "author": "Michael Schmidt",
+            "role": "Malermeister",
+            "company": "Schmidt & Söhne",
+            "rating": 5
+          },
+          {
+            "text": "Die KI versteht genau, was ich brauche. Die Angebote sind professionell und ich spare so viel Zeit.",
+            "author": "Sarah Weber",
+            "role": "Elektrikerin",
+            "company": "Weber Elektro",
+            "rating": 5
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureGrid",
+      "props": {
+        "title": "Alles was du für professionelle Angebote brauchst",
+        "subtitle": "Von der Idee zum fertigen Angebot in wenigen Schritten",
+        "features": [
+          {
+            "icon": "camera",
+            "title": "Foto hochladen",
+            "description": "Mache einfach ein Foto von der Baustelle oder dem Projekt. Die KI erkennt automatisch alle wichtigen Details.",
+            "highlight": true
+          },
+          {
+            "icon": "brain",
+            "title": "KI-Analyse",
+            "description": "Unsere KI analysiert das Foto und erstellt automatisch eine detaillierte Beschreibung des Projekts.",
+            "highlight": true
+          },
+          {
+            "icon": "file-text",
+            "title": "Angebot erstellen",
+            "description": "Erhalte ein professionelles Angebot mit allen Details, Preisen und Zeitangaben - sofort als PDF.",
+            "highlight": true
+          },
+          {
+            "icon": "clock",
+            "title": "Zeit sparen",
+            "description": "Reduziere deine Angebotserstellung von Stunden auf Minuten. Mehr Zeit für deine eigentliche Arbeit.",
+            "highlight": false
+          },
+          {
+            "icon": "shield",
+            "title": "DSGVO-konform",
+            "description": "Alle Daten werden sicher in Deutschland gespeichert und verarbeitet. Vollständig DSGVO-konform.",
+            "highlight": false
+          },
+          {
+            "icon": "smartphone",
+            "title": "Mobile optimiert",
+            "description": "Funktioniert perfekt auf dem Smartphone. Erstelle Angebote direkt auf der Baustelle.",
+            "highlight": false
+          }
+        ]
+      }
+    },
+    {
+      "type": "ProblemSolution",
+      "props": {
+        "title": "Das Problem kennen wir alle",
+        "subtitle": "Angebotserstellung kostet Zeit und Nerven - aber nicht mehr mit AngebotNow",
+        "problem": {
+          "title": "Angebotserstellung ist zeitaufwändig und fehleranfällig",
+          "description": "Handwerker verbringen Stunden mit der Erstellung von Angeboten. Oft fehlen wichtige Details oder die Preise sind nicht korrekt kalkuliert.",
+          "painPoints": [
+            "Stundenlange Angebotserstellung",
+            "Fehlende Details in Angeboten",
+            "Falsche Preiskalkulation",
+            "Unprofessionelle Darstellung",
+            "Verlorene Zeit für eigentliche Arbeit"
+          ]
+        },
+        "solution": {
+          "title": "KI-gestützte Angebotserstellung in Minuten",
+          "description": "AngebotNow nutzt künstliche Intelligenz, um aus deinen Fotos automatisch professionelle Angebote zu erstellen. Schnell, präzise und immer korrekt.",
+          "benefits": [
+            "Angebote in 5-10 Minuten erstellt",
+            "Automatische Detailerkennung",
+            "Präzise Preiskalkulation",
+            "Professionelle PDF-Ausgabe",
+            "Mehr Zeit für Kunden und Projekte"
+          ]
+        },
+        "stats": [
+          {
+            "value": "90%",
+            "label": "Zeitersparnis",
+            "description": "Durchschnittliche Zeitersparnis bei der Angebotserstellung"
+          },
+          {
+            "value": "95%",
+            "label": "Genauigkeit",
+            "description": "KI-Erkennungsrate für Projekt-Details"
+          },
+          {
+            "value": "3x",
+            "label": "Mehr Angebote",
+            "description": "Durchschnittlich mehr Angebote pro Tag möglich"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Steps",
+      "props": {
+        "title": "So einfach funktioniert AngebotNow",
+        "subtitle": "Drei einfache Schritte zu deinem professionellen Angebot",
+        "steps": [
+          {
+            "number": 1,
+            "title": "Foto machen",
+            "description": "Mache ein Foto von der Baustelle oder dem Projekt. Die KI erkennt automatisch alle wichtigen Details und Materialien.",
+            "icon": "camera"
+          },
+          {
+            "number": 2,
+            "title": "Details ergänzen",
+            "description": "Füge kurze Informationen hinzu: Zeitrahmen, besondere Wünsche oder zusätzliche Anforderungen.",
+            "icon": "edit"
+          },
+          {
+            "number": 3,
+            "title": "Angebot erhalten",
+            "description": "Erhalte dein professionelles Angebot als PDF. Fertig zum Versenden an deine Kunden.",
+            "icon": "download"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Pricing",
+      "props": {
+        "title": "Einfache, transparente Preise",
+        "subtitle": "Wähle den Plan, der zu dir passt. Jederzeit kündbar.",
+        "plans": [
+          {
+            "name": "Starter",
+            "price": {
+              "monthly": 0
+            },
+            "description": "Perfekt zum Ausprobieren",
+            "features": [
+              "3 Angebote pro Monat",
+              "Basis-KI-Funktionen",
+              "PDF-Export",
+              "Mobile App"
+            ],
+            "limitations": [
+              "Keine erweiterten Features",
+              "Standard-Templates"
+            ],
+            "cta": {
+              "label": "Kostenlos starten",
+              "href": "/auth/signin"
+            }
+          },
+          {
+            "name": "Professional",
+            "price": {
+              "monthly": 29
+            },
+            "description": "Für aktive Handwerker",
+            "features": [
+              "Unbegrenzte Angebote",
+              "Erweiterte KI-Funktionen",
+              "Custom Templates",
+              "Kundenverwaltung",
+              "WhatsApp-Integration",
+              "Prioritäts-Support"
+            ],
+            "cta": {
+              "label": "Jetzt upgraden",
+              "href": "/auth/signin?plan=professional"
+            },
+            "popular": true,
+            "badge": "Beliebt"
+          },
+          {
+            "name": "Enterprise",
+            "price": {
+              "monthly": 99
+            },
+            "description": "Für größere Betriebe",
+            "features": [
+              "Alles aus Professional",
+              "Team-Management",
+              "API-Zugang",
+              "White-Label",
+              "Dedicated Support",
+              "Custom Integration"
+            ],
+            "cta": {
+              "label": "Kontakt aufnehmen",
+              "href": "/contact"
+            }
+          }
+        ],
+        "faq": [
+          {
+            "question": "Kann ich jederzeit kündigen?",
+            "answer": "Ja, alle Pläne können jederzeit ohne Kündigungsfrist beendet werden."
+          },
+          {
+            "question": "Gibt es eine Testversion?",
+            "answer": "Der Starter-Plan ist kostenlos und bietet 3 Angebote pro Monat zum Testen."
+          },
+          {
+            "question": "Werden meine Daten sicher gespeichert?",
+            "answer": "Ja, alle Daten werden DSGVO-konform in Deutschland gespeichert und verarbeitet."
+          }
+        ]
+      }
+    },
+    {
+      "type": "FAQ",
+      "props": {
+        "title": "Häufige Fragen",
+        "subtitle": "Alles was du über AngebotNow wissen musst",
+        "items": [
+          {
+            "question": "Wie genau erkennt die KI die Details aus meinen Fotos?",
+            "answer": "Unsere KI wurde speziell für Handwerksprojekte trainiert und erkennt automatisch Materialien, Flächen, Komplexität und andere wichtige Details. Die Erkennungsrate liegt bei über 95%."
+          },
+          {
+            "question": "Brauche ich technische Vorkenntnisse?",
+            "answer": "Nein, AngebotNow ist so einfach zu bedienen, dass du sofort loslegen kannst. Einfach Foto machen, kurze Infos hinzufügen und das Angebot ist fertig."
+          },
+          {
+            "question": "Kann ich die Angebote anpassen?",
+            "answer": "Ja, alle KI-generierten Angebote können vor dem Versenden individuell angepasst und bearbeitet werden."
+          },
+          {
+            "question": "Funktioniert es auch auf dem Smartphone?",
+            "answer": "Ja, AngebotNow ist vollständig mobile-optimiert und funktioniert perfekt auf Smartphones und Tablets."
+          },
+          {
+            "question": "Wie sicher sind meine Daten?",
+            "answer": "Alle Daten werden DSGVO-konform in Deutschland gespeichert. Wir verwenden modernste Verschlüsselung und Sicherheitsstandards."
+          },
+          {
+            "question": "Gibt es Support bei Problemen?",
+            "answer": "Ja, wir bieten Support per E-Mail und Chat. Professional- und Enterprise-Kunden erhalten Prioritäts-Support."
+          }
+        ]
+      }
+    },
+    {
+      "type": "CTA",
+      "props": {
+        "title": "Bereit, deine Angebotserstellung zu revolutionieren?",
+        "subtitle": "Starte noch heute und erlebe, wie einfach professionelle Angebote sein können.",
+        "primaryCta": {
+          "label": "Kostenlos starten",
+          "href": "/auth/signin"
+        },
+        "secondaryCta": {
+          "label": "Demo anfragen",
+          "href": "/contact"
+        },
+        "socialProof": {
+          "text": "Schließe dich über 500 Handwerkern an, die bereits Zeit und Geld sparen",
+          "stats": [
+            {
+              "value": "500+",
+              "label": "Nutzer"
+            },
+            {
+              "value": "10.000+",
+              "label": "Angebote"
+            },
+            {
+              "value": "95%",
+              "label": "Zufriedenheit"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Footer",
+      "props": {
+        "company": {
+          "name": "AngebotNow",
+          "description": "KI-gestützte Angebotserstellung für Handwerker und Dienstleister. Schneller, präziser, professioneller.",
+          "logo": {
+            "src": "/images/logo.png",
+            "alt": "AngebotNow Logo"
+          }
+        },
+        "sections": [
+          {
+            "title": "Produkt",
+            "links": [
+              {
+                "label": "Features",
+                "href": "#features"
+              },
+              {
+                "label": "Preise",
+                "href": "#pricing"
+              },
+              {
+                "label": "Demo",
+                "href": "/demo"
+              },
+              {
+                "label": "API",
+                "href": "/api-docs"
+              }
+            ]
+          },
+          {
+            "title": "Unternehmen",
+            "links": [
+              {
+                "label": "Über uns",
+                "href": "/about"
+              },
+              {
+                "label": "Karriere",
+                "href": "/careers"
+              },
+              {
+                "label": "Blog",
+                "href": "/blog"
+              },
+              {
+                "label": "Presse",
+                "href": "/press"
+              }
+            ]
+          },
+          {
+            "title": "Support",
+            "links": [
+              {
+                "label": "Hilfe",
+                "href": "/help"
+              },
+              {
+                "label": "Kontakt",
+                "href": "/contact"
+              },
+              {
+                "label": "Status",
+                "href": "/status"
+              },
+              {
+                "label": "Community",
+                "href": "/community"
+              }
+            ]
+          }
+        ],
+        "social": [
+          {
+            "name": "LinkedIn",
+            "href": "https://linkedin.com/company/angebotnow",
+            "icon": "linkedin"
+          },
+          {
+            "name": "Twitter",
+            "href": "https://twitter.com/angebotnow",
+            "icon": "twitter"
+          }
+        ],
+        "legal": {
+          "copyright": "© 2024 AngebotNow. Alle Rechte vorbehalten.",
+          "links": [
+            {
+              "label": "Datenschutz",
+              "href": "/privacy"
+            },
+            {
+              "label": "Impressum",
+              "href": "/imprint"
+            },
+            {
+              "label": "AGB",
+              "href": "/terms"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

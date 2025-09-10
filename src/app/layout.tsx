@@ -3,6 +3,7 @@ import { Manrope } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "@/components/providers/session-provider";
 import ErrorBoundary from "@/components/error-boundary";
+import MetaPixel from "@/components/analytics/meta-pixel";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -43,6 +44,7 @@ export default function RootLayout({
             {children}
           </AuthProvider>
         </ErrorBoundary>
+        <MetaPixel />
       </body>
     </html>
   );
