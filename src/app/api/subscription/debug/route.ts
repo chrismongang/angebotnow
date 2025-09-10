@@ -36,31 +36,46 @@ export async function GET(request: NextRequest) {
         // Get customer from Stripe
         const customer = await stripe.customers.retrieve(user.stripeCustomerId);
         
-        // Get active subscriptions
-        const subscriptions = await stripe.subscriptions.list({
-          customer: user.stripeCustomerId,
-          limit: 10
-        });
+        // Check if customer is deleted
+        if (customer.deleted) {
+          stripeData = {
+            customer: {
+              id: customer.id,
+              email: null,
+              created: null,
+              metadata: null,
+              deleted: true,
+            },
+            subscriptions: []
+          };
+        } else {
+          // Get active subscriptions
+          const subscriptions = await stripe.subscriptions.list({
+            customer: user.stripeCustomerId,
+            limit: 10
+          });
 
-        stripeData = {
-          customer: {
-            id: customer.id,
-            email: customer.email,
-            created: customer.created,
-            metadata: customer.metadata,
-          },
-          subscriptions: subscriptions.data.map(sub => ({
-            id: sub.id,
-            status: sub.status,
-            current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
-            created: new Date(sub.created * 1000).toISOString(),
-            items: sub.items.data.map(item => ({
-              price_id: item.price.id,
-              quantity: item.quantity,
+          stripeData = {
+            customer: {
+              id: customer.id,
+              email: customer.email,
+              created: customer.created,
+              metadata: customer.metadata,
+              deleted: false,
+            },
+            subscriptions: subscriptions.data.map((sub: any) => ({
+              id: sub.id,
+              status: sub.status,
+              current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
+              current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+              created: new Date(sub.created * 1000).toISOString(),
+              items: sub.items.data.map((item: any) => ({
+                price_id: item.price.id,
+                quantity: item.quantity,
+              }))
             }))
-          }))
-        };
+          };
+        }
       } catch (stripeError) {
         stripeData = { error: 'Failed to fetch Stripe data', details: stripeError };
       }

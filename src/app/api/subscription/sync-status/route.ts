@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
           subscriptionStatus: 'ACTIVE',
           subscriptionTier: 'PRO',
           subscriptionId: activeSubscription.id,
-          subscriptionEndDate: new Date(activeSubscription.current_period_end * 1000),
+          subscriptionEndDate: new Date((activeSubscription as any).current_period_end * 1000),
           lastPaymentDate: new Date(),
         }
       });
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
           status: 'ACTIVE',
           tier: 'PRO',
           id: activeSubscription.id,
-          endDate: new Date(activeSubscription.current_period_end * 1000).toISOString(),
+          endDate: new Date((activeSubscription as any).current_period_end * 1000).toISOString(),
         }
       });
     } else {
