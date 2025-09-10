@@ -117,7 +117,7 @@ export default function SocialProof({
 
                   {/* Quote */}
                   <blockquote className="text-muted-foreground italic">
-                    "{testimonial.text}"
+                    &ldquo;{testimonial.text}&rdquo;
                   </blockquote>
 
                   {/* Author */}
