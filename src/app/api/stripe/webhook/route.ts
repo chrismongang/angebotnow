@@ -105,20 +105,47 @@ async function updateUserSubscription(subscription: any) {
     });
 
     if (user) {
-      const subscriptionStatus = subscription.status === 'active' ? 'ACTIVE' : 'FREE';
+      // Map Stripe subscription status to our internal status
+      let subscriptionStatus: string;
+      let subscriptionTier: string;
+      
+      switch (subscription.status) {
+        case 'active':
+          subscriptionStatus = 'ACTIVE';
+          subscriptionTier = 'PRO';
+          break;
+        case 'past_due':
+          subscriptionStatus = 'PAST_DUE';
+          subscriptionTier = 'PRO';
+          break;
+        case 'canceled':
+        case 'cancelled':
+          subscriptionStatus = 'CANCELED';
+          subscriptionTier = 'FREE';
+          break;
+        case 'unpaid':
+          subscriptionStatus = 'UNPAID';
+          subscriptionTier = 'FREE';
+          break;
+        default:
+          subscriptionStatus = 'FREE';
+          subscriptionTier = 'FREE';
+      }
       
       await prismaClient.user.update({
         where: { id: user.id },
         data: {
           subscriptionStatus,
-          subscriptionTier: subscriptionStatus === 'ACTIVE' ? 'PRO' : 'FREE',
+          subscriptionTier,
           subscriptionId: subscription.id,
-          subscriptionEndDate: new Date(subscription.current_period_end * 1000),
-          lastPaymentDate: subscription.status === 'active' ? new Date() : null,
+          subscriptionEndDate: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : null,
+          lastPaymentDate: subscription.status === 'active' ? new Date() : user.lastPaymentDate, // Keep existing lastPaymentDate if not active
         }
       });
 
-      console.log(`User ${user.email} subscription updated to ${subscriptionStatus}`);
+      console.log(`User ${user.email} subscription updated to ${subscriptionStatus} (${subscriptionTier})`);
+    } else {
+      console.warn(`No user found for Stripe customer ID: ${customerId}`);
     }
   } catch (error) {
     console.error('Error updating user subscription:', error);
@@ -186,10 +213,27 @@ async function handleCheckoutCompleted(session: any) {
         lastPaymentDate: new Date().toISOString()
       })
 
-      // Update lastPaymentDate in database
+      // Update subscription status and lastPaymentDate in database
+      let subscriptionEndDate = null;
+      
+      // If we have a subscription ID, try to get the actual end date from Stripe
+      if (session.subscription) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(session.subscription) as any;
+          subscriptionEndDate = new Date(subscription.current_period_end * 1000);
+        } catch (stripeError) {
+          console.warn('Failed to fetch subscription details, using fallback date:', stripeError);
+          subscriptionEndDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now as fallback
+        }
+      }
+      
       await prismaClient.user.update({
         where: { id: user.id },
         data: {
+          subscriptionStatus: 'ACTIVE',
+          subscriptionTier: 'PRO',
+          subscriptionId: session.subscription,
+          subscriptionEndDate: subscriptionEndDate,
           lastPaymentDate: new Date(),
         }
       });
@@ -277,15 +321,18 @@ async function handlePaymentSuccess(invoice: any) {
         paidAt: new Date().toISOString(),
       });
 
-      // Update lastPaymentDate in database
+      // Update subscription status and lastPaymentDate in database
+      // This ensures the user gets PRO status even if checkout.session.completed didn't work
       await prismaClient.user.update({
         where: { id: user.id },
         data: {
+          subscriptionStatus: 'ACTIVE',
+          subscriptionTier: 'PRO',
           lastPaymentDate: new Date(),
         }
       });
 
-      console.log(`Payment succeeded for user ${user.email}, invoice ${invoice.id}`);
+      console.log(`Payment succeeded for user ${user.email}, invoice ${invoice.id} - subscription updated to PRO`);
     }
   } catch (error) {
     console.error('Error handling payment success:', error);
