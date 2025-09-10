@@ -1,19 +1,22 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Lock, Eye, EyeOff, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react'
-import dynamic from 'next/dynamic'
+import dynamicImport from 'next/dynamic'
+
+// Force dynamic rendering to avoid prerendering issues
+export const dynamic = 'force-dynamic'
 
 // Dynamische Imports
-const Card = dynamic(() => import('@/components/ui/card').then(mod => ({ default: mod.Card })), { ssr: false })
-const CardContent = dynamic(() => import('@/components/ui/card').then(mod => ({ default: mod.CardContent })), { ssr: false })
-const CardHeader = dynamic(() => import('@/components/ui/card').then(mod => ({ default: mod.CardHeader })), { ssr: false })
-const CardTitle = dynamic(() => import('@/components/ui/card').then(mod => ({ default: mod.CardTitle })), { ssr: false })
-const Button = dynamic(() => import('@/components/ui/button').then(mod => ({ default: mod.Button })), { ssr: false })
-const Input = dynamic(() => import('@/components/ui/input').then(mod => ({ default: mod.Input })), { ssr: false })
-const Label = dynamic(() => import('@/components/ui/label').then(mod => ({ default: mod.Label })), { ssr: false })
+const Card = dynamicImport(() => import('@/components/ui/card').then(mod => ({ default: mod.Card })), { ssr: false })
+const CardContent = dynamicImport(() => import('@/components/ui/card').then(mod => ({ default: mod.CardContent })), { ssr: false })
+const CardHeader = dynamicImport(() => import('@/components/ui/card').then(mod => ({ default: mod.CardHeader })), { ssr: false })
+const CardTitle = dynamicImport(() => import('@/components/ui/card').then(mod => ({ default: mod.CardTitle })), { ssr: false })
+const Button = dynamicImport(() => import('@/components/ui/button').then(mod => ({ default: mod.Button })), { ssr: false })
+const Input = dynamicImport(() => import('@/components/ui/input').then(mod => ({ default: mod.Input })), { ssr: false })
+const Label = dynamicImport(() => import('@/components/ui/label').then(mod => ({ default: mod.Label })), { ssr: false })
 
 interface User {
   firstName: string
@@ -27,7 +30,7 @@ interface ResetState {
   error?: string
 }
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [state, setState] = useState<ResetState>({ status: 'loading' })
@@ -323,5 +326,26 @@ export default function ResetPasswordPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-8">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                <p className="text-gray-600">Lade...</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   )
 }

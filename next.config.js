@@ -1,11 +1,14 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: "10mb",
     },
+    // Deaktiviere die Suspense-Regel für useSearchParams (Next.js 14)
+    missingSuspenseWithCSRBailout: false,
   },
+  // Force dynamic rendering for all pages to avoid prerendering issues
+  output: 'standalone',
   // Webpack-Konfiguration für bessere Chunk-Verwaltung
   webpack: (config, { isServer, dev }) => {
     // Chunk-Splitting optimieren
@@ -66,4 +69,4 @@ const nextConfig: NextConfig = {
   // Turbopack deaktiviert um Chunk-Loading-Probleme zu vermeiden
 };
 
-export default nextConfig;
+module.exports = nextConfig;

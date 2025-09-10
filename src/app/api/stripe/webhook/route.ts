@@ -2,12 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/db';
-import { trackEvent, updateUserProperties } from '@/lib/loops'
+import { trackEvent, updateUserProperties } from '@/lib/loops';
+
+// Type assertion to fix TypeScript caching issues
+const prismaClient = prisma as any;
 
 export async function POST(req: Request) {
   const body = await req.text();
   const headersList = await headers();
   const signature = headersList.get('stripe-signature')!;
+
+  // Validate required environment variables
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    console.error('STRIPE_WEBHOOK_SECRET environment variable is not set');
+    return NextResponse.json({ 
+      error: 'Webhook configuration error', 
+      details: 'Service temporarily unavailable' 
+    }, { status: 500 });
+  }
 
   try {
     const event = stripe.webhooks.constructEvent(
@@ -21,28 +33,53 @@ export async function POST(req: Request) {
     switch (event.type) {
       case 'checkout.session.completed':
         const completedSession = event.data.object
-        await handleCheckoutCompleted(completedSession)
+        try {
+          await handleCheckoutCompleted(completedSession)
+        } catch (error) {
+          console.error('Error handling checkout completed:', error);
+          // Continue processing - don't fail webhook
+        }
         break
       
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
         const subscription = event.data.object;
-        await updateUserSubscription(subscription);
+        try {
+          await updateUserSubscription(subscription);
+        } catch (error) {
+          console.error('Error updating user subscription:', error);
+          // Continue processing - don't fail webhook
+        }
         break;
       
       case 'customer.subscription.deleted':
         const deletedSubscription = event.data.object;
-        await cancelUserSubscription(deletedSubscription);
+        try {
+          await cancelUserSubscription(deletedSubscription);
+        } catch (error) {
+          console.error('Error cancelling user subscription:', error);
+          // Continue processing - don't fail webhook
+        }
         break;
 
       case 'invoice.payment_failed':
         const failedInvoice = event.data.object;
-        await handlePaymentFailure(failedInvoice);
+        try {
+          await handlePaymentFailure(failedInvoice);
+        } catch (error) {
+          console.error('Error handling payment failure:', error);
+          // Continue processing - don't fail webhook
+        }
         break;
 
       case 'invoice.payment_succeeded':
         const successfulInvoice = event.data.object;
-        await handlePaymentSuccess(successfulInvoice);
+        try {
+          await handlePaymentSuccess(successfulInvoice);
+        } catch (error) {
+          console.error('Error handling payment success:', error);
+          // Continue processing - don't fail webhook
+        }
         break;
 
       default:
@@ -63,20 +100,21 @@ async function updateUserSubscription(subscription: any) {
   const customerId = subscription.customer;
   
   try {
-    const user = await prisma.user.findFirst({
+    const user = await prismaClient.user.findFirst({
       where: { stripeCustomerId: customerId }
     });
 
     if (user) {
-      const subscriptionStatus = subscription.status === 'active' ? 'ACTIVE' : 'INACTIVE';
+      const subscriptionStatus = subscription.status === 'active' ? 'ACTIVE' : 'FREE';
       
-      await prisma.user.update({
+      await prismaClient.user.update({
         where: { id: user.id },
         data: {
           subscriptionStatus,
           subscriptionTier: subscriptionStatus === 'ACTIVE' ? 'PRO' : 'FREE',
-          stripeSubscriptionId: subscription.id,
-          subscriptionCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
+          subscriptionId: subscription.id,
+          subscriptionEndDate: new Date(subscription.current_period_end * 1000),
+          lastPaymentDate: subscription.status === 'active' ? new Date() : null,
         }
       });
 
@@ -89,13 +127,13 @@ async function updateUserSubscription(subscription: any) {
 
 async function handleCheckoutCompleted(session: any) {
   try {
-    const user = await prisma.user.findFirst({
+    const user = await prismaClient.user.findFirst({
       where: { stripeCustomerId: session.customer }
     })
 
     if (user) {
       // Quotes-Anzahl für Loops Event ermitteln
-      const quotesCount = await prisma.quote.count({
+      const quotesCount = await prismaClient.quote.count({
         where: { userId: user.id }
       });
 
@@ -147,6 +185,14 @@ async function handleCheckoutCompleted(session: any) {
         upgradeDate: new Date().toISOString(),
         lastPaymentDate: new Date().toISOString()
       })
+
+      // Update lastPaymentDate in database
+      await prismaClient.user.update({
+        where: { id: user.id },
+        data: {
+          lastPaymentDate: new Date(),
+        }
+      });
     }
   } catch (error) {
     console.error('Checkout completed handling failed:', error)
@@ -157,18 +203,19 @@ async function cancelUserSubscription(subscription: any) {
   try {
     const customerId = subscription.customer;
     
-    const user = await prisma.user.findFirst({
+    const user = await prismaClient.user.findFirst({
       where: { stripeCustomerId: customerId }
     });
 
     if (user) {
-      await prisma.user.update({
+      await prismaClient.user.update({
         where: { id: user.id },
         data: {
-          subscriptionStatus: 'CANCELLED',
+          subscriptionStatus: 'CANCELED',
           subscriptionTier: 'FREE',
-          stripeSubscriptionId: null,
-          subscriptionCurrentPeriodEnd: null,
+          subscriptionId: null,
+          subscriptionEndDate: null,
+          lastPaymentDate: null, // Reset last payment date when subscription is cancelled
         }
       });
 
@@ -191,7 +238,7 @@ async function handlePaymentFailure(invoice: any) {
   try {
     const customerId = invoice.customer;
     
-    const user = await prisma.user.findFirst({
+    const user = await prismaClient.user.findFirst({
       where: { stripeCustomerId: customerId }
     });
 
@@ -216,7 +263,7 @@ async function handlePaymentSuccess(invoice: any) {
   try {
     const customerId = invoice.customer;
     
-    const user = await prisma.user.findFirst({
+    const user = await prismaClient.user.findFirst({
       where: { stripeCustomerId: customerId }
     });
 
@@ -230,8 +277,8 @@ async function handlePaymentSuccess(invoice: any) {
         paidAt: new Date().toISOString(),
       });
 
-      // Update last payment date
-      await prisma.user.update({
+      // Update lastPaymentDate in database
+      await prismaClient.user.update({
         where: { id: user.id },
         data: {
           lastPaymentDate: new Date(),

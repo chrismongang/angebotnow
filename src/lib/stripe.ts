@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
+  apiVersion: '2025-08-27.basil' as any,
 });
 
 export const STRIPE_PLANS = {
@@ -13,7 +13,7 @@ export const STRIPE_PLANS = {
     limits: { monthlyQuotes: 5, canEditPositions: false, canCustomizeLogo: false }
   },
   PRO: {
-    id: 'price_pro_monthly', // Stripe Price ID
+    id: process.env.STRIPE_PRO_PRICE_ID || 'price_pro_monthly', // Stripe Price ID from environment
     name: 'Pro',
     price: 1999, // 19,99€ in Cent
     features: [

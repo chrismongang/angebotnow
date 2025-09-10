@@ -4,16 +4,19 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Mail, AlertCircle, CheckCircle } from 'lucide-react'
-import dynamic from 'next/dynamic'
+import dynamicImport from 'next/dynamic'
+
+// Force dynamic rendering to avoid prerendering issues
+export const dynamic = 'force-dynamic'
 
 // Dynamische Imports
-const Card = dynamic(() => import('@/components/ui/card').then(mod => ({ default: mod.Card })), { ssr: false })
-const CardContent = dynamic(() => import('@/components/ui/card').then(mod => ({ default: mod.CardContent })), { ssr: false })
-const CardHeader = dynamic(() => import('@/components/ui/card').then(mod => ({ default: mod.CardHeader })), { ssr: false })
-const CardTitle = dynamic(() => import('@/components/ui/card').then(mod => ({ default: mod.CardTitle })), { ssr: false })
-const Button = dynamic(() => import('@/components/ui/button').then(mod => ({ default: mod.Button })), { ssr: false })
-const Input = dynamic(() => import('@/components/ui/input').then(mod => ({ default: mod.Input })), { ssr: false })
-const Label = dynamic(() => import('@/components/ui/label').then(mod => ({ default: mod.Label })), { ssr: false })
+const Card = dynamicImport(() => import('@/components/ui/card').then(mod => ({ default: mod.Card })), { ssr: false })
+const CardContent = dynamicImport(() => import('@/components/ui/card').then(mod => ({ default: mod.CardContent })), { ssr: false })
+const CardHeader = dynamicImport(() => import('@/components/ui/card').then(mod => ({ default: mod.CardHeader })), { ssr: false })
+const CardTitle = dynamicImport(() => import('@/components/ui/card').then(mod => ({ default: mod.CardTitle })), { ssr: false })
+const Button = dynamicImport(() => import('@/components/ui/button').then(mod => ({ default: mod.Button })), { ssr: false })
+const Input = dynamicImport(() => import('@/components/ui/input').then(mod => ({ default: mod.Input })), { ssr: false })
+const Label = dynamicImport(() => import('@/components/ui/label').then(mod => ({ default: mod.Label })), { ssr: false })
 
 export default function ForgotPasswordPage() {
   const router = useRouter()

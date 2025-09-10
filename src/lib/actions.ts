@@ -41,7 +41,19 @@ export async function createQuote(formData: FormData) {
     console.log('Authenticated user:', session.user.id)
     
     // Check subscription limits
-    const { canCreate, remainingQuotes, tier } = await checkQuoteLimit(session.user.id);
+    let limitCheck;
+    try {
+      limitCheck = await checkQuoteLimit(session.user.id);
+    } catch (limitError) {
+      console.error('Failed to check quote limits:', limitError);
+      return { 
+        success: false, 
+        error: 'Service temporarily unavailable. Please try again later.',
+        requiresUpgrade: false
+      };
+    }
+    
+    const { canCreate, remainingQuotes, tier } = limitCheck;
     
     if (!canCreate) {
       return { 

@@ -1,8 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
+
+// Force dynamic rendering to avoid prerendering issues
+export const dynamic = 'force-dynamic'
 import { AuthGuard } from "@/components/auth-guard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -24,7 +27,24 @@ import { HardPaywallModal } from '@/components/hard-paywall-modal'
 export default function DashboardPage() {
   return (
     <AuthGuard>
-      <DashboardContent />
+      <Suspense fallback={
+        <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
+          <div className="container mx-auto max-w-4xl">
+            <div className="pt-8 sm:pt-12 mb-6 sm:mb-8">
+              <div className="animate-pulse">
+                <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
+                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+              </div>
+            </div>
+            <div className="animate-pulse">
+              <div className="h-32 bg-gray-200 rounded mb-6"></div>
+              <div className="h-96 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      }>
+        <DashboardContent />
+      </Suspense>
     </AuthGuard>
   )
 }

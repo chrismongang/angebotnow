@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { use } from 'react'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -19,13 +18,13 @@ import { Input } from "@/components/ui/input"
 
 
 interface PageProps {
-  params: Promise<{
+  params: {
     id: string
-  }>
+  }
 }
 
 export default function QuoteDetailPage({ params }: PageProps) {
-  const { id } = use(params)
+  const { id } = params
   const { data: session } = useSession()
   const [quote, setQuote] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)

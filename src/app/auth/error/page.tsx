@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Suspense } from 'react'
 
+// Force dynamic rendering to avoid prerendering issues
+export const dynamic = 'force-dynamic'
+
 function AuthErrorContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')

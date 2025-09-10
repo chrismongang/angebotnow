@@ -19,10 +19,19 @@ export async function POST(request: NextRequest) {
     const { firstName, lastName, email, password } = registerSchema.parse(body)
 
     // Prüfen ob User bereits existiert (ohne password Feld)
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-      select: { id: true, email: true, name: true }
-    })
+    let existingUser;
+    try {
+      existingUser = await prisma.user.findUnique({
+        where: { email },
+        select: { id: true, email: true, name: true }
+      })
+    } catch (dbError) {
+      console.error('Database error checking existing user:', dbError);
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable', details: 'Database connection error' },
+        { status: 500 }
+      )
+    }
 
     if (existingUser) {
       return NextResponse.json(
@@ -32,30 +41,53 @@ export async function POST(request: NextRequest) {
     }
 
     // Passwort hashen
-    const hashedPassword = await bcrypt.hash(password, 12)
+    let hashedPassword;
+    try {
+      hashedPassword = await bcrypt.hash(password, 12)
+    } catch (hashError) {
+      console.error('Password hashing error:', hashError);
+      return NextResponse.json(
+        { error: 'Registration failed', details: 'Password processing error' },
+        { status: 500 }
+      )
+    }
 
     // User erstellen (ohne Email-Verifikation)
-    const user = await prisma.user.create({
-      data: {
+    let user;
+    try {
+      user = await prisma.user.create({
+        data: {
+          firstName,
+          lastName,
+          name: `${firstName} ${lastName}`, // Temporär für Kompatibilität
+          email,
+          password: hashedPassword,
+          emailVerified: null, // Email noch nicht verifiziert
+        },
+      })
+    } catch (dbError) {
+      console.error('Database error creating user:', dbError);
+      return NextResponse.json(
+        { error: 'Registration failed', details: 'Failed to create user account' },
+        { status: 500 }
+      )
+    }
+
+    // Loops Event: signed_up (non-critical)
+    try {
+      await trackEvent(email, 'signed_up', {
+        userId: user.id,
         firstName,
         lastName,
-        name: `${firstName} ${lastName}`, // Temporär für Kompatibilität
-        email,
-        password: hashedPassword,
-        emailVerified: null, // Email noch nicht verifiziert
-      },
-    })
-
-    // Loops Event: signed_up
-    await trackEvent(email, 'signed_up', {
-      userId: user.id,
-      firstName,
-      lastName,
-      plan: 'free',
-      quotesCount: 0,
-      createdAt: user.createdAt.toISOString(),
-      source: 'email_password' // oder 'google_oauth', 'microsoft_oauth'
-    })
+        plan: 'free',
+        quotesCount: 0,
+        createdAt: user.createdAt.toISOString(),
+        source: 'email_password' // oder 'google_oauth', 'microsoft_oauth'
+      })
+    } catch (trackingError) {
+      console.error('Failed to track signed_up event:', trackingError);
+      // Continue without tracking - not critical for registration
+    }
 
     // Meta Pixel Event: CompleteRegistration
     try {
@@ -82,36 +114,56 @@ export async function POST(request: NextRequest) {
       // Don't fail registration if tracking fails
     }
 
-    // User Properties in Loops setzen
-    await updateUserProperties(email, {
-      userId: user.id,
-      firstName,
-      lastName,
-      plan: 'free',
-      quotesCount: 0,
-      createdAt: user.createdAt.toISOString(),
-      emailVerified: false,
-      subscriptionStatus: 'FREE',
-      subscriptionTier: 'FREE'
-    })
+    // User Properties in Loops setzen (non-critical)
+    try {
+      await updateUserProperties(email, {
+        userId: user.id,
+        firstName,
+        lastName,
+        plan: 'free',
+        quotesCount: 0,
+        createdAt: user.createdAt.toISOString(),
+        emailVerified: false,
+        subscriptionStatus: 'FREE',
+        subscriptionTier: 'FREE'
+      })
+    } catch (propertiesError) {
+      console.error('Failed to update user properties:', propertiesError);
+      // Continue without properties update - not critical for registration
+    }
 
     // Email-Verifikation Token erstellen
-    const tokenRecord = createTokenRecord(email, 'email-verification')
-    const verificationToken = await prisma.verificationToken.create({
-      data: {
-        identifier: email,
-        token: tokenRecord.token,
-        expires: tokenRecord.expires,
-        type: 'email-verification'
-      }
-    })
+    let verificationToken;
+    try {
+      const tokenRecord = createTokenRecord(email, 'email-verification')
+      verificationToken = await prisma.verificationToken.create({
+        data: {
+          identifier: email,
+          token: tokenRecord.token,
+          expires: tokenRecord.expires,
+          type: 'email-verification'
+        }
+      })
+    } catch (tokenError) {
+      console.error('Failed to create verification token:', tokenError);
+      return NextResponse.json(
+        { error: 'Registration failed', details: 'Failed to create verification token' },
+        { status: 500 }
+      )
+    }
 
     // Verifikations-Email senden
-    const emailResult = await emailService.sendVerificationEmail({
-      firstName,
-      email,
-      token: verificationToken.token // Wir verwenden den gehashten Token für den Link
-    })
+    let emailResult;
+    try {
+      emailResult = await emailService.sendVerificationEmail({
+        firstName,
+        email,
+        token: verificationToken.token // Wir verwenden den gehashten Token für den Link
+      })
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      emailResult = { success: false, error: 'Email service unavailable' };
+    }
 
     if (!emailResult.success) {
       console.error('Failed to send verification email:', emailResult.error)

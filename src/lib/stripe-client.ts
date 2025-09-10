@@ -8,7 +8,7 @@ export const STRIPE_PLANS = {
     limits: { monthlyQuotes: 5, canEditPositions: false, canCustomizeLogo: false }
   },
   PRO: {
-    id: 'price_pro_monthly', // Stripe Price ID
+    id: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID || 'price_pro_monthly', // Stripe Price ID from environment
     name: 'Pro',
     price: 1999, // 19,99€ in Cent
     features: [

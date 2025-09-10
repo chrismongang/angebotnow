@@ -73,6 +73,7 @@ model User {
   subscriptionId      String?
   subscriptionStatus  SubscriptionStatus @default(FREE)
   subscriptionTier    SubscriptionTier   @default(FREE)
+  lastPaymentDate     DateTime?          // Datum der letzten Zahlung
   referralCode        String?            @unique // Eindeutiger Referral-Code
   referredBy          String?            // Wer hat diesen User eingeladen
   referralCredits     Int                @default(0) // Gratis-Credits für Referrals

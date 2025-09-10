@@ -5,6 +5,7 @@ import MicrosoftProvider from "next-auth/providers/azure-ad"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/db"
+import { trackEvent, updateUserProperties } from "@/lib/loops"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -112,6 +113,65 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return token
     },
+    // @ts-ignore
+    signIn: async ({ user, account, profile }) => {
+      // Prüfe ob es ein neuer User ist (OAuth-Registrierung)
+      if (account?.provider === 'google' || account?.provider === 'azure-ad') {
+        try {
+          // Prüfe ob User bereits existiert
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email! },
+            select: { id: true, createdAt: true }
+          })
+
+          // Wenn User nicht existiert, ist es eine neue Registrierung
+          if (!existingUser) {
+            console.log('🆕 New OAuth user detected:', user.email)
+            
+            // Warte kurz, damit der User in der DB erstellt wird
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            
+            // Loops Event: signed_up für OAuth-Registrierung
+            try {
+              await trackEvent(user.email!, 'signed_up', {
+                userId: user.id,
+                firstName: user.name?.split(' ')[0] || '',
+                lastName: user.name?.split(' ').slice(1).join(' ') || '',
+                plan: 'free',
+                quotesCount: 0,
+                createdAt: new Date().toISOString(),
+                source: account.provider === 'google' ? 'google_oauth' : 'microsoft_oauth'
+              })
+              console.log('✅ Loops signed_up event tracked for OAuth user:', user.email)
+            } catch (trackingError) {
+              console.error('❌ Failed to track signed_up event for OAuth user:', trackingError)
+            }
+
+            // User Properties in Loops setzen
+            try {
+              await updateUserProperties(user.email!, {
+                userId: user.id,
+                firstName: user.name?.split(' ')[0] || '',
+                lastName: user.name?.split(' ').slice(1).join(' ') || '',
+                plan: 'free',
+                quotesCount: 0,
+                source: account.provider === 'google' ? 'google_oauth' : 'microsoft_oauth'
+              })
+              console.log('✅ Loops user properties updated for OAuth user:', user.email)
+            } catch (propertiesError) {
+              console.error('❌ Failed to update user properties for OAuth user:', propertiesError)
+            }
+          } else {
+            console.log('👤 Existing OAuth user login:', user.email)
+          }
+        } catch (error) {
+          console.error('❌ Error in signIn callback:', error)
+          // Nicht blockierend - Auth funktioniert weiter
+        }
+      }
+      
+      return true
+    }
   },
   pages: {
     signIn: '/auth/signin',
