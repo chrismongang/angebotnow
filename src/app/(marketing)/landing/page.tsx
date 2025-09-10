@@ -21,11 +21,12 @@ export async function generateMetadata() {
 export default async function LandingPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   // UTM-Parameter verarbeiten
+  const resolvedSearchParams = await searchParams;
   const urlSearchParams = new URLSearchParams();
-  Object.entries(searchParams).forEach(([key, value]) => {
+  Object.entries(resolvedSearchParams).forEach(([key, value]) => {
     if (typeof value === 'string') {
       urlSearchParams.set(key, value);
     }
