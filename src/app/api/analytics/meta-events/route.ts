@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 import { 
   trackMetaEvent, 
   trackUpgrade, 
@@ -14,7 +13,7 @@ import {
 // Enhanced Meta Events API for custom tracking
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -33,9 +32,9 @@ export async function POST(request: NextRequest) {
     // Build user data from session
     const userData: UserData = {
       email: session.user.email!,
-      firstName: session.user.firstName || '',
-      lastName: session.user.lastName || '',
-      userId: session.user.id,
+      firstName: (session.user as any).firstName || session.user.name?.split(' ')[0] || '',
+      lastName: (session.user as any).lastName || session.user.name?.split(' ').slice(1).join(' ') || '',
+      userId: session.user.id || '',
     };
 
     // Track the event
@@ -71,7 +70,7 @@ export async function POST(request: NextRequest) {
 // Specific endpoints for common events
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -81,9 +80,9 @@ export async function PUT(request: NextRequest) {
 
     const userData: UserData = {
       email: session.user.email!,
-      firstName: session.user.firstName || '',
-      lastName: session.user.lastName || '',
-      userId: session.user.id,
+      firstName: (session.user as any).firstName || session.user.name?.split(' ')[0] || '',
+      lastName: (session.user as any).lastName || session.user.name?.split(' ').slice(1).join(' ') || '',
+      userId: session.user.id || '',
     };
 
     let result;

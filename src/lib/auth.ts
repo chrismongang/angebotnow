@@ -155,7 +155,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 email: user.email!,
                 firstName: user.name?.split(' ')[0] || '',
                 lastName: user.name?.split(' ').slice(1).join(' ') || '',
-                userId: user.id,
+                userId: user.id || '',
                 fbc: getFacebookClickId(),
                 fbp: getFacebookBrowserId(),
               }, account.provider === 'google' ? 'google_oauth' : 'microsoft_oauth');
