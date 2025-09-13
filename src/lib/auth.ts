@@ -147,6 +147,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               console.error('❌ Failed to track signed_up event for OAuth user:', trackingError)
             }
 
+            // Enhanced Meta Conversions API Event: CompleteRegistration für OAuth
+            try {
+              const { trackUserRegistration, getFacebookClickId, getFacebookBrowserId } = await import('@/lib/meta-conversions');
+              
+              await trackUserRegistration({
+                email: user.email!,
+                firstName: user.name?.split(' ')[0] || '',
+                lastName: user.name?.split(' ').slice(1).join(' ') || '',
+                userId: user.id,
+                fbc: getFacebookClickId(),
+                fbp: getFacebookBrowserId(),
+              }, account.provider === 'google' ? 'google_oauth' : 'microsoft_oauth');
+              
+              console.log('✅ Enhanced Meta CompleteRegistration event tracked for OAuth user:', user.email);
+            } catch (trackingError) {
+              console.error('❌ Enhanced Meta CompleteRegistration tracking failed for OAuth user:', trackingError);
+            }
+
             // User Properties in Loops setzen
             try {
               await updateUserProperties(user.email!, {

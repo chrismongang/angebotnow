@@ -176,32 +176,52 @@ async function handleCheckoutCompleted(session: any) {
         subscriptionId: session.subscription
       })
 
-      // Meta Pixel Event: Purchase
+      // Enhanced Meta Conversions API Event: Purchase
       try {
-        await fetch(`${process.env.NEXTAUTH_URL}/api/analytics/meta-pixel`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            event: 'Purchase',
-            userData: {
-              email: user.email,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              userId: user.id,
-            },
-            eventData: {
-              value: session.amount_total / 100, // Convert from cents
-              currency: session.currency?.toUpperCase() || 'EUR',
-              plan: 'pro',
-              checkoutSessionId: session.id,
-              subscriptionId: session.subscription,
-              quotesCount: quotesCount,
-            }
-          }),
+        const { trackSubscriptionPurchase } = await import('@/lib/meta-conversions');
+        
+        await trackSubscriptionPurchase({
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          userId: user.id,
+        }, {
+          value: session.amount_total / 100,
+          currency: session.currency?.toUpperCase() || 'EUR',
+          plan: 'pro',
+          subscriptionId: session.subscription,
+          checkoutSessionId: session.id,
         });
+        
+        console.log('✅ Enhanced Meta Purchase event tracked');
       } catch (error) {
-        console.error('Meta Pixel Purchase tracking failed:', error);
-        // Don't fail webhook if tracking fails
+        console.error('❌ Enhanced Meta Purchase tracking failed:', error);
+        // Fallback to old method
+        try {
+          await fetch(`${process.env.NEXTAUTH_URL}/api/analytics/meta-pixel`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              event: 'Purchase',
+              userData: {
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                userId: user.id,
+              },
+              eventData: {
+                value: session.amount_total / 100, // Convert from cents
+                currency: session.currency?.toUpperCase() || 'EUR',
+                plan: 'pro',
+                checkoutSessionId: session.id,
+                subscriptionId: session.subscription,
+                quotesCount: quotesCount,
+              }
+            }),
+          });
+        } catch (fallbackError) {
+          console.error('❌ Fallback Meta tracking also failed:', fallbackError);
+        }
       }
 
       // User Properties aktualisieren

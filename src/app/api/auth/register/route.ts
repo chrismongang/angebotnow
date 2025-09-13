@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { emailService } from '@/lib/email'
 import { createTokenRecord } from '@/lib/tokens'
 import { trackEvent, updateUserProperties } from '@/lib/loops'
+import { getFacebookClickId, getFacebookBrowserId } from '@/lib/meta-conversions'
 
 const registerSchema = z.object({
   firstName: z.string().min(2, 'Vorname muss mindestens 2 Zeichen lang sein'),
@@ -89,29 +90,45 @@ export async function POST(request: NextRequest) {
       // Continue without tracking - not critical for registration
     }
 
-    // Meta Pixel Event: CompleteRegistration
+    // Enhanced Meta Conversions API Event: CompleteRegistration
     try {
-      await fetch(`${process.env.NEXTAUTH_URL}/api/analytics/meta-pixel`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'CompleteRegistration',
-          userData: {
-            email,
-            firstName,
-            lastName,
-            userId: user.id,
-          },
-          eventData: {
-            plan: 'free',
-            source: 'email_password',
-            registration_time: user.createdAt.toISOString(),
-          }
-        }),
-      });
+      const { trackUserRegistration } = await import('@/lib/meta-conversions');
+      
+      await trackUserRegistration({
+        email,
+        firstName,
+        lastName,
+        userId: user.id,
+        fbc: getFacebookClickId(),
+        fbp: getFacebookBrowserId(),
+      }, 'email_password');
+      
+      console.log('✅ Enhanced Meta CompleteRegistration event tracked');
     } catch (error) {
-      console.error('Meta Pixel CompleteRegistration tracking failed:', error);
-      // Don't fail registration if tracking fails
+      console.error('❌ Enhanced Meta CompleteRegistration tracking failed:', error);
+      // Fallback to old method
+      try {
+        await fetch(`${process.env.NEXTAUTH_URL}/api/analytics/meta-pixel`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'CompleteRegistration',
+            userData: {
+              email,
+              firstName,
+              lastName,
+              userId: user.id,
+            },
+            eventData: {
+              plan: 'free',
+              source: 'email_password',
+              registration_time: user.createdAt.toISOString(),
+            }
+          }),
+        });
+      } catch (fallbackError) {
+        console.error('❌ Fallback Meta tracking also failed:', fallbackError);
+      }
     }
 
     // User Properties in Loops setzen (non-critical)
