@@ -6,7 +6,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/db"
 import { trackEvent, updateUserProperties } from "@/lib/loops"
-import { trackLogin } from "@/components/analytics/google-analytics"
+import { trackLogin, trackRegistration } from "@/components/analytics/google-analytics"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -159,7 +159,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             // Google Analytics Event: sign_up für OAuth-Registrierung
             try {
               trackRegistration({
-                userId: user.id,
+                userId: user.id || '',
                 email: user.email!,
                 firstName: user.name?.split(' ')[0] || '',
                 lastName: user.name?.split(' ').slice(1).join(' ') || ''
@@ -206,7 +206,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             
             // Google Analytics Event: login für bestehende OAuth-User
             try {
-              trackLogin(account.provider === 'google' ? 'google_oauth' : 'microsoft_oauth', user.id)
+              trackLogin(account.provider === 'google' ? 'google_oauth' : 'microsoft_oauth', user.id || '')
               console.log('✅ Google Analytics login event tracked for existing OAuth user:', user.email)
             } catch (gaError) {
               console.error('❌ Failed to track Google Analytics login event for existing OAuth user:', gaError)
