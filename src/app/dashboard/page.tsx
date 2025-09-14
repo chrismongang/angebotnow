@@ -18,6 +18,7 @@ import { PlanStatusBadge } from "@/components/plan-status-badge"
 import { UpgradeSuccessModal } from "@/components/upgrade-success-modal"
 import { createQuote } from "@/lib/actions"
 import { Image } from "@/components/ui/image"
+import { trackUpgradeClick } from '@/components/analytics/google-analytics'
 import { Upload, CheckCircle, AlertCircle, Loader2, Download, Share2, FileText, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { generateQuoteFileName } from '@/lib/user-data'
@@ -663,6 +664,19 @@ function DashboardContent() {
         isOpen={showHardPaywall}
         onClose={() => setShowHardPaywall(false)}
         onUpgrade={() => {
+          // Google Analytics Event: upgrade_clicked
+          try {
+            trackUpgradeClick({
+              location: 'hard_paywall_modal',
+              userId: session?.user?.id || '',
+              currentPlan: 'free',
+              targetPlan: 'pro'
+            })
+            console.log('✅ Google Analytics upgrade click event tracked from hard paywall')
+          } catch (gaError) {
+            console.error('❌ Google Analytics upgrade click tracking failed:', gaError);
+          }
+
           setShowHardPaywall(false)
           // Redirect to upgrade page using Next.js router to maintain PWA context
           router.push('/einstellungen/app')

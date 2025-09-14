@@ -10,6 +10,7 @@ import { processWithOpenAI } from '@/lib/ai/openai'
 import { uploadImage } from '@/lib/cloudinary'
 import { getNextQuoteNumberFromDB } from '@/lib/user-data'
 import { checkQuoteLimit, incrementQuoteCount } from '@/lib/subscription'
+import { trackQuoteCreation } from '@/components/analytics/google-analytics'
 import * as Sentry from '@sentry/nextjs'
 
 const uploadSchema = z.object({
@@ -238,6 +239,18 @@ export async function createQuote(formData: FormData) {
     console.log('=== Quote creation completed successfully ===')
     // Increment quote count after successful creation
     await incrementQuoteCount(session.user.id);
+
+    // Google Analytics Event: generate_lead (Quote Creation)
+    try {
+      trackQuoteCreation({
+        quoteId: quote.id,
+        userId: session.user.id,
+        value: aiResult.total || 0
+      })
+      console.log('✅ Google Analytics quote creation event tracked')
+    } catch (gaError) {
+      console.error('❌ Google Analytics quote creation tracking failed:', gaError);
+    }
 
     return { 
       success: true, 

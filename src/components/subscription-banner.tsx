@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Crown, Check, X, AlertCircle, Zap } from 'lucide-react';
 import { STRIPE_PLANS } from '@/lib/stripe-client';
-import { trackEvent } from '@/lib/loops';
+import { trackEvent } from '@/lib/loops'
+import { trackUpgradeClick } from '@/components/analytics/google-analytics';
 import { useRouter } from 'next/navigation';
 
 interface SubscriptionInfo {
@@ -63,6 +64,19 @@ export function SubscriptionBanner() {
         source: 'subscription_banner',
         location: 'einstellungen'
       });
+
+      // Google Analytics Event: upgrade_clicked
+      try {
+        trackUpgradeClick({
+          location: 'subscription_banner',
+          userId: session?.user?.id || '',
+          currentPlan: 'free',
+          targetPlan: 'pro'
+        })
+        console.log('✅ Google Analytics upgrade click event tracked')
+      } catch (gaError) {
+        console.error('❌ Google Analytics upgrade click tracking failed:', gaError);
+      }
 
       // Weiterleitung zum Checkout
       const response = await fetch('/api/stripe/create-checkout-session', {

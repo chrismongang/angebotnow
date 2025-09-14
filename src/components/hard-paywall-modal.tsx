@@ -11,6 +11,7 @@ import {
   X, 
   Share2
 } from 'lucide-react';
+import { trackUpgradeClick } from '@/components/analytics/google-analytics';
 import { trackEventClient } from '@/lib/loops';
 import { WhatsAppService } from '@/lib/whatsapp';
 

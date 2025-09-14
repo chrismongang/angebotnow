@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/db';
 import { trackEvent, updateUserProperties } from '@/lib/loops';
+import { trackPurchase } from '@/components/analytics/google-analytics';
 
 // Type assertion to fix TypeScript caching issues
 const prismaClient = prisma as any;
@@ -175,6 +176,20 @@ async function handleCheckoutCompleted(session: any) {
         currency: session.currency,
         subscriptionId: session.subscription
       })
+
+      // Google Analytics Event: purchase
+      try {
+        trackPurchase({
+          transactionId: session.id,
+          value: session.amount_total / 100,
+          currency: session.currency?.toUpperCase() || 'EUR',
+          plan: 'pro',
+          userId: user.id
+        })
+        console.log('✅ Google Analytics purchase event tracked');
+      } catch (gaError) {
+        console.error('❌ Google Analytics purchase tracking failed:', gaError);
+      }
 
       // Enhanced Meta Conversions API Event: Purchase
       try {

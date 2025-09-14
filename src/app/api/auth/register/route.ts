@@ -6,6 +6,7 @@ import { emailService } from '@/lib/email'
 import { createTokenRecord } from '@/lib/tokens'
 import { trackEvent, updateUserProperties } from '@/lib/loops'
 import { getFacebookClickId, getFacebookBrowserId } from '@/lib/meta-conversions'
+import { trackRegistration } from '@/components/analytics/google-analytics'
 
 const registerSchema = z.object({
   firstName: z.string().min(2, 'Vorname muss mindestens 2 Zeichen lang sein'),
@@ -87,6 +88,19 @@ export async function POST(request: NextRequest) {
       })
     } catch (trackingError) {
       console.error('Failed to track signed_up event:', trackingError);
+      // Continue without tracking - not critical for registration
+    }
+
+    // Google Analytics Event: sign_up
+    try {
+      trackRegistration({
+        userId: user.id,
+        email: user.email,
+        firstName: user.firstName || '',
+        lastName: user.lastName || ''
+      })
+    } catch (gaError) {
+      console.error('Failed to track Google Analytics sign_up event:', gaError);
       // Continue without tracking - not critical for registration
     }
 

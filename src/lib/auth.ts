@@ -6,6 +6,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/db"
 import { trackEvent, updateUserProperties } from "@/lib/loops"
+import { trackLogin } from "@/components/analytics/google-analytics"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -63,6 +64,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (!isPasswordValid) {
           return null
+        }
+
+        // Google Analytics Event: login
+        try {
+          trackLogin('credentials', user.id)
+        } catch (gaError) {
+          console.error('Failed to track Google Analytics login event:', gaError);
+          // Continue without tracking - not critical for login
         }
 
         return {
@@ -147,6 +156,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               console.error('❌ Failed to track signed_up event for OAuth user:', trackingError)
             }
 
+            // Google Analytics Event: sign_up für OAuth-Registrierung
+            try {
+              trackRegistration({
+                userId: user.id,
+                email: user.email!,
+                firstName: user.name?.split(' ')[0] || '',
+                lastName: user.name?.split(' ').slice(1).join(' ') || ''
+              })
+              console.log('✅ Google Analytics sign_up event tracked for OAuth user:', user.email)
+            } catch (gaError) {
+              console.error('❌ Failed to track Google Analytics sign_up event for OAuth user:', gaError)
+            }
+
             // Enhanced Meta Conversions API Event: CompleteRegistration für OAuth
             try {
               const { trackUserRegistration, getFacebookClickId, getFacebookBrowserId } = await import('@/lib/meta-conversions');
@@ -181,6 +203,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             }
           } else {
             console.log('👤 Existing OAuth user login:', user.email)
+            
+            // Google Analytics Event: login für bestehende OAuth-User
+            try {
+              trackLogin(account.provider === 'google' ? 'google_oauth' : 'microsoft_oauth', user.id)
+              console.log('✅ Google Analytics login event tracked for existing OAuth user:', user.email)
+            } catch (gaError) {
+              console.error('❌ Failed to track Google Analytics login event for existing OAuth user:', gaError)
+            }
           }
         } catch (error) {
           console.error('❌ Error in signIn callback:', error)
