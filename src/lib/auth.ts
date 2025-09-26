@@ -8,8 +8,19 @@ import { prisma } from "@/lib/db"
 import { trackEvent, updateUserProperties } from "@/lib/loops"
 import { trackLogin, trackRegistration } from "@/components/analytics/google-analytics"
 
+// Check if database is available
+const isDatabaseAvailable = async () => {
+  try {
+    await prisma.$queryRaw`SELECT 1`
+    return true
+  } catch (error) {
+    console.warn('Database not available, using JWT sessions:', error)
+    return false
+  }
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter: process.env.DATABASE_URL ? PrismaAdapter(prisma) : undefined,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -226,7 +237,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: '/auth/error',
   },
   session: {
-    strategy: "database",
+    strategy: process.env.DATABASE_URL ? "database" : "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 Tage
   },
   secret: process.env.NEXTAUTH_SECRET,

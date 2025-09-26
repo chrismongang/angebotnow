@@ -84,6 +84,7 @@ model User {
   referrals           User[]             @relation("UserReferrals") // Users die dieser User eingeladen hat
   referredByUser      User?              @relation("UserReferrals", fields: [referredBy], references: [id])
   referralInvites     ReferralInvite[]   // Einladungen die dieser User gesendet hat
+  feedbacks           Feedback[]         // Feedback-Einträge des Users
 }
 
 model Quote {
@@ -101,6 +102,7 @@ model Quote {
   clientCity   String?
   clientStreet String?
   user         User        @relation(fields: [userId], references: [id])
+  feedbacks    Feedback[]  // Feedback-Einträge für dieses Angebot
 }
 
 enum QuoteStatus {
@@ -140,4 +142,36 @@ enum ReferralStatus {
   PENDING
   ACCEPTED
   EXPIRED
+}
+
+model Feedback {
+  id          String        @id @default(cuid())
+  userId      String        // User der das Feedback abgegeben hat
+  quoteId     String        // Angebot für das Feedback abgegeben wurde
+  rating      FeedbackRating // Daumen hoch/runter/neutral
+  text        String?       // Optionaler Freitext (max 1000 Zeichen)
+  status      FeedbackStatus @default(NEW) // Status für Admin-Verwaltung
+  tags        String[]      // Tags für Kategorisierung (z.B. "UX", "Qualität", "Preis")
+  adminNotes  String?       // Interne Notizen vom Admin
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quote       Quote         @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, quoteId]) // Maximal ein Feedback pro User pro Angebot
+}
+
+enum FeedbackRating {
+  UP      // Daumen hoch
+  DOWN    // Daumen runter
+  NEUTRAL // Neutral (falls später erweitert)
+}
+
+enum FeedbackStatus {
+  NEW       // Neues Feedback, noch nicht bearbeitet
+  TRIAGED   // Vom Admin kategorisiert
+  IN_PROGRESS // In Bearbeitung
+  RESOLVED  // Abgeschlossen
+  IGNORED   // Ignoriert
 }

@@ -66,8 +66,8 @@ PREISKALKULATION:
 - Kalkuliere realistische Arbeitszeiten basierend auf Projektumfang
 - Verwende regionale Preise für ${input.clientCity ? input.clientCity : 'Deutschland'}
 - Berücksichtige Gewerke-spezifische Preise:
-  * Malerarbeiten: 25-45€/Std
-  * Fliesenleger: 35-55€/Std
+  * Malerarbeiten: 35-60€/Std
+  * Fliesenleger: 35-70€/Std
   * Sanitär: 40-60€/Std
   * Elektriker: 45-65€/Std
   * Schreiner: 40-60€/Std

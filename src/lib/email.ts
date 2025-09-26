@@ -19,6 +19,19 @@ export interface WelcomeData {
   email: string
 }
 
+// Feedback-Zusammenfassung
+export interface FeedbackSummaryData {
+  recipientEmail: string
+  userEmail: string
+  userName?: string | null
+  quoteId: string
+  quoteNumber?: string | null
+  clientName?: string | null
+  projectInfo?: string | null
+  rating: 'UP' | 'DOWN' | 'NEUTRAL'
+  text?: string | null
+}
+
 // Email-Verifikation Template
 const createVerificationEmail = (data: EmailVerificationData) => ({
   from: 'AngebotNow <info@angebotnow.de>',
@@ -243,6 +256,74 @@ export const emailService = {
       return { success: true, data: result }
     } catch (error) {
       console.error('Error sending verification email:', error)
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    }
+  },
+
+  // Feedback-Zusammenfassung senden
+  async sendFeedbackSummaryEmail(data: FeedbackSummaryData) {
+    if (!process.env.RESEND_API_KEY) {
+      console.log('RESEND_API_KEY not configured - feedback summary email not sent')
+      return { success: false, error: 'Email service not configured' }
+    }
+
+    try {
+      const ratingLabel = data.rating === 'UP' ? 'Daumen hoch' : data.rating === 'DOWN' ? 'Daumen runter' : 'Neutral'
+      const subjectParts = [
+        'Neues Angebots-Feedback',
+        data.quoteNumber ? `#${data.quoteNumber}` : `(${data.quoteId})`,
+        `– ${ratingLabel}`
+      ]
+      const subject = subjectParts.join(' ')
+
+      const safe = (v?: string | null) => v ? v : ''
+      const html = `
+        <!DOCTYPE html>
+        <html lang="de">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Neues Angebots-Feedback</title>
+          <style>
+            body { font-family: 'Manrope', Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 640px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #F89813 0%, #FFB366 100%); padding: 24px; color: white; border-radius: 12px 12px 0 0; }
+            .content { background: #f9f9f9; padding: 24px; border-radius: 0 0 12px 12px; }
+            .row { margin: 8px 0; }
+            .label { color: #6b7280; font-size: 14px; }
+            .value { color: #111827; font-weight: 600; }
+            .box { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="margin:0; font-size:20px;">Neues Angebots-Feedback</h1>
+            </div>
+            <div class="content">
+              <div class="row"><span class="label">Angebot:</span> <span class="value">${safe(data.quoteNumber) ? `#${safe(data.quoteNumber)}` : `ID ${safe(data.quoteId)}`}</span></div>
+              ${safe(data.clientName) ? `<div class="row"><span class="label">Kunde:</span> <span class="value">${safe(data.clientName)}</span></div>` : ''}
+              ${safe(data.projectInfo) ? `<div class="row"><span class="label">Projekt:</span> <span class="value">${safe(data.projectInfo)}</span></div>` : ''}
+              <div class="row"><span class="label">Bewertet von:</span> <span class="value">${safe(data.userName) || safe(data.userEmail)}</span></div>
+              <div class="row"><span class="label">Bewertung:</span> <span class="value">${ratingLabel}</span></div>
+              ${safe(data.text) ? `<div class="row"><span class="label">Feedback-Text:</span></div><div class="box">${safe(data.text)}</div>` : ''}
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+
+      const result = await resend.emails.send({
+        from: 'AngebotNow <info@angebotnow.de>',
+        to: data.recipientEmail,
+        subject,
+        html,
+      })
+
+      console.log('Feedback summary email sent:', result)
+      return { success: true, data: result }
+    } catch (error) {
+      console.error('Error sending feedback summary email:', error)
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
     }
   },

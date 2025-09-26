@@ -19,6 +19,12 @@ Dieses Dokument gibt einen Überblick über alle verfügbaren Dokumentationen im
 - **Version:** 1.0.0
 
 ### **2. [DEPLOYMENT_FIXES_REFERRAL_SYSTEM.md](./DEPLOYMENT_FIXES_REFERRAL_SYSTEM.md)**
+
+### **3. [FEEDBACK_SYSTEM.md](./FEEDBACK_SYSTEM.md)**
+- **Zweck:** End-to-end Dokumentation des Angebots-Feedback-Systems
+- **Inhalt:** UI, API, E-Mail-Benachrichtigung (nur mit Text), Env-Setup
+- **Status:** ✅ Neu erstellt
+- **Version:** 1.0.0
 - **Zweck:** Dokumentation aller Deployment-Fixes für das Referral-System
 - **Inhalt:**
   - Identifizierte Probleme (SSR, Alert, Console.log, React Hooks)

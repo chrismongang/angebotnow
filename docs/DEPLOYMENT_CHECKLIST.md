@@ -21,6 +21,9 @@
 - [x] `GOOGLE_CLIENT_ID` und `GOOGLE_CLIENT_SECRET` gesetzt
 - [x] `OPENAI_API_KEY` konfiguriert
 - [x] `CLOUDINARY_*` Variablen gesetzt
+- [x] `ADMIN_EMAILS` gesetzt (kommagetrennte Admin-E-Mails für Admin-Bereich)
+- [x] `ADMIN_EMAIL` gesetzt (Empfänger für Angebots-Feedback-Zusammenfassungen)
+- [x] `RESEND_API_KEY` gesetzt (E-Mail-Versand; ohne Schlüssel keine Feedback-E-Mails)
 
 ## 🚀 Deployment Steps
 
@@ -54,6 +57,9 @@ CLOUDINARY_API_SECRET=your-api-secret
 RESEND_API_KEY=re_your-resend-api-key
 SENTRY_DSN=https://placeholder@placeholder.ingest.sentry.io/placeholder
 NEXT_PUBLIC_SENTRY_DSN=https://placeholder@placeholder.ingest.sentry.io/placeholder
+ADMIN_EMAILS=dein.admin@domain.com,zweite.admin@domain.com
+ADMIN_EMAIL=owner@domain.com
+RESEND_API_KEY=re_your-resend-api-key
 ```
 
 ### 3. Google OAuth für Produktion konfigurieren
@@ -84,6 +90,7 @@ npx prisma migrate deploy
 - [ ] Benutzerdaten werden gespeichert
 - [ ] Angebote können erstellt werden
 - [ ] PDF-Generierung funktioniert
+- [ ] Angebots-Feedback mit Text sendet Zusammenfassungs-Email an `ADMIN_EMAIL`
 - [ ] Mobile Navigation funktioniert
 
 ### 2. Performance-Tests
@@ -99,6 +106,9 @@ npx prisma migrate deploy
 - [ ] CORS-Einstellungen korrekt
 
 ## 🐛 Bekannte Issues
+### Feedback-E-Mails
+- **Hinweis:** E-Mails werden nur versendet, wenn ein Feedback-Text vorhanden ist (Daumen hoch/runter allein löst keine Mail aus).
+- **Konfiguration:** `ADMIN_EMAIL` erforderlich, sonst keine Benachrichtigung.
 
 ### PDF-Generierung
 - **Problem:** Firmendaten werden nicht korrekt in PDFs angezeigt

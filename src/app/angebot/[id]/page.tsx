@@ -12,7 +12,8 @@ import { formatDate, calculateTotal, calculateTotalWithVAT, formatPrice } from '
 import { AIResult } from '@/lib/ai/provider'
 import { updateQuotePositions } from '@/lib/actions'
 import { MobileNavigation } from "@/components/mobile-navigation"
-import { ArrowLeft, FileText, Download, Share2, Edit, Save, X, Crown } from 'lucide-react'
+import { QuoteFeedback } from "@/components/feedback/quote-feedback"
+import { ArrowLeft, FileText, Download, Share2, Edit, Save, X, Crown, Plus } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Input } from "@/components/ui/input"
 
@@ -171,10 +172,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
     }
   }
 
-  const handleSaveToAccounting = () => {
-    // TODO: Implement accounting tool integration
-    alert('Buchhaltungstool-Integration wird implementiert')
-  }
+  
 
   const handleEdit = () => {
     if (quote?.aiData?.positions) {
@@ -233,6 +231,11 @@ export default function QuoteDetailPage({ params }: PageProps) {
     setEditedPositions(newPositions)
   }
 
+  const addPosition = () => {
+    const newPosition = { title: '', qty: 1, unit: 'Psch', price: 0 }
+    setEditedPositions([...editedPositions, newPosition])
+  }
+
   return (
     <>
       <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
@@ -261,6 +264,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
             <div className="space-y-6 sm:space-y-8">
               {/* PDF Block - Similar to Success Block */}
               {quote.status === 'COMPLETED' ? (
+                <>
                 <Card>
                   <CardContent className="p-6">
                     {/* PDF Preview */}
@@ -298,18 +302,15 @@ export default function QuoteDetailPage({ params }: PageProps) {
                         <Share2 className="h-5 w-5 mr-2 text-[#F89813]" />
                         An Kunden senden
                       </Button>
-                      
-                      <Button 
-                        className="w-full h-12 border-orange-300 text-[#404040] hover:bg-orange-50 rounded-[14px]"
-                        variant="outline"
-                        onClick={handleSaveToAccounting}
-                      >
-                        <FileText className="h-5 w-5 mr-2 text-[#F89813]" />
-                        In LexWare speichern
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Feedback Block direkt unter Angebotsvorschau */}
+                {session?.user?.id && (
+                  <QuoteFeedback quoteId={id} userId={session.user.id} />
+                )}
+                </>
               ) : (
                 <Card>
                   <CardContent className="p-6 sm:p-8 text-center">
@@ -510,6 +511,22 @@ export default function QuoteDetailPage({ params }: PageProps) {
                       </div>
                     )}
 
+                    {isEditing && (
+                      <div className="pt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={addPosition}
+                          className="flex items-center gap-2 rounded-[14px]"
+                        
+                        >
+                          <Plus size={16} />
+                          Position hinzufügen
+                        </Button>
+                      </div>
+                    )}
+
                     {total > 0 && (
                       <div className="pt-4 border-t space-y-2">
                         <div className="flex justify-between items-center">
@@ -533,6 +550,9 @@ export default function QuoteDetailPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+
+      {/* Feedback Section moved above, under PDF block */}
+
       <div className="pb-20 md:pb-8"></div>
       <MobileNavigation />
     </>

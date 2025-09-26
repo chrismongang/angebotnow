@@ -392,15 +392,15 @@ function DashboardContent() {
               <Share2 className="h-5 w-5 mr-2 text-[#F89813]" />
               An Kunden senden
             </Button>
-            
-            <Button
-              onClick={() => createdQuoteId && saveToAccounting(createdQuoteId)}
-              variant="outline"
-              className="w-full h-12 border-orange-300 text-[#404040] hover:bg-orange-50 rounded-[14px]"
-            >
-              <FileText className="h-5 w-5 mr-2 text-[#F89813]" />
-              In LexWare speichern
-            </Button>
+          </div>
+
+          {/* Details Link */}
+          <div className="mt-4 text-center">
+            {createdQuoteId && (
+              <a href={`/angebot/${createdQuoteId}`} className="text-[#F89813] font-medium">
+                Angebot verwalten
+              </a>
+            )}
           </div>
         </CardContent>
       </Card>
