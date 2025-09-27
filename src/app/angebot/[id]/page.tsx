@@ -11,7 +11,7 @@ import Link from 'next/link'
 import { formatDate, calculateTotal, calculateTotalWithVAT, formatPrice } from '@/lib/utils'
 import { AIResult } from '@/lib/ai/provider'
 import { updateQuotePositions } from '@/lib/actions'
-import { MobileNavigation } from "@/components/mobile-navigation"
+import { AuthenticatedLayout } from "@/components/authenticated-layout"
 import { QuoteFeedback } from "@/components/feedback/quote-feedback"
 import { ArrowLeft, FileText, Download, Share2, Edit, Save, X, Crown, Plus } from 'lucide-react'
 import { Label } from '@/components/ui/label'
@@ -73,7 +73,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
 
   if (isLoading) {
     return (
-      <>
+      <AuthenticatedLayout>
         <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
           <div className="container mx-auto max-w-6xl">
             <div className="text-center py-12">
@@ -81,8 +81,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
             </div>
           </div>
         </div>
-        <MobileNavigation />
-      </>
+      </AuthenticatedLayout>
     )
   }
 
@@ -237,7 +236,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
   }
 
   return (
-    <>
+    <AuthenticatedLayout>
       <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
         <div className="container mx-auto max-w-6xl">
           {/* Header with back button and title */}
@@ -554,7 +553,6 @@ export default function QuoteDetailPage({ params }: PageProps) {
       {/* Feedback Section moved above, under PDF block */}
 
       <div className="pb-20 md:pb-8"></div>
-      <MobileNavigation />
-    </>
+    </AuthenticatedLayout>
   )
 }

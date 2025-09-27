@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { MobileNavigation } from "@/components/mobile-navigation"
+import { AuthenticatedLayout } from "@/components/authenticated-layout"
 import { SubscriptionBanner } from "@/components/subscription-banner"
 import Link from 'next/link'
 import { ArrowLeft, LogOut, Send, CheckCircle, AlertCircle, Gift, Share2, Users, Zap } from 'lucide-react'
@@ -193,7 +193,7 @@ export default function AppSettingsPage() {
   const isFreeUser = subscriptionInfo?.tier === 'FREE'
 
   return (
-    <>
+    <AuthenticatedLayout>
       <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
         <div className="container mx-auto max-w-4xl">
           {/* Header with top spacing and back button */}
@@ -379,7 +379,6 @@ export default function AppSettingsPage() {
           </Card>
         </div>
       </div>
-      <MobileNavigation />
-    </>
+    </AuthenticatedLayout>
   )
 }

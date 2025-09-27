@@ -2,7 +2,7 @@
 
 import { AuthGuard } from "@/components/auth-guard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { MobileNavigation } from "@/components/mobile-navigation"
+import { AuthenticatedLayout } from "@/components/authenticated-layout"
 import Link from 'next/link'
 import { Settings } from 'lucide-react'
 
@@ -17,7 +17,7 @@ export default function EinstellungenPage() {
 function EinstellungenContent() {
 
   return (
-    <>
+    <AuthenticatedLayout>
       <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
         <div className="container mx-auto max-w-4xl">
           {/* Header with top spacing */}
@@ -62,7 +62,6 @@ function EinstellungenContent() {
 
         </div>
       </div>
-      <MobileNavigation />
-    </>
+    </AuthenticatedLayout>
   )
 }

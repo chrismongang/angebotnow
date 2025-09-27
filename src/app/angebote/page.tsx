@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { AuthGuard } from "@/components/auth-guard"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MobileNavigation } from "@/components/mobile-navigation"
+import { AuthenticatedLayout } from "@/components/authenticated-layout"
 import { Image } from "@/components/ui/image"
 import Link from 'next/link'
 import { Plus, Filter, ChevronDown, ChevronUp, FileText, Euro } from 'lucide-react'
@@ -142,7 +142,7 @@ function AngeboteContent() {
 
   if (isLoading) {
     return (
-      <>
+      <AuthenticatedLayout>
         <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
           <div className="container mx-auto max-w-4xl">
             <div className="pt-8 sm:pt-12 mb-6 sm:mb-8">
@@ -153,13 +153,12 @@ function AngeboteContent() {
             </div>
           </div>
         </div>
-        <MobileNavigation />
-      </>
+      </AuthenticatedLayout>
     )
   }
 
   return (
-    <>
+    <AuthenticatedLayout>
       <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
         <div className="container mx-auto max-w-4xl">
           {/* Header with top spacing */}
@@ -308,7 +307,6 @@ function AngeboteContent() {
           </div>
         </div>
       </div>
-      <MobileNavigation />
-    </>
+    </AuthenticatedLayout>
   )
 }

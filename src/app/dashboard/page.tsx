@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { MobileNavigation } from "@/components/mobile-navigation"
+import { AuthenticatedLayout } from "@/components/authenticated-layout"
 import { PlanStatusMini } from "@/components/plan-status-mini"
 import { PlanStatusBadge } from "@/components/plan-status-badge"
 import { UpgradeSuccessModal } from "@/components/upgrade-success-modal"
@@ -408,7 +408,7 @@ function DashboardContent() {
   }
 
   return (
-    <>
+    <AuthenticatedLayout>
       <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
         <div className="container mx-auto max-w-4xl">
           {/* Header with top spacing */}
@@ -698,8 +698,6 @@ function DashboardContent() {
         isOpen={showCompanyModal}
         onClose={() => setShowCompanyModal(false)}
       />
-      
-      <MobileNavigation />
-    </>
+    </AuthenticatedLayout>
   )
 }

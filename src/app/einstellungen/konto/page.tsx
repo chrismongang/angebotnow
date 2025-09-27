@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { MobileNavigation } from "@/components/mobile-navigation"
+import { AuthenticatedLayout } from "@/components/authenticated-layout"
 import Link from 'next/link'
 import { ArrowLeft, Edit, Save, X, CheckCircle, AlertCircle } from 'lucide-react'
 import { type UserData } from '@/lib/user-data'
@@ -160,7 +160,7 @@ export default function KontoPage() {
   // Show loading state while data is being loaded
   if (isLoading || !userData) {
     return (
-      <>
+      <AuthenticatedLayout>
         <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
           <div className="container mx-auto max-w-4xl">
             <div className="text-center py-12">
@@ -168,13 +168,12 @@ export default function KontoPage() {
             </div>
           </div>
         </div>
-        <MobileNavigation />
-      </>
+      </AuthenticatedLayout>
     )
   }
 
   return (
-    <>
+    <AuthenticatedLayout>
       <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
         <div className="container mx-auto max-w-4xl">
           {/* Header with top spacing and back button */}
@@ -474,7 +473,6 @@ export default function KontoPage() {
 
         </div>
       </div>
-      <MobileNavigation />
-    </>
+    </AuthenticatedLayout>
   )
 }
