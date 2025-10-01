@@ -28,6 +28,14 @@ export default function Home() {
         <p className="text-lg sm:text-xl text-gray-700 text-center max-w-md leading-relaxed mb-12 px-4">
           Erstelle professionelle Angebote in nur 60 Sekunden mit unserer KI-gestützten App.
         </p>
+        <Link 
+          href="https://angebotnow.framer.website/" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-[#F89813] font-medium hover:underline mb-12"
+        >
+          -&gt; Mehr erfahren
+        </Link>
       </div>
 
       {/* Bottom CTA Section */}
