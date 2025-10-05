@@ -11,7 +11,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   return (
     <>
       <DesktopNavigation />
-      <div className="pt-16 md:pt-16">
+      <div className="pt-4 md:pt-16">
         {children}
       </div>
       <MobileNavigation />

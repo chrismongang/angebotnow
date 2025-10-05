@@ -34,6 +34,7 @@ export const metadata: Metadata = {
     'mobile-web-app-capable': 'yes',
     'theme-color': '#ffffff',
   },
+  manifest: '/manifest.webmanifest',
 };
 
 export default function RootLayout({
