@@ -1,0 +1,13 @@
+{
+  "version": 1.1,
+  "atDirectives": [
+    { "name": "@tailwind", "description": "Tailwind CSS entrypoint directive (base, components, utilities)." },
+    { "name": "@apply", "description": "Tailwind CSS utility composition directive." },
+    { "name": "@layer", "description": "Tailwind CSS layering directive (base, components, utilities)." },
+    { "name": "@config", "description": "Tailwind CSS configuration directive for PostCSS." },
+    { "name": "@variants", "description": "Legacy Tailwind directive (v1) for generating variants." },
+    { "name": "@responsive", "description": "Legacy Tailwind directive (v1) for responsive utilities." },
+    { "name": "@screen", "description": "Tailwind CSS directive to wrap rules in a media query for a named breakpoint." }
+  ]
+}
+
