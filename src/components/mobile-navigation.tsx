@@ -34,36 +34,44 @@ export function MobileNavigation() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-2 z-50 md:hidden">
-      <div className="flex justify-around">
-        {navigationItems.map((item) => {
-          const active = isActive(item.href)
-          const IconComponent = item.icon
-          
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex flex-col items-center p-2 rounded-lg transition-colors",
-                active
-                  ? "text-[#F89813]" // Orange for active
-                  : "text-gray-500 hover:text-gray-700" // Gray for inactive
-              )}
-            >
-              <IconComponent
-                size={24}
-                className={cn(
-                  "mb-1",
-                  active
-                    ? "text-[#F89813]"
-                    : "text-gray-500"
-                )}
-              />
-              <span className="text-xs font-medium">{item.label}</span>
-            </Link>
-          )
-        })}
+    <nav
+      className="fixed inset-x-0 bottom-2 z-50 md:hidden px-4 pb-[max(env(safe-area-inset-bottom),0.25rem)]"
+      aria-label="Primäre Navigation"
+    >
+      <div
+        className="mx-auto max-w-md rounded-full border border-white/30 bg-white/60 backdrop-blur-lg shadow-[0_12px_40px_rgba(0,0,0,0.18)] saturate-150"
+      >
+        <ul className="grid grid-cols-3 items-center justify-between px-4 py-3">
+          {navigationItems.map((item) => {
+            const active = isActive(item.href)
+            const IconComponent = item.icon
+
+            return (
+              <li key={item.href} className="flex justify-center">
+                <Link
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "group flex flex-col items-center gap-1 rounded-full px-3 py-1.5 text-center text-[13px] font-medium transition-all duration-200 ease-out",
+                    "hover:opacity-95 active:scale-[0.97]",
+                    active ? "text-[#FFA726]" : "text-[#6B7280]"
+                  )}
+                >
+                  <IconComponent
+                    size={24}
+                    className={cn(
+                      "transition-colors duration-200",
+                      active ? "text-[#FFA726]" : "text-[#6B7280]"
+                    )}
+                  />
+                  <span className="leading-none">
+                    {item.label}
+                  </span>
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
       </div>
     </nav>
   )
