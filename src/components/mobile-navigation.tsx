@@ -54,14 +54,14 @@ export function MobileNavigation() {
                   className={cn(
                     "group flex flex-col items-center gap-1 rounded-full px-3 py-1.5 text-center text-[13px] font-medium transition-all duration-200 ease-out",
                     "hover:opacity-95 active:scale-[0.97]",
-                    active ? "text-[#F89813]" : "text-[#6B7280]"
+                    active ? "text-[#FFA40F]" : "text-[#6B7280]"
                   )}
                 >
                   <IconComponent
                     size={24}
                     className={cn(
                       "transition-colors duration-200",
-                      active ? "text-[#F89813]" : "text-[#6B7280]"
+                      active ? "text-[#FFA40F]" : "text-[#6B7280]"
                     )}
                   />
                   <span className="leading-none">
