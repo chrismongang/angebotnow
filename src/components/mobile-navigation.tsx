@@ -35,7 +35,7 @@ export function MobileNavigation() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-2 z-50 md:hidden px-4 pb-[max(env(safe-area-inset-bottom),0.25rem)]"
+      className="fixed inset-x-0 bottom-4 z-50 md:hidden px-4 pb-[max(env(safe-area-inset-bottom),0.25rem)]"
       aria-label="Primäre Navigation"
     >
       <div
@@ -54,14 +54,14 @@ export function MobileNavigation() {
                   className={cn(
                     "group flex flex-col items-center gap-1 rounded-full px-3 py-1.5 text-center text-[13px] font-medium transition-all duration-200 ease-out",
                     "hover:opacity-95 active:scale-[0.97]",
-                    active ? "text-[#FFA726]" : "text-[#6B7280]"
+                    active ? "text-[#F89813]" : "text-[#6B7280]"
                   )}
                 >
                   <IconComponent
                     size={24}
                     className={cn(
                       "transition-colors duration-200",
-                      active ? "text-[#FFA726]" : "text-[#6B7280]"
+                      active ? "text-[#F89813]" : "text-[#6B7280]"
                     )}
                   />
                   <span className="leading-none">
