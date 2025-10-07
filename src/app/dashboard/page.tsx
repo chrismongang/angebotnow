@@ -547,14 +547,11 @@ function DashboardContent() {
                     <Textarea
                       value={projectInfo}
                       onChange={(e) => setProjectInfo(e.target.value)}
-                      placeholder="Beschreiben Sie das Projekt detailliert..."
+                    placeholder="Je detaillierter die Beschreibung, desto präziser die KI-Analyse"
                       className="bg-[#EDEDED] border-[#EDEDED] focus:border-[#F89813] focus:ring-[#F89813] text-base min-h-24 resize-none rounded-[10px]"
                       required
                       disabled={isSubmitting}
                     />
-                    <p className="text-xs text-[#676767]">
-                      Je detaillierter die Beschreibung, desto präziser die KI-Analyse
-                    </p>
                   </div>
 
                   {/* Client Name Section */}
@@ -564,7 +561,7 @@ function DashboardContent() {
                       type="text"
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
-                      placeholder="Vor- & Nachname oder Firmenname"
+                      placeholder="Vor-/Nachname oder Firma"
                       className="bg-[#EDEDED] border-[#EDEDED] focus:border-[#F89813] focus:ring-[#F89813] h-12 text-base rounded-[10px]"
                       required
                       disabled={isSubmitting}
