@@ -16,6 +16,7 @@ import { QuoteFeedback } from "@/components/feedback/quote-feedback"
 import { ArrowLeft, FileText, Download, Share2, Edit, Save, X, Crown, Plus } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 
 
 interface PageProps {
@@ -31,7 +32,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [editedPositions, setEditedPositions] = useState<Array<{ title: string; qty: number; unit: string; price: number }>>([])
+  const [editedPositions, setEditedPositions] = useState<Array<{ title: string; qty: number | string; unit: string; price: number | string }>>([])
   const [isUpdating, setIsUpdating] = useState(false)
   const [canEdit, setCanEdit] = useState(false)
 
@@ -71,6 +72,19 @@ export default function QuoteDetailPage({ params }: PageProps) {
     checkEditPermissions()
   }, [id, session])
 
+  // Auto-resize textareas when entering edit mode
+  useEffect(() => {
+    if (isEditing) {
+      setTimeout(() => {
+        const textareas = document.querySelectorAll('textarea')
+        textareas.forEach(textarea => {
+          textarea.style.height = 'auto'
+          textarea.style.height = textarea.scrollHeight + 'px'
+        })
+      }, 0)
+    }
+  }, [isEditing, editedPositions])
+
   if (isLoading) {
     return (
       <AuthenticatedLayout>
@@ -92,17 +106,20 @@ export default function QuoteDetailPage({ params }: PageProps) {
   const aiData = quote.aiData as AIResult | null
 
   // Calculate correct totals
-  const getQuoteTotal = (positions: Array<{ qty: number; price: number }>) => {
-    const subtotal = calculateTotal(positions)
+  const getQuoteTotal = (positions: Array<{ qty: number | string; price: number | string }>) => {
+    const numericPositions = positions.map(p => ({ qty: Number(p.qty) || 0, price: Number(p.price) || 0 }))
+    const subtotal = calculateTotal(numericPositions)
     return calculateTotalWithVAT(subtotal)
   }
 
-  const getSubtotal = (positions: Array<{ qty: number; price: number }>) => {
-    return calculateTotal(positions)
+  const getSubtotal = (positions: Array<{ qty: number | string; price: number | string }>) => {
+    const numericPositions = positions.map(p => ({ qty: Number(p.qty) || 0, price: Number(p.price) || 0 }))
+    return calculateTotal(numericPositions)
   }
 
-  const getVAT = (positions: Array<{ qty: number; price: number }>) => {
-    const subtotal = calculateTotal(positions)
+  const getVAT = (positions: Array<{ qty: number | string; price: number | string }>) => {
+    const numericPositions = positions.map(p => ({ qty: Number(p.qty) || 0, price: Number(p.price) || 0 }))
+    const subtotal = calculateTotal(numericPositions)
     return calculateTotalWithVAT(subtotal) - subtotal
   }
 
@@ -188,9 +205,36 @@ export default function QuoteDetailPage({ params }: PageProps) {
   const handleSave = async () => {
     if (!quote || editedPositions.length === 0) return
 
+    // Validierung
+    const errors: string[] = []
+    editedPositions.forEach((pos, index) => {
+      if (!pos.title.trim()) {
+        errors.push(`Position ${index + 1}: Bezeichnung fehlt`)
+      }
+      if (pos.qty === '' || isNaN(Number(pos.qty)) || Number(pos.qty) <= 0) {
+        errors.push(`Position ${index + 1}: Gültige Menge erforderlich`)
+      }
+      if (pos.price === '' || isNaN(Number(pos.price)) || Number(pos.price) < 0) {
+        errors.push(`Position ${index + 1}: Gültiger Preis erforderlich`)
+      }
+    })
+
+    if (errors.length > 0) {
+      alert('Bitte korrigieren Sie folgende Fehler:\n\n' + errors.join('\n'))
+      return
+    }
+
+    // Konvertiere zu Zahlen für das Speichern
+    const positionsToSave = editedPositions.map(pos => ({
+      title: pos.title,
+      qty: Number(pos.qty),
+      unit: pos.unit,
+      price: Number(pos.price)
+    }))
+
     setIsUpdating(true)
     try {
-      const result = await updateQuotePositions(quote.id, editedPositions)
+      const result = await updateQuotePositions(quote.id, positionsToSave)
       
       if (result.success) {
         // Update local state
@@ -198,8 +242,8 @@ export default function QuoteDetailPage({ params }: PageProps) {
           ...quote,
           aiData: {
             ...quote.aiData,
-            positions: editedPositions,
-            total: editedPositions.reduce((sum, pos) => sum + (pos.qty * pos.price), 0)
+            positions: positionsToSave,
+            total: positionsToSave.reduce((sum, pos) => sum + (pos.qty * pos.price), 0)
           }
         })
         setIsEditing(false)
@@ -220,9 +264,14 @@ export default function QuoteDetailPage({ params }: PageProps) {
     const newPositions = [...editedPositions]
     newPositions[index] = {
       ...newPositions[index],
-      [field]: field === 'qty' || field === 'price' ? Number(value) : value
+      [field]: value
     }
     setEditedPositions(newPositions)
+  }
+
+  const autoResize = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    e.target.style.height = 'auto'
+    e.target.style.height = e.target.scrollHeight + 'px'
   }
 
   const removePosition = (index: number) => {
@@ -231,7 +280,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
   }
 
   const addPosition = () => {
-    const newPosition = { title: '', qty: 1, unit: 'Psch', price: 0 }
+    const newPosition = { title: '', qty: '', unit: 'Psch', price: '' }
     setEditedPositions([...editedPositions, newPosition])
   }
 
@@ -448,18 +497,23 @@ export default function QuoteDetailPage({ params }: PageProps) {
                             <div key={index} className="p-3 bg-muted/50 rounded-lg">
                               {isEditing ? (
                                 <div className="space-y-3">
-                                  <div className="flex items-center justify-between">
-                                    <Input
+                                  <div className="flex items-start justify-between gap-2">
+                                    <Textarea
                                       value={position.title}
-                                      onChange={(e) => updatePosition(index, 'title', e.target.value)}
+                                      onChange={(e) => {
+                                        updatePosition(index, 'title', e.target.value)
+                                        autoResize(e)
+                                      }}
+                                      onInput={autoResize}
                                       placeholder="Bezeichnung"
-                                      className="bg-white flex-1 mr-2"
+                                      className="bg-white flex-1 min-h-[40px] resize-none overflow-hidden"
+                                      rows={1}
                                     />
                                     <Button
                                       variant="ghost"
                                       size="sm"
                                       onClick={() => removePosition(index)}
-                                      className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2"
+                                      className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 flex-shrink-0"
                                     >
                                       <X size={16} />
                                     </Button>
@@ -471,6 +525,8 @@ export default function QuoteDetailPage({ params }: PageProps) {
                                       onChange={(e) => updatePosition(index, 'qty', e.target.value)}
                                       placeholder="Menge"
                                       className="bg-white"
+                                      min="0"
+                                      step="1"
                                     />
                                     <Input
                                       value={position.unit}
@@ -485,21 +541,22 @@ export default function QuoteDetailPage({ params }: PageProps) {
                                       onChange={(e) => updatePosition(index, 'price', e.target.value)}
                                       placeholder="Preis"
                                       className="bg-white"
+                                      min="0"
                                     />
                                   </div>
                                 </div>
                               ) : (
-                                <div className="flex justify-between items-center">
-                                  <div className="flex-1">
-                                    <p className="font-medium">{position.title}</p>
+                                <div className="flex justify-between items-center gap-4">
+                                  <div className="flex-1 min-w-0 pr-2">
+                                    <p className="font-medium break-words">{position.title}</p>
                                     <p className="text-sm text-muted-foreground">
                                       {position.qty} {position.unit}
                                     </p>
                                   </div>
-                                  <div className="text-right">
-                                    <p className="font-medium">{formatPrice(position.qty * position.price)}</p>
-                                    <p className="text-sm text-muted-foreground">
-                                      {formatPrice(position.price)}/{position.unit}
+                                  <div className="text-right flex-shrink-0">
+                                    <p className="font-medium whitespace-nowrap">{formatPrice(Number(position.qty) * Number(position.price))}</p>
+                                    <p className="text-sm text-muted-foreground whitespace-nowrap">
+                                      {formatPrice(Number(position.price))}/{position.unit}
                                     </p>
                                   </div>
                                 </div>
