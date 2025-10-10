@@ -89,6 +89,20 @@ EINHEITEN:
 - Psch nur für kleine, definierte Arbeiten
 - Mengenangaben müssen realistisch sein
 
+POSITIONSBESCHREIBUNGEN:
+- Verwende präzise Fachterminologie für das jeweilige Gewerk
+- Beschreibe den Leistungsumfang klar und verständlich
+- Erwähne wesentliche Materialien und Standards wo sinnvoll
+- Formuliere professionell im Stil von VOB/BGB-Verträgen
+- Strukturiere komplexe Positionen mit aussagekräftigen Details
+- Beispiele guter Formulierungen:
+  * Statt: "Wände streichen"
+  → "Wandflächen grundieren und 2-fach deckend streichen mit Dispersionsfarbe matt"
+  * Statt: "Fliesen verlegen"
+  → "Bodenfliesen verlegen im Dickbettverfahren, inkl. Grundierung und Verfugung"
+  * Statt: "Sanitär installieren"
+  → "WC-Anlage demontieren und entsorgen, neue wandhängende WC-Keramik montieren inkl. Unterputz-Spülkasten"
+
 Erstelle eine kurze, prägnante Projektzusammenfassung (max. 100 Zeichen) für die Einleitung des Angebots.
 
 JSON-Format:
@@ -114,96 +128,102 @@ JSON-Format:
 
 BEISPIEL FÜR BADEZIMMER-SANIERUNG:
 {
-  "description": "Komplette Badezimmer-Sanierung mit neuen Fliesen",
+  "description": "Komplette Badezimmer-Sanierung mit Fliesenarbeiten und Sanitärinstallation",
   "positions": [
     {
-      "title": "Entfernung alter Fliesen und Estrich",
-      "qty": 12,
-      "unit": "m²",
-      "price": 25.00
-    },
-    {
-      "title": "Fliesenarbeiten Wand - hochwertige Fliesen",
+      "title": "Rückbau und Entsorgung alter Wandfliesen inkl. Putzträger, fachgerechte Entsorgung des Abbruchmaterials",
       "qty": 18,
       "unit": "m²",
+      "price": 28.00
+    },
+    {
+      "title": "Rückbau Bodenfliesen inkl. Estrichschicht bis 3cm Stärke, Untergrund vorbereiten und ebnen",
+      "qty": 6,
+      "unit": "m²",
+      "price": 32.00
+    },
+    {
+      "title": "Wandfliesenarbeiten im Dünnbettverfahren, großformatige Feinsteinzeugfliesen 30x60cm, inkl. Grundierung",
+      "qty": 18,
+      "unit": "m²",
+      "price": 55.00
+    },
+    {
+      "title": "Bodenfliesenarbeiten mit rutschfesten Fliesen R10/B, Verlegung im Dünnbettverfahren inkl. Gefälleausbildung",
+      "qty": 6,
+      "unit": "m²",
+      "price": 48.00
+    },
+    {
+      "title": "Verfugung aller Fliesenflächen mit wasserabweisender Fugenmasse, Silikonfugen an Wandanschlüssen",
+      "qty": 24,
+      "unit": "m²",
+      "price": 9.50
+    },
+    {
+      "title": "Demontage alte WC-Anlage, Installation wandhängendes WC komplett mit Unterputz-Spülkasten und Drückerplatte, Anschluss an Abwasserleitung",
+      "qty": 1,
+      "unit": "Stück",
+      "price": 380.00
+    },
+    {
+      "title": "Waschtisch-Kombination montieren inkl. Unterschrank, Keramik-Einbauwaschtisch 80cm, Einhebel-Waschtischarmatur, Anschluss an Kalt- und Warmwasser",
+      "qty": 1,
+      "unit": "Stück",
+      "price": 420.00
+    },
+    {
+      "title": "Bodenebene Duschfläche einbauen 90x120cm inkl. Ablaufrinne, Duschabtrennung aus ESG-Glas 8mm, inkl. aller Dichtarbeiten",
+      "qty": 1,
+      "unit": "Stück",
+      "price": 580.00
+    },
+    {
+      "title": "Container-Gestellung und fachgerechte Entsorgung aller Abbruchmaterialien, Fliesen, Keramik und Bauschutt",
+      "qty": 1,
+      "unit": "Psch",
+      "price": 220.00
+    }
+  ],
+  "total": 3531.00
+}
+
+BEISPIEL FÜR MALERARBEITEN:
+{
+  "description": "Umfassende Renovierung Wohnzimmer - Malerarbeiten in Premiumqualität",
+  "positions": [
+    {
+      "title": "Wandflächen grundieren mit Tiefengrund, anschließend 2-fach deckend streichen mit Dispersionsfarbe matt (Deckkraftklasse 1), inkl. Abkleben und Abdeckarbeiten",
+      "qty": 35,
+      "unit": "m²",
+      "price": 15.00
+    },
+    {
+      "title": "Deckenflächen vorbereiten, grundieren und 2-fach deckend streichen mit Dispersionsdeckenfarbe weiß matt, tropfgehemmt",
+      "qty": 20,
+      "unit": "m²",
+      "price": 12.50
+    },
+    {
+      "title": "Türrahmen und Türblätter schleifen, grundieren und 2-fach lackieren mit Acryllack seidenmatt weiß, inkl. Demontage/Montage Türbeschläge",
+      "qty": 3,
+      "unit": "Stück",
+      "price": 65.00
+    },
+    {
+      "title": "Fensterbank innen abschleifen, grundieren und 2-fach lackieren mit lösemittelfreiem Buntlack seidenmatt",
+      "qty": 2,
+      "unit": "Stück",
       "price": 45.00
     },
     {
-      "title": "Fliesenarbeiten Boden - rutschfeste Fliesen",
-      "qty": 6,
-      "unit": "m²",
-      "price": 42.00
-    },
-    {
-      "title": "Fugenmörtel und Silikon",
-      "qty": 24,
-      "unit": "m²",
-      "price": 8.00
-    },
-    {
-      "title": "WC-Installation komplett",
-      "qty": 1,
-      "unit": "Stück",
-      "price": 280.00
-    },
-    {
-      "title": "Waschbecken mit Armatur",
-      "qty": 1,
-      "unit": "Stück",
-      "price": 320.00
-    },
-    {
-      "title": "Dusche komplett mit Ablauf",
-      "qty": 1,
-      "unit": "Stück",
-      "price": 450.00
-    },
-    {
-      "title": "Entsorgung Altmaterial",
+      "title": "Komplettrenovierung - Möbel ausräumen und einräumen, Raum komplett abdecken mit Malervlies, Reinigung nach Abschluss der Arbeiten",
       "qty": 1,
       "unit": "Psch",
       "price": 180.00
     }
   ],
-  "total": 2846.00
-}
-
-BEISPIEL FÜR MALERARBEITEN:
-{
-  "description": "Wohnzimmer-Renovierung - Malerarbeiten",
-  "positions": [
-    {
-      "title": "Wandfarbe Premium - 2 Anstriche",
-      "qty": 35,
-      "unit": "m²",
-      "price": 12.50
-    },
-    {
-      "title": "Deckenfarbe - 2 Anstriche",
-      "qty": 20,
-      "unit": "m²",
-      "price": 10.00
-    },
-    {
-      "title": "Türrahmen lackieren",
-      "qty": 3,
-      "unit": "Stück",
-      "price": 45.00
-    },
-    {
-      "title": "Fensterbank streichen",
-      "qty": 2,
-      "unit": "Stück",
-      "price": 35.00
-    },
-    {
-      "title": "Möblierung und Schutz",
-      "qty": 1,
-      "unit": "Psch",
-      "price": 120.00
-    }
-  ],
-  "total": 795.00
+  "total": 972.50
 }`;
 
     const userPrompt = `PROJEKTANALYSE:
@@ -219,7 +239,10 @@ WICHTIG:
 - Verwende realistische Materialmengen und Arbeitszeiten
 - Kalkuliere korrekte Einzelpreise pro Position
 - Berücksichtige alle notwendigen Materialien und Arbeiten
-- Erstelle eine präzise Gesamtsumme`;
+- Erstelle eine präzise Gesamtsumme
+- Formuliere alle Positionen in professioneller Fachsprache
+- Beschreibe den Leistungsumfang klar und detailliert
+- Jede Position soll aussagekräftig und präzise formuliert sein`;
 
     // NEU: Vision API Integration
     const messages: any[] = [

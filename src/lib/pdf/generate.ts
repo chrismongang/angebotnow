@@ -118,7 +118,7 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
       }
     });
   }
-  if (input.company && isValidText(input.company.email)) drawText(`E-Mail: ${input.company.email}`, senderX, senderY - 48, 10);
+  if (input.company && isValidText(input.company.email)) drawText(`${input.company.email}`, senderX, senderY - 48, 10);
   if (input.company && isValidText(input.company.phone)) drawText(`Tel.: ${input.company.phone}`, senderX, senderY - 64, 10);
 
   // Recipient information (top left, below branding)
