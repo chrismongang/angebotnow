@@ -1,0 +1,96 @@
+<svg width="600" height="300" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="600" height="300" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="300" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#404040">
+    Logo-Format Vergleich
+  </text>
+  
+  <!-- Left side - Transparent Logo -->
+  <g transform="translate(50, 60)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#22c55e">
+      ✓ Empfohlen: Transparentes Logo
+    </text>
+    
+    <!-- PDF Background simulation -->
+    <rect x="0" y="20" width="200" height="120" fill="white" stroke="#e5e7eb" stroke-width="2"/>
+    
+    <!-- Company info text -->
+    <text x="10" y="40" font-family="Arial, sans-serif" font-size="10" fill="#666">
+      Musterfirma GmbH
+    </text>
+    <text x="10" y="55" font-family="Arial, sans-serif" font-size="10" fill="#666">
+      Musterstraße 123
+    </text>
+    <text x="10" y="70" font-family="Arial, sans-serif" font-size="10" fill="#666">
+      12345 Musterstadt
+    </text>
+    
+    <!-- Transparent logo (PNG style) -->
+    <g transform="translate(120, 50)">
+      <!-- Logo background circle (transparent) -->
+      <circle cx="30" cy="30" r="25" fill="none" stroke="#3b82f6" stroke-width="3"/>
+      <!-- Logo text -->
+      <text x="30" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#3b82f6">
+        MF
+      </text>
+    </g>
+    
+    <text x="0" y="160" font-family="Arial, sans-serif" font-size="12" fill="#22c55e">
+      • Sauberer Look in PDF
+    </text>
+    <text x="0" y="175" font-family="Arial, sans-serif" font-size="12" fill="#22c55e">
+      • Passt zu jedem Hintergrund
+    </text>
+    <text x="0" y="190" font-family="Arial, sans-serif" font-size="12" fill="#22c55e">
+      • Professionell
+    </text>
+  </g>
+  
+  <!-- Right side - Non-transparent Logo -->
+  <g transform="translate(350, 60)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#ef4444">
+      ✗ Nicht empfohlen: Logo mit Hintergrund
+    </text>
+    
+    <!-- PDF Background simulation -->
+    <rect x="0" y="20" width="200" height="120" fill="white" stroke="#e5e7eb" stroke-width="2"/>
+    
+    <!-- Company info text -->
+    <text x="10" y="40" font-family="Arial, sans-serif" font-size="10" fill="#666">
+      Musterfirma GmbH
+    </text>
+    <text x="10" y="55" font-family="Arial, sans-serif" font-size="10" fill="#666">
+      Musterstraße 123
+    </text>
+    <text x="10" y="70" font-family="Arial, sans-serif" font-size="10" fill="#666">
+      12345 Musterstadt
+    </text>
+    
+    <!-- Non-transparent logo (JPG style) -->
+    <g transform="translate(120, 50)">
+      <!-- Logo background circle (white) -->
+      <circle cx="30" cy="30" r="25" fill="white" stroke="#3b82f6" stroke-width="3"/>
+      <!-- Logo text -->
+      <text x="30" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#3b82f6">
+        MF
+      </text>
+    </g>
+    
+    <text x="0" y="160" font-family="Arial, sans-serif" font-size="12" fill="#ef4444">
+      • Weißer Hintergrund sichtbar
+    </text>
+    <text x="0" y="175" font-family="Arial, sans-serif" font-size="12" fill="#ef4444">
+      • Wirkt unprofessionell
+    </text>
+    <text x="0" y="190" font-family="Arial, sans-serif" font-size="12" fill="#ef4444">
+      • Stört das Design
+    </text>
+  </g>
+  
+  <!-- Bottom tip -->
+  <text x="300" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#666">
+    Tipp: Verwenden Sie PNG-Dateien mit transparentem Hintergrund für beste Ergebnisse
+  </text>
+</svg>

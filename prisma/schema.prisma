@@ -52,6 +52,7 @@ model User {
   bankName            String?
   city                String?
   companyName         String?
+  companyLogo         String?            // URL zum Firmenlogo (nur für PRO-User)
   currentYear         Int                @default(2025)
   emailVerified       DateTime?
   image               String?

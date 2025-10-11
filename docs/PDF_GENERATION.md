@@ -21,7 +21,8 @@ AngebotNow now uses `pdf-lib` for PDF generation instead of the previous placeho
 
 ### PDF Structure
 The generated PDF includes:
-- Company header (AngebotNow branding)
+- **Company logo** (PRO users only, positioned top-left with proper aspect ratio)
+- Company header (AngebotNow branding for FREE users)
 - Quote number and date
 - Client information
 - Project description (with text wrapping)
@@ -48,3 +49,11 @@ PDFs are automatically generated when:
 - Uses `Buffer.from()` to convert `Uint8Array` to proper response format
 - Handles async params correctly for Next.js 15
 - Includes proper error handling and status codes
+- **Logo Integration**: PRO users' company logos are automatically embedded in PDFs
+- **Logo Positioning**: Logos are positioned top-left with intelligent aspect ratio preservation
+- **Format Support**: PNG and JPG logos are supported with automatic format detection
+
+## Related Documentation
+
+- [LOGO_UPLOAD_FEATURE.md](./LOGO_UPLOAD_FEATURE.md) - Complete logo upload feature documentation
+- [USER_DATA_INTEGRATION.md](./USER_DATA_INTEGRATION.md) - User data management and PDF integration

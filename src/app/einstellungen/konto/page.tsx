@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AuthenticatedLayout } from "@/components/authenticated-layout"
+import { LogoUpload } from "@/components/logo-upload"
 import Link from 'next/link'
 import { ArrowLeft, Edit, Save, X, CheckCircle, AlertCircle } from 'lucide-react'
 import { type UserData } from '@/lib/user-data'
@@ -18,6 +19,7 @@ export default function KontoPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [subscriptionInfo, setSubscriptionInfo] = useState<{tier: 'FREE' | 'PRO'} | null>(null)
 
   // Load user data from database when session is available
   useEffect(() => {
@@ -25,6 +27,7 @@ export default function KontoPage() {
 
     if (status === 'authenticated' && session?.user?.id) {
       loadUserData()
+      loadSubscriptionInfo()
     } else if (status === 'unauthenticated') {
       // Fallback to localStorage for demo mode
       loadFromLocalStorage()
@@ -47,6 +50,40 @@ export default function KontoPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const loadSubscriptionInfo = async () => {
+    try {
+      // Versuche zuerst die Subscription-Sync-API
+      const response = await fetch('/api/subscription/sync-status')
+      if (response.ok) {
+        const data = await response.json()
+        setSubscriptionInfo({ tier: data.subscription?.tier || 'FREE' })
+        return
+      }
+    } catch (error) {
+      console.error('Error loading subscription info from sync API:', error)
+    }
+
+    // Fallback: Lade Subscription-Info direkt aus der User-Data API
+    try {
+      const response = await fetch('/api/user-data')
+      if (response.ok) {
+        const data = await response.json()
+        // Prüfe ob der User PRO-Status in der Datenbank hat
+        if (data.subscriptionTier === 'PRO') {
+          setSubscriptionInfo({ tier: 'PRO' })
+        } else {
+          setSubscriptionInfo({ tier: 'FREE' })
+        }
+        return
+      }
+    } catch (error) {
+      console.error('Error loading subscription info from user data:', error)
+    }
+
+    // Letzter Fallback
+    setSubscriptionInfo({ tier: 'FREE' })
   }
 
   const loadFromLocalStorage = () => {
@@ -470,6 +507,12 @@ export default function KontoPage() {
             </CardContent>
           </Card>
 
+          {/* Logo Upload Card */}
+          <LogoUpload
+            currentLogo={userData.companyLogo}
+            onLogoChange={(logoUrl) => setUserData({...userData, companyLogo: logoUrl})}
+            isProUser={subscriptionInfo?.tier === 'PRO'}
+          />
 
         </div>
       </div>

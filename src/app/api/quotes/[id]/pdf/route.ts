@@ -99,6 +99,7 @@ export async function GET(
       bankName: string;
       bankAccount: string;
       bankBic: string;
+      logo?: string;
     } = {
       name: 'Inatros GmbH',
       address: 'Musterstraße 123\n90475 Nürnberg',
@@ -109,7 +110,8 @@ export async function GET(
       taxOffice: 'Finanzamt Nürnberg',
       bankName: 'Musterbank AG',
       bankAccount: 'DE89 3704 0044 0532 0130 00',
-      bankBic: 'COBADEFFXXX'
+      bankBic: 'COBADEFFXXX',
+      logo: undefined
     }
 
     try {
@@ -134,7 +136,8 @@ export async function GET(
         taxOffice: userData.taxOffice,
         bankName: userData.bankName,
         bankAccount: userData.bankAccount,
-        bankBic: userData.bankBic
+        bankBic: userData.bankBic,
+        logo: userData.companyLogo
       }
       
       console.log('Company info for PDF:', companyInfo)

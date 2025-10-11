@@ -101,7 +101,7 @@ export async function getUserDataFromDB(userId: string): Promise<UserData> {
       city: user.city || '',
       email: user.email || '',
       phone: user.phone || '',
-      companyLogo: '', // Not stored in DB yet
+      companyLogo: user.companyLogo || '',
       taxNumber: user.taxNumber || '',
       vatNumber: user.vatNumber || '',
       taxOffice: user.taxOffice || '',
@@ -160,6 +160,7 @@ export async function saveUserDataToDB(userId: string, data: UserData): Promise<
         bankName: data.bankName,
         bankAccount: data.bankAccount,
         bankBic: data.bankBic,
+        companyLogo: data.companyLogo,
         lastQuoteNumber: data.lastQuoteNumber,
         currentYear: data.currentYear
       }
@@ -212,6 +213,7 @@ export function getCompanyInfoForPDF(): {
   bankName?: string;
   bankAccount?: string;
   bankBic?: string;
+  logo?: string;
 } {
   const userData = getUserData();
   return {
@@ -224,7 +226,8 @@ export function getCompanyInfoForPDF(): {
     taxOffice: userData.taxOffice,
     bankName: userData.bankName,
     bankAccount: userData.bankAccount,
-    bankBic: userData.bankBic
+    bankBic: userData.bankBic,
+    logo: userData.companyLogo
   };
 }
 

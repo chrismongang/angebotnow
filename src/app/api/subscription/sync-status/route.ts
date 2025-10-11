@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth';
 import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/db';
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -42,13 +42,17 @@ export async function POST(request: NextRequest) {
       const activeSubscription = subscriptions.data[0];
       
       // Update user subscription status
+      const endDate = (activeSubscription as any).current_period_end 
+        ? new Date((activeSubscription as any).current_period_end * 1000)
+        : null;
+        
       updatedUser = await prisma.user.update({
         where: { id: user.id },
         data: {
           subscriptionStatus: 'ACTIVE',
           subscriptionTier: 'PRO',
           subscriptionId: activeSubscription.id,
-          subscriptionEndDate: new Date((activeSubscription as any).current_period_end * 1000),
+          subscriptionEndDate: endDate,
           lastPaymentDate: new Date(),
         }
       });
@@ -60,7 +64,7 @@ export async function POST(request: NextRequest) {
           status: 'ACTIVE',
           tier: 'PRO',
           id: activeSubscription.id,
-          endDate: new Date((activeSubscription as any).current_period_end * 1000).toISOString(),
+          endDate: endDate ? endDate.toISOString() : null,
         }
       });
     } else {
@@ -93,4 +97,8 @@ export async function POST(request: NextRequest) {
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
+}
+
+export async function POST(request: NextRequest) {
+  return GET(request);
 }

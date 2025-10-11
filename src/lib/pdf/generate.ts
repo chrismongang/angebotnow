@@ -20,6 +20,7 @@ export type GeneratePDFInput = {
     bankName?: string;
     bankAccount?: string;
     bankBic?: string;
+    logo?: string;
   };
   userSubscriptionTier?: 'FREE' | 'PRO';
 };
@@ -98,6 +99,62 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
     const brandingY = height - 40;
     drawText('AngebotNow', brandingX, brandingY, 18, true, rgb(0.973, 0.596, 0.075)); // Orange color
     drawText('Professionelle Angebotserstellung', brandingX, brandingY - 20, 10, false, grayscale(0.5));
+  }
+
+  // Logo für PRO-User (links oben)
+  if (input.userSubscriptionTier === 'PRO' && input.company?.logo) {
+    try {
+      // Logo von URL laden und in PDF einbetten
+      const logoResponse = await fetch(input.company.logo)
+      if (logoResponse.ok) {
+        const logoBytes = await logoResponse.arrayBuffer()
+        
+        // Versuche PNG zu laden, falls das fehlschlägt, versuche JPG
+        let logoImage;
+        try {
+          logoImage = await pdfDoc.embedPng(logoBytes)
+        } catch (pngError) {
+          try {
+            logoImage = await pdfDoc.embedJpg(logoBytes)
+          } catch (jpgError) {
+            console.warn('Logo konnte nicht als PNG oder JPG geladen werden:', jpgError)
+            logoImage = null
+          }
+        }
+        
+        if (logoImage) {
+          // Logo positionieren (links oben) mit korrektem Seitenverhältnis
+          const maxWidth = 250
+          const maxHeight = 60
+          const logoX = 40
+          const logoY = height - 80
+          
+          // Berechne die tatsächlichen Dimensionen basierend auf dem Seitenverhältnis
+          const imageWidth = logoImage.width
+          const imageHeight = logoImage.height
+          const aspectRatio = imageWidth / imageHeight
+          
+          let logoWidth = maxWidth
+          let logoHeight = maxWidth / aspectRatio
+          
+          // Wenn die Höhe zu groß ist, skaliere basierend auf der Höhe
+          if (logoHeight > maxHeight) {
+            logoHeight = maxHeight
+            logoWidth = maxHeight * aspectRatio
+          }
+          
+          page.drawImage(logoImage, {
+            x: logoX,
+            y: logoY,
+            width: logoWidth,
+            height: logoHeight,
+          })
+        }
+      }
+    } catch (error) {
+      console.warn('Logo konnte nicht geladen werden:', error)
+      // PDF wird ohne Logo generiert
+    }
   }
 
   // Sender information (top right)
