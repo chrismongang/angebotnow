@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Upload, X, AlertCircle, CheckCircle, Crown, Loader2 } from 'lucide-react'
+import { Upload, X, AlertCircle, CheckCircle, Crown, Loader2, Trash2 } from 'lucide-react'
 import { LogoUploadModal } from './logo-upload-modal'
 
 interface LogoUploadProps {
@@ -136,16 +136,16 @@ export function LogoUpload({ currentLogo, onLogoChange, isProUser }: LogoUploadP
                   />
                   <div className="flex-1">
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleDeleteLogo}
-                    disabled={isUploading}
-                    className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
-                  >
-                    <X size={16} />
-                    Entfernen
-                  </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={handleDeleteLogo}
+                            disabled={isUploading}
+                            className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
+                            title="Logo entfernen"
+                          >
+                            <Trash2 size={16} />
+                          </Button>
                 </div>
                 <p className="text-sm text-gray-600 text-center">
                   Ihr Logo wird automatisch in alle PDF-Angebote eingefügt.
