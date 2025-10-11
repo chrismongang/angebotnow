@@ -188,6 +188,40 @@ export default function QuoteDetailPage({ params }: PageProps) {
     }
   }
 
+  const downloadPDF = async (quoteId: string) => {
+    try {
+      const response = await fetch(`/api/quotes/${quoteId}/pdf`)
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        
+        // Get filename from Content-Disposition header
+        const contentDisposition = response.headers.get('Content-Disposition')
+        let filename = `angebot_${quoteId}.pdf` // fallback
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="(.+)"/)
+          if (filenameMatch) {
+            filename = filenameMatch[1]
+          }
+        }
+        
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      } else {
+        console.error('Failed to download PDF')
+        alert('Fehler beim Herunterladen der PDF.')
+      }
+    } catch (error) {
+      console.error('Error downloading PDF:', error)
+      alert('Fehler beim Herunterladen der PDF.')
+    }
+  }
+
   
 
   const handleEdit = () => {
@@ -332,14 +366,12 @@ export default function QuoteDetailPage({ params }: PageProps) {
                     {/* Action Buttons */}
                     <div className="space-y-3">
                       <Button 
-                        asChild 
                         className="w-full h-12 border-orange-300 text-[#404040] hover:bg-orange-50 rounded-[14px]"
                         variant="outline"
+                        onClick={() => downloadPDF(quote.id)}
                       >
-                        <a href={`/api/quotes/${quote.id}/pdf`} target="_blank" rel="noopener noreferrer">
-                          <Download className="h-5 w-5 mr-2 text-[#F89813]" />
-                          PDF herunterladen
-                        </a>
+                        <Download className="h-5 w-5 mr-2 text-[#F89813]" />
+                        PDF herunterladen
                       </Button>
                       
                       <Button 
@@ -594,7 +626,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
                           <p className="text-sm">{formatPrice(vat)}</p>
                         </div>
                         <div className="flex justify-between items-center pt-2 border-t">
-                          <p className="text-lg font-semibold">Gesamtsumme</p>
+                          <p className="text-lg font-semibold">Gesamt</p>
                           <p className="text-2xl font-bold text-primary">{formatPrice(total)}</p>
                         </div>
                       </div>
