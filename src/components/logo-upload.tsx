@@ -141,10 +141,10 @@ export function LogoUpload({ currentLogo, onLogoChange, isProUser }: LogoUploadP
                             size="sm"
                             onClick={handleDeleteLogo}
                             disabled={isUploading}
-                            className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
+                            className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white min-w-[44px] min-h-[44px]"
                             title="Logo entfernen"
                           >
-                            <Trash2 size={16} />
+                            <Trash2 size={20} />
                           </Button>
                 </div>
                 <p className="text-sm text-gray-600 text-center">
