@@ -57,6 +57,7 @@ function DashboardContent() {
   const [clientName, setClientName] = useState('')
   const [clientStreet, setClientStreet] = useState('')
   const [clientCity, setClientCity] = useState('')
+  const [bauvorhaben, setBauvorhaben] = useState('')
   const [includeAddress, setIncludeAddress] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -282,6 +283,7 @@ function DashboardContent() {
       formData.append('clientName', clientName)
       formData.append('clientStreet', clientStreet)
       formData.append('clientCity', clientCity)
+      formData.append('bauvorhaben', bauvorhaben)
       formData.append('includeAddress', includeAddress.toString())
       if (selectedFile) {
         formData.append('file', selectedFile)
@@ -330,6 +332,7 @@ function DashboardContent() {
     setClientName('')
     setClientStreet('')
     setClientCity('')
+    setBauvorhaben('')
     setIncludeAddress(false)
     setSelectedFile(null)
     setPreviewUrl(null)
@@ -610,6 +613,33 @@ function DashboardContent() {
                             required={includeAddress}
                             disabled={isSubmitting}
                           />
+                        </div>
+
+                        {/* Bauvorhaben Section */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-[#404040]">
+                            Bauvorhaben (optional)
+                          </Label>
+                          <Input
+                            type="text"
+                            value={bauvorhaben}
+                            onChange={(e) => setBauvorhaben(e.target.value)}
+                            placeholder={clientStreet && clientCity 
+                              ? `${clientStreet}, ${clientCity}` 
+                              : "z.B. Musterstraße 123, 90475 Nürnberg"}
+                            className="bg-[#EDEDED] border-[#EDEDED] focus:border-[#F89813] focus:ring-[#F89813] h-12 text-base rounded-[10px]"
+                            disabled={isSubmitting}
+                          />
+                          {clientStreet && clientCity && (
+                            <button
+                              type="button"
+                              onClick={() => setBauvorhaben(`${clientStreet}, ${clientCity}`)}
+                              className="text-sm text-[#F89813] hover:underline"
+                              disabled={isSubmitting}
+                            >
+                              Von Adresse übernehmen
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}

@@ -27,6 +27,7 @@ export interface UserData {
   defaultCurrency: string;
   defaultPaymentTerms: string;
   defaultValidity: string;
+  offerValidityDays: number; // Gültigkeitsdauer für Angebote in Tagen
   
   // Angebotsnummern-Verwaltung
   lastQuoteNumber: number;
@@ -52,6 +53,7 @@ const defaultUserData: UserData = {
   defaultCurrency: 'EUR',
   defaultPaymentTerms: '30 Tage netto',
   defaultValidity: '30 Tage',
+  offerValidityDays: 30,
   lastQuoteNumber: 0,
   currentYear: new Date().getFullYear()
 };
@@ -84,6 +86,7 @@ export async function getUserDataFromDB(userId: string): Promise<UserData> {
         defaultCurrency: 'EUR',
         defaultPaymentTerms: '30 Tage netto',
         defaultValidity: '30 Tage',
+        offerValidityDays: 30,
         lastQuoteNumber: 0,
         currentYear: new Date().getFullYear()
       }
@@ -108,12 +111,13 @@ export async function getUserDataFromDB(userId: string): Promise<UserData> {
       bankName: user.bankName || '',
       bankAccount: user.bankAccount || '',
       bankBic: user.bankBic || '',
-      defaultQuotePrefix: 'AN', // Default value
-      defaultCurrency: 'EUR', // Default value
-      defaultPaymentTerms: '30 Tage netto', // Default value
-      defaultValidity: '30 Tage', // Default value
-      lastQuoteNumber: user.lastQuoteNumber || 0,
-      currentYear: user.currentYear || new Date().getFullYear()
+        defaultQuotePrefix: 'AN', // Default value
+        defaultCurrency: 'EUR', // Default value
+        defaultPaymentTerms: '30 Tage netto', // Default value
+        defaultValidity: '30 Tage', // Default value
+        offerValidityDays: user.offerValidityDays || 30,
+        lastQuoteNumber: user.lastQuoteNumber || 0,
+        currentYear: user.currentYear || new Date().getFullYear()
     }
   } catch (error) {
     console.error('Error fetching user data from database:', error)
@@ -137,6 +141,7 @@ export async function getUserDataFromDB(userId: string): Promise<UserData> {
       defaultCurrency: 'EUR',
       defaultPaymentTerms: '30 Tage netto',
       defaultValidity: '30 Tage',
+      offerValidityDays: 30,
       lastQuoteNumber: 0,
       currentYear: new Date().getFullYear()
     }
@@ -161,6 +166,7 @@ export async function saveUserDataToDB(userId: string, data: UserData): Promise<
         bankAccount: data.bankAccount,
         bankBic: data.bankBic,
         companyLogo: data.companyLogo,
+        offerValidityDays: data.offerValidityDays || 30, // Ensure minimum value of 30
         lastQuoteNumber: data.lastQuoteNumber,
         currentYear: data.currentYear
       }

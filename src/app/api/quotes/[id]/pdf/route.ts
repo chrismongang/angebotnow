@@ -26,7 +26,7 @@ export async function GET(
         clientName: 'Demo Kunde',
         projectInfo: 'Demo Projekt - Bitte konfigurieren Sie Ihre Daten in den Einstellungen',
         positions: [
-          { title: 'Demo Position', qty: 1, unit: 'Psch', price: 100 }
+          { title: 'Demo Position', description: 'Demo Beschreibung', qty: 1, unit: 'Psch', price: 100 }
         ],
         total: 100,
         quoteNumber: 'AN20250001',
@@ -114,6 +114,8 @@ export async function GET(
       logo: undefined
     }
 
+    let offerValidityDays = 30; // Default value
+
     try {
       console.log('Fetching user data for userId:', quote.userId)
       // Try to get user data from database
@@ -123,7 +125,8 @@ export async function GET(
         street: userData.street,
         city: userData.city,
         email: userData.email,
-        phone: userData.phone
+        phone: userData.phone,
+        offerValidityDays: userData.offerValidityDays
       })
       
       companyInfo = {
@@ -139,6 +142,8 @@ export async function GET(
         bankBic: userData.bankBic,
         logo: userData.companyLogo
       }
+
+      offerValidityDays = userData.offerValidityDays || 30
       
       console.log('Company info for PDF:', companyInfo)
     } catch (error) {
@@ -147,14 +152,21 @@ export async function GET(
     }
 
     // Parse AI data if available
-    let positions: Array<{ title: string; qty: number; unit: string; price: number }> = [];
+    let positions: Array<{ title: string; description: string; qty: number; unit: string; price: number }> = [];
     let total = 0;
     let description = quote.projectInfo;
 
     const aiData = quote.aiData as any;
     if (aiData && typeof aiData === 'object') {
       if (aiData.positions && Array.isArray(aiData.positions)) {
-        positions = aiData.positions;
+        // Handle both old and new format for backward compatibility
+        positions = aiData.positions.map((pos: any) => ({
+          title: pos.title || 'Arbeitsleistung',
+          description: pos.description || pos.title || 'Allgemeine Arbeitsleistung nach Vereinbarung',
+          qty: pos.qty || 1,
+          unit: pos.unit || 'Psch',
+          price: pos.price || 0
+        }));
       }
       
       if (typeof aiData.total === 'number') {
@@ -186,6 +198,8 @@ export async function GET(
       quoteNumber: quoteNumber,
       clientStreet: quote.clientStreet || undefined,
       clientCity: quote.clientCity || undefined,
+      bauvorhaben: (quote as any).bauvorhaben || undefined,
+      offerValidityDays: offerValidityDays,
       company: companyInfo,
       userSubscriptionTier: quote.user.subscriptionTier
     })

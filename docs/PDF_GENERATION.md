@@ -2,7 +2,7 @@
 
 ## Overview
 
-AngebotNow now uses `pdf-lib` for PDF generation instead of the previous placeholder implementation. PDFs are generated on-demand via API routes and served as downloads.
+AngebotNow uses `pdf-lib` for professional PDF generation with advanced multi-page support, intelligent page breaks, and comprehensive legal document features. PDFs are generated on-demand via API routes and served as downloads.
 
 ## Implementation Details
 
@@ -22,13 +22,51 @@ AngebotNow now uses `pdf-lib` for PDF generation instead of the previous placeho
 ### PDF Structure
 The generated PDF includes:
 - **Company logo** (PRO users only, positioned top-left with proper aspect ratio)
-- Company header (AngebotNow branding for FREE users)
+- **Company header** (AngebotNow branding for FREE users)
+- **Header on every page** - Full header with logo/branding, sender info, recipient info, offer number, and date
+- **Footer on every page** - Company details, bank information, legal info, and page numbers
 - Quote number and date
 - Client information
+- **Bauvorhaben** field (if provided)
 - Project description (with text wrapping)
-- AI-generated positions (if available)
-- Total calculation
+- AI-generated positions table with:
+  - Position numbers
+  - Titles (bold) and descriptions
+  - Quantities and units
+  - Prices with German number formatting (1.000,00 EUR)
+- Total calculation (Subtotal, VAT 19%, Grand Total)
+- **Offer validity statement** with customizable validity days
+- **Signature section** with legally binding signature lines:
+  - "Ort, Datum" line
+  - "Unterschrift Kunde" line
+  - "Unterschrift Handwerker" line
+  - Legal explanation text
 - Professional formatting with Helvetica fonts
+
+### Multi-Page Support
+
+PDFs automatically support multiple pages with:
+- **Intelligent page breaks**: Automatically creates new pages when content exceeds available space
+- **Header repetition**: Full header appears on every page for better readability
+- **Footer repetition**: Important company and legal information on every page (industry standard in German trade)
+- **Table continuation**: Table headers repeat on new pages
+- **Page numbers**: "Seite X von Y" format in footer
+- **Optimized spacing**: Smart page break logic prevents unnecessary page creation
+
+### Page Break Logic
+
+The system uses intelligent page break detection:
+- **Minimum Y position**: `minY = 140px` (configurable via `bottomMargin`)
+- **Position-based checks**: Different space requirements for last vs. intermediate positions
+- **Automatic detection**: Checks if content fits before drawing
+- **Footer protection**: Ensures content never overlaps with footer (80px height + 60px margin)
+
+### German Number Formatting
+
+All monetary values are formatted in German standard:
+- **Thousand separators**: Points (.) e.g., `1.000,00 EUR`
+- **Decimal separator**: Comma (,) e.g., `1.234,56 EUR`
+- Applied to all prices, subtotals, VAT, and totals
 
 ### Usage
 PDFs are automatically generated when:
@@ -42,6 +80,9 @@ PDFs are automatically generated when:
 - **No file storage**: Eliminates need for PDF file management
 - **Better performance**: Smaller bundle size, faster builds
 - **Modern API**: Uses Next.js 15 App Router patterns
+- **Professional appearance**: Multi-page support with headers/footers on every page
+- **Legal compliance**: Signature sections for binding offers
+- **Industry standard**: Follows German trade document conventions
 
 ## Technical Notes
 
@@ -52,6 +93,8 @@ PDFs are automatically generated when:
 - **Logo Integration**: PRO users' company logos are automatically embedded in PDFs
 - **Logo Positioning**: Logos are positioned top-left with intelligent aspect ratio preservation
 - **Format Support**: PNG and JPG logos are supported with automatic format detection
+- **Page Management**: Tracks all pages for page numbering
+- **Dynamic Content**: Handles variable content lengths with automatic pagination
 
 ## Related Documentation
 

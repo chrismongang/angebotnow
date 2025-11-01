@@ -18,6 +18,7 @@ const uploadSchema = z.object({
   clientName: z.string().min(1, 'Kundenname ist erforderlich').max(100, 'Kundenname zu lang'),
   clientStreet: z.string().optional(),
   clientCity: z.string().optional(),
+  bauvorhaben: z.string().max(200, 'Bauvorhaben zu lang').optional(),
 })
 
 // Schema for when address is required
@@ -26,6 +27,7 @@ const uploadSchemaWithAddress = z.object({
   clientName: z.string().min(1, 'Kundenname ist erforderlich').max(100, 'Kundenname zu lang'),
   clientStreet: z.string().min(1, 'Straße & Hausnummer ist erforderlich').max(200, 'Straße & Hausnummer zu lang'),
   clientCity: z.string().min(1, 'PLZ & Ort ist erforderlich').max(200, 'PLZ & Ort zu lang'),
+  bauvorhaben: z.string().max(200, 'Bauvorhaben zu lang').optional(),
 })
 
 export async function createQuote(formData: FormData) {
@@ -69,6 +71,7 @@ export async function createQuote(formData: FormData) {
     const clientName = formData.get('clientName') as string
     const clientStreet = formData.get('clientStreet') as string
     const clientCity = formData.get('clientCity') as string
+    const bauvorhaben = formData.get('bauvorhaben') as string
     const includeAddress = formData.get('includeAddress') === 'true'
     const file = formData.get('file') as File
     
@@ -77,6 +80,7 @@ export async function createQuote(formData: FormData) {
       clientName,
       clientStreet,
       clientCity,
+      bauvorhaben,
       includeAddress,
       fileSize: file?.size,
       fileType: file?.type
@@ -90,7 +94,14 @@ export async function createQuote(formData: FormData) {
       clientName: clientName?.trim(),
       clientStreet: clientStreet?.trim(),
       clientCity: clientCity?.trim(),
+      bauvorhaben: bauvorhaben?.trim(),
     })
+    
+    // Logik: Wenn Adresse vorhanden aber BV leer, BV aus Adresse generieren
+    let finalBauvorhaben = validatedData.bauvorhaben || null
+    if (!finalBauvorhaben && includeAddress && validatedData.clientStreet && validatedData.clientCity) {
+      finalBauvorhaben = `${validatedData.clientStreet}, ${validatedData.clientCity}`
+    }
 
     if (!file) {
       console.log('No file uploaded')
@@ -135,6 +146,7 @@ export async function createQuote(formData: FormData) {
         projectInfo: validatedData.projectInfo,
         clientStreet: includeAddress ? validatedData.clientStreet : null,
         clientCity: includeAddress ? validatedData.clientCity : null,
+        bauvorhaben: finalBauvorhaben,
         status: 'PENDING',
         userId: session.user.id,
         quoteNumber: quoteNumber, // Store the structured quote number

@@ -79,6 +79,7 @@ model User {
   referredBy          String?            // Wer hat diesen User eingeladen
   referralCredits     Int                @default(0) // Gratis-Credits für Referrals
   referralCount       Int                @default(0) // Anzahl erfolgreicher Referrals
+  offerValidityDays   Int                @default(30) // Gültigkeitsdauer für Angebote in Tagen
   accounts            Account[]
   quotes              Quote[]
   sessions            Session[]
@@ -102,6 +103,7 @@ model Quote {
   quoteNumber  String?
   clientCity   String?
   clientStreet String?
+  bauvorhaben  String?     // Bauvorhaben (kann von Adresse übernommen oder separat eingegeben werden)
   user         User        @relation(fields: [userId], references: [id])
   feedbacks    Feedback[]  // Feedback-Einträge für dieses Angebot
 }

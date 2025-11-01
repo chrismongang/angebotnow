@@ -112,6 +112,7 @@ export default function KontoPage() {
           defaultCurrency: 'EUR',
           defaultPaymentTerms: '30 Tage netto',
           defaultValidity: '30 Tage',
+          offerValidityDays: 30,
           lastQuoteNumber: 0,
           currentYear: new Date().getFullYear()
         })
@@ -503,6 +504,41 @@ export default function KontoPage() {
                     )}
                   </div>
                 </div>
+              </div>
+
+              {/* Angebots-Gültigkeitsdauer */}
+              <div className="space-y-2 pt-4 border-t border-gray-200">
+                <Label className="text-sm font-medium text-[#404040]">Gültigkeitsdauer für Angebote (Tage)</Label>
+                {isEditing ? (
+                  <Input
+                    type="number"
+                    min="1"
+                    value={userData.offerValidityDays || ''}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Allow empty value for easy editing
+                      if (value === '') {
+                        setUserData({...userData, offerValidityDays: undefined});
+                        return;
+                      }
+                      const numValue = parseInt(value);
+                      // Only update if it's a valid number and at least 1
+                      if (!isNaN(numValue) && numValue >= 1) {
+                        setUserData({...userData, offerValidityDays: numValue});
+                      }
+                    }}
+                    onBlur={(e) => {
+                      // On blur, if empty, set to default 30
+                      if (e.target.value === '' || !userData.offerValidityDays) {
+                        setUserData({...userData, offerValidityDays: 30});
+                      }
+                    }}
+                    className="bg-[#EDEDED] border-[#EDEDED] focus:border-[#F89813] focus:ring-[#F89813] rounded-[10px]"
+                    placeholder="30"
+                  />
+                ) : (
+                  <p className="text-[#676767] py-2">{userData.offerValidityDays || 30} Tage</p>
+                )}
               </div>
             </CardContent>
           </Card>

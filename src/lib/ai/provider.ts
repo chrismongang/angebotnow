@@ -9,7 +9,13 @@ export type AIInput = {
 
 export type AIResult = { 
   description: string; 
-  positions: Array<{ title: string; qty: number; unit: string; price: number }>; 
+  positions: Array<{ 
+    title: string; 
+    description: string; 
+    qty: number; 
+    unit: string; 
+    price: number 
+  }>; 
   total?: number;
   // NEU: Bildanalyse-Ergebnisse (im Hintergrund)
   imageAnalysis?: {

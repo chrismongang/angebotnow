@@ -17,8 +17,20 @@ export async function processWithMockAI(input: AIInput): Promise<AIResult> {
   return {
     description: `Analyse (Mock): ${input.projectInfo}${input.clientCity ? ` - Standort: ${input.clientCity}` : ''}`,
     positions: [
-      { title: 'Fliesenlegen', qty: 38, unit: 'm²', price: Math.round(37 * priceMultiplier) },
-      { title: 'Entsorgung', qty: 1, unit: 'Psch', price: Math.round(350 * priceMultiplier) },
+      { 
+        title: 'Fliesen verlegen', 
+        description: 'Fliesenarbeiten im Dünnbettverfahren, inkl. Grundierung und Verfugung',
+        qty: 38, 
+        unit: 'm²', 
+        price: Math.round(37 * priceMultiplier) 
+      },
+      { 
+        title: 'Entsorgung', 
+        description: 'Container-Gestellung und fachgerechte Entsorgung aller Abbruchmaterialien',
+        qty: 1, 
+        unit: 'Psch', 
+        price: Math.round(350 * priceMultiplier) 
+      },
     ],
     total: Math.round(1746 * priceMultiplier),
   };

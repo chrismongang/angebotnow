@@ -90,18 +90,18 @@ EINHEITEN:
 - Mengenangaben müssen realistisch sein
 
 POSITIONSBESCHREIBUNGEN:
+- Jede Position hat einen prägnanten Titel (max. 60 Zeichen) und eine detaillierte Beschreibung
+- Titel: Kurz, präzise, fachlich korrekt (wird fett dargestellt)
+- Beschreibung: Detaillierte Leistungsbeschreibung mit Materialien, Standards und Verfahren
 - Verwende präzise Fachterminologie für das jeweilige Gewerk
-- Beschreibe den Leistungsumfang klar und verständlich
-- Erwähne wesentliche Materialien und Standards wo sinnvoll
 - Formuliere professionell im Stil von VOB/BGB-Verträgen
-- Strukturiere komplexe Positionen mit aussagekräftigen Details
-- Beispiele guter Formulierungen:
-  * Statt: "Wände streichen"
-  → "Wandflächen grundieren und 2-fach deckend streichen mit Dispersionsfarbe matt"
-  * Statt: "Fliesen verlegen"
-  → "Bodenfliesen verlegen im Dickbettverfahren, inkl. Grundierung und Verfugung"
-  * Statt: "Sanitär installieren"
-  → "WC-Anlage demontieren und entsorgen, neue wandhängende WC-Keramik montieren inkl. Unterputz-Spülkasten"
+- Beispiele für Titel und Beschreibungen:
+  * Titel: "Wandflächen streichen"
+    Beschreibung: "Wandflächen grundieren und 2-fach deckend streichen mit Dispersionsfarbe matt, inkl. Abkleben und Abdeckarbeiten"
+  * Titel: "Bodenfliesen verlegen"
+    Beschreibung: "Bodenfliesen verlegen im Dickbettverfahren, inkl. Grundierung und Verfugung mit wasserabweisender Fugenmasse"
+  * Titel: "WC-Anlage montieren"
+    Beschreibung: "WC-Anlage demontieren und entsorgen, neue wandhängende WC-Keramik montieren inkl. Unterputz-Spülkasten und Anschluss an Abwasserleitung"
 
 Erstelle eine kurze, prägnante Projektzusammenfassung (max. 100 Zeichen) für die Einleitung des Angebots.
 
@@ -110,7 +110,8 @@ JSON-Format:
   "description": "Kurze Projektzusammenfassung für die Einleitung",
   "positions": [
     {
-      "title": "Detaillierte Beschreibung der Position",
+      "title": "Prägnanter Positionstitel (max. 60 Zeichen)",
+      "description": "Detaillierte Leistungsbeschreibung mit Materialien und Verfahren",
       "qty": 1,
       "unit": "Einheit (m², lfm, Stück, Std, Psch)",
       "price": 100.00
@@ -131,55 +132,64 @@ BEISPIEL FÜR BADEZIMMER-SANIERUNG:
   "description": "Komplette Badezimmer-Sanierung mit Fliesenarbeiten und Sanitärinstallation",
   "positions": [
     {
-      "title": "Rückbau und Entsorgung alter Wandfliesen inkl. Putzträger, fachgerechte Entsorgung des Abbruchmaterials",
+      "title": "Rückbau Wandfliesen",
+      "description": "Rückbau und Entsorgung alter Wandfliesen inkl. Putzträger, fachgerechte Entsorgung des Abbruchmaterials",
       "qty": 18,
       "unit": "m²",
       "price": 28.00
     },
     {
-      "title": "Rückbau Bodenfliesen inkl. Estrichschicht bis 3cm Stärke, Untergrund vorbereiten und ebnen",
+      "title": "Rückbau Bodenfliesen",
+      "description": "Rückbau Bodenfliesen inkl. Estrichschicht bis 3cm Stärke, Untergrund vorbereiten und ebnen",
       "qty": 6,
       "unit": "m²",
       "price": 32.00
     },
     {
-      "title": "Wandfliesenarbeiten im Dünnbettverfahren, großformatige Feinsteinzeugfliesen 30x60cm, inkl. Grundierung",
+      "title": "Wandfliesen verlegen",
+      "description": "Wandfliesenarbeiten im Dünnbettverfahren, großformatige Feinsteinzeugfliesen 30x60cm, inkl. Grundierung",
       "qty": 18,
       "unit": "m²",
       "price": 55.00
     },
     {
-      "title": "Bodenfliesenarbeiten mit rutschfesten Fliesen R10/B, Verlegung im Dünnbettverfahren inkl. Gefälleausbildung",
+      "title": "Bodenfliesen verlegen",
+      "description": "Bodenfliesenarbeiten mit rutschfesten Fliesen R10/B, Verlegung im Dünnbettverfahren inkl. Gefälleausbildung",
       "qty": 6,
       "unit": "m²",
       "price": 48.00
     },
     {
-      "title": "Verfugung aller Fliesenflächen mit wasserabweisender Fugenmasse, Silikonfugen an Wandanschlüssen",
+      "title": "Fliesen verfugen",
+      "description": "Verfugung aller Fliesenflächen mit wasserabweisender Fugenmasse, Silikonfugen an Wandanschlüssen",
       "qty": 24,
       "unit": "m²",
       "price": 9.50
     },
     {
-      "title": "Demontage alte WC-Anlage, Installation wandhängendes WC komplett mit Unterputz-Spülkasten und Drückerplatte, Anschluss an Abwasserleitung",
+      "title": "WC-Anlage montieren",
+      "description": "Demontage alte WC-Anlage, Installation wandhängendes WC komplett mit Unterputz-Spülkasten und Drückerplatte, Anschluss an Abwasserleitung",
       "qty": 1,
       "unit": "Stück",
       "price": 380.00
     },
     {
-      "title": "Waschtisch-Kombination montieren inkl. Unterschrank, Keramik-Einbauwaschtisch 80cm, Einhebel-Waschtischarmatur, Anschluss an Kalt- und Warmwasser",
+      "title": "Waschtisch montieren",
+      "description": "Waschtisch-Kombination montieren inkl. Unterschrank, Keramik-Einbauwaschtisch 80cm, Einhebel-Waschtischarmatur, Anschluss an Kalt- und Warmwasser",
       "qty": 1,
       "unit": "Stück",
       "price": 420.00
     },
     {
-      "title": "Bodenebene Duschfläche einbauen 90x120cm inkl. Ablaufrinne, Duschabtrennung aus ESG-Glas 8mm, inkl. aller Dichtarbeiten",
+      "title": "Duschfläche einbauen",
+      "description": "Bodenebene Duschfläche einbauen 90x120cm inkl. Ablaufrinne, Duschabtrennung aus ESG-Glas 8mm, inkl. aller Dichtarbeiten",
       "qty": 1,
       "unit": "Stück",
       "price": 580.00
     },
     {
-      "title": "Container-Gestellung und fachgerechte Entsorgung aller Abbruchmaterialien, Fliesen, Keramik und Bauschutt",
+      "title": "Entsorgung",
+      "description": "Container-Gestellung und fachgerechte Entsorgung aller Abbruchmaterialien, Fliesen, Keramik und Bauschutt",
       "qty": 1,
       "unit": "Psch",
       "price": 220.00
@@ -193,31 +203,36 @@ BEISPIEL FÜR MALERARBEITEN:
   "description": "Umfassende Renovierung Wohnzimmer - Malerarbeiten in Premiumqualität",
   "positions": [
     {
-      "title": "Wandflächen grundieren mit Tiefengrund, anschließend 2-fach deckend streichen mit Dispersionsfarbe matt (Deckkraftklasse 1), inkl. Abkleben und Abdeckarbeiten",
+      "title": "Wandflächen streichen",
+      "description": "Wandflächen grundieren mit Tiefengrund, anschließend 2-fach deckend streichen mit Dispersionsfarbe matt (Deckkraftklasse 1), inkl. Abkleben und Abdeckarbeiten",
       "qty": 35,
       "unit": "m²",
       "price": 15.00
     },
     {
-      "title": "Deckenflächen vorbereiten, grundieren und 2-fach deckend streichen mit Dispersionsdeckenfarbe weiß matt, tropfgehemmt",
+      "title": "Deckenflächen streichen",
+      "description": "Deckenflächen vorbereiten, grundieren und 2-fach deckend streichen mit Dispersionsdeckenfarbe weiß matt, tropfgehemmt",
       "qty": 20,
       "unit": "m²",
       "price": 12.50
     },
     {
-      "title": "Türrahmen und Türblätter schleifen, grundieren und 2-fach lackieren mit Acryllack seidenmatt weiß, inkl. Demontage/Montage Türbeschläge",
+      "title": "Türen lackieren",
+      "description": "Türrahmen und Türblätter schleifen, grundieren und 2-fach lackieren mit Acryllack seidenmatt weiß, inkl. Demontage/Montage Türbeschläge",
       "qty": 3,
       "unit": "Stück",
       "price": 65.00
     },
     {
-      "title": "Fensterbank innen abschleifen, grundieren und 2-fach lackieren mit lösemittelfreiem Buntlack seidenmatt",
+      "title": "Fensterbänke lackieren",
+      "description": "Fensterbank innen abschleifen, grundieren und 2-fach lackieren mit lösemittelfreiem Buntlack seidenmatt",
       "qty": 2,
       "unit": "Stück",
       "price": 45.00
     },
     {
-      "title": "Komplettrenovierung - Möbel ausräumen und einräumen, Raum komplett abdecken mit Malervlies, Reinigung nach Abschluss der Arbeiten",
+      "title": "Komplettrenovierung",
+      "description": "Möbel ausräumen und einräumen, Raum komplett abdecken mit Malervlies, Reinigung nach Abschluss der Arbeiten",
       "qty": 1,
       "unit": "Psch",
       "price": 180.00
@@ -289,7 +304,7 @@ WICHTIG:
       return {
         description: input.projectInfo || 'Arbeitsleistung',
         positions: [
-          { title: 'Arbeitsleistung', qty: 1, unit: 'Psch', price: 500 }
+          { title: 'Arbeitsleistung', description: 'Allgemeine Arbeitsleistung nach Vereinbarung', qty: 1, unit: 'Psch', price: 500 }
         ],
         total: 500
       };
@@ -305,7 +320,7 @@ WICHTIG:
       return {
         description: input.projectInfo || 'Arbeitsleistung',
         positions: [
-          { title: 'Arbeitsleistung', qty: 1, unit: 'Psch', price: 500 }
+          { title: 'Arbeitsleistung', description: 'Allgemeine Arbeitsleistung nach Vereinbarung', qty: 1, unit: 'Psch', price: 500 }
         ],
         total: 500
       };
@@ -341,7 +356,7 @@ WICHTIG:
     return {
       description: input.projectInfo || 'Arbeitsleistung',
       positions: [
-        { title: 'Arbeitsleistung', qty: 1, unit: 'Psch', price: 500 }
+        { title: 'Arbeitsleistung', description: 'Allgemeine Arbeitsleistung nach Vereinbarung', qty: 1, unit: 'Psch', price: 500 }
       ],
       total: 500
     };
