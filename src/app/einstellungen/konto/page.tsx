@@ -517,9 +517,8 @@ export default function KontoPage() {
                     value={userData.offerValidityDays || ''}
                     onChange={(e) => {
                       const value = e.target.value;
-                      // Allow empty value for easy editing
+                      // Allow empty value for easy editing - don't update state if empty
                       if (value === '') {
-                        setUserData({...userData, offerValidityDays: undefined});
                         return;
                       }
                       const numValue = parseInt(value);
