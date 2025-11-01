@@ -6,6 +6,19 @@ Dieses Dokument gibt einen Überblick über alle verfügbaren Dokumentationen im
 
 ---
 
+## 🆕 **NEUE DOKUMENTATIONEN (Version 1.5.0)**
+
+### **1. [QUOTE_FEATURES.md](./QUOTE_FEATURES.md)**
+- **Zweck:** Vollständige Dokumentation der neuen Angebots-Features
+- **Inhalt:**
+  - Bauvorhaben (BV)-Feld: Optionales Feld für Projektadresse
+  - Gültigkeitsdauer: Konfigurierbare Gültigkeitsdauer für Angebote
+  - Technische Implementierung und Datenbank-Schema
+  - UI-Integration und Verwendung
+  - Best Practices und Fehlerbehebung
+- **Status:** ✅ Neu erstellt
+- **Version:** 1.5.0
+
 ## 🆕 **NEUE DOKUMENTATIONEN (Version 1.3.0)**
 
 ### **1. [LOGO_UPLOAD_FEATURE.md](./LOGO_UPLOAD_FEATURE.md)**
@@ -80,6 +93,7 @@ Dieses Dokument gibt einen Überblick über alle verfügbaren Dokumentationen im
 ## 📚 **BESTEHENDE DOKUMENTATIONEN (Unverändert)**
 
 ### **Core Features:**
+- **[QUOTE_FEATURES.md](./QUOTE_FEATURES.md)** - Bauvorhaben & Gültigkeitsdauer Features ✨ NEU
 - **[STRIPE_SUBSCRIPTION_IMPLEMENTATION.md](./STRIPE_SUBSCRIPTION_IMPLEMENTATION.md)** - Stripe Integration
 - **[AUTHENTICATION_DEVELOPMENT_STATUS.md](./AUTHENTICATION_DEVELOPMENT_STATUS.md)** - Auth-Entwicklung
 - **[AUTHENTICATION_INTEGRATION_SUMMARY.md](./AUTHENTICATION_INTEGRATION_SUMMARY.md)** - Auth-Integration
@@ -89,7 +103,7 @@ Dieses Dokument gibt einen Überblick über alle verfügbaren Dokumentationen im
 - **[CODING_STANDARDS.md](./CODING_STANDARDS.md)** - Coding-Standards
 - **[DATABASE_ISSUES.md](./DATABASE_ISSUES.md)** - Datenbank-Probleme
 - **[NEXTJS_15_COMPATIBILITY.md](./NEXTJS_15_COMPATIBILITY.md)** - Next.js 15 Kompatibilität
-- **[PDF_GENERATION.md](./PDF_GENERATION.md)** - PDF-Generierung
+- **[PDF_GENERATION.md](./PDF_GENERATION.md)** - PDF-Generierung (aktualisiert mit BV & Gültigkeitsdauer)
 
 ### **Deployment & Setup:**
 - **[DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md)** - Deployment-Checkliste
@@ -132,7 +146,14 @@ Dieses Dokument gibt einen Überblick über alle verfügbaren Dokumentationen im
 
 ## 📊 **VERSIONSHISTORIE**
 
-### **Version 1.3.0 (Aktuell)**
+### **Version 1.5.0 (Aktuell)**
+- ✅ **Bauvorhaben (BV)-Feld** im Angebot-Erstellungsformular
+- ✅ **Automatische Adressübernahme** für BV-Feld
+- ✅ **Gültigkeitsdauer** konfigurierbar in Einstellungen
+- ✅ **PDF-Integration** für BV und Gültigkeitsdauer
+- ✅ **Vollständige Dokumentation** der neuen Features
+
+### **Version 1.3.0 (Vorher)**
 - ✅ **Logo-Upload-Feature** für PRO-User implementiert
 - ✅ **Automatische PDF-Integration** mit intelligenter Logo-Positionierung
 - ✅ **Cloudinary-Integration** für sichere Datei-Speicherung
@@ -163,6 +184,7 @@ Dieses Dokument gibt einen Überblick über alle verfügbaren Dokumentationen im
 ## 🔍 **DOKUMENTATION SUCHEN**
 
 ### **Nach Feature:**
+- **Angebots-Features:** `QUOTE_FEATURES.md` ✨ NEU
 - **Logo-Upload:** `LOGO_UPLOAD_FEATURE.md`
 - **Referral-System:** `REFERRAL_SYSTEM_IMPLEMENTATION.md`
 - **Stripe:** `STRIPE_SUBSCRIPTION_IMPLEMENTATION.md`
@@ -197,7 +219,7 @@ Dieses Dokument gibt einen Überblick über alle verfügbaren Dokumentationen im
 
 Die Dokumentation im `docs` Ordner ist **vollständig und aktuell**:
 
-- **1 neue Dokumentation** für Version 1.3.0 (Logo-Upload-Feature)
+- **1 neue Dokumentation** für Version 1.5.0 (Angebots-Features: BV & Gültigkeitsdauer)
 - **3 bestehende Dokumentationen** aktualisiert (PDF_GENERATION, USER_DATA_INTEGRATION, DOCUMENTATION_OVERVIEW)
 - **Alle Features** vollständig dokumentiert
 - **Deployment-Status** aktuell
@@ -208,6 +230,6 @@ Die Dokumentation im `docs` Ordner ist **vollständig und aktuell**:
 ---
 
 **Dokumentation erstellt von:** AI Assistant  
-**Datum:** 01.09.2025  
-**Version:** 1.0.0  
+**Datum:** 01.11.2025  
+**Version:** 1.5.0  
 **Status:** Vollständige Übersicht aller verfügbaren Dokumentationen

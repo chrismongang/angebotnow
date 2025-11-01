@@ -139,6 +139,7 @@ export default function KontoPage() {
         defaultCurrency: 'EUR',
         defaultPaymentTerms: '30 Tage netto',
         defaultValidity: '30 Tage',
+        offerValidityDays: 30,
         lastQuoteNumber: 0,
         currentYear: new Date().getFullYear()
       })

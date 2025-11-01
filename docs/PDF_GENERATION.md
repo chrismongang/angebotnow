@@ -26,8 +26,12 @@ The generated PDF includes:
 - **Header on every page** - Full header with logo/branding, sender info, recipient info, offer number, and date
 - **Footer on every page** - Company details, bank information, legal info, and page numbers
 - Quote number and date
-- Client information
-- **Bauvorhaben** field (if provided)
+- Client information (name and address if provided)
+- **Bauvorhaben (BV) field** (if provided):
+  - Optional field for project location/address
+  - Displayed above project description as "BV: [address]"
+  - Can be automatically filled from client address or entered separately
+  - Format: "BV: [street], [city]" or custom text
 - Project description (with text wrapping)
 - AI-generated positions table with:
   - Position numbers
@@ -35,7 +39,11 @@ The generated PDF includes:
   - Quantities and units
   - Prices with German number formatting (1.000,00 EUR)
 - Total calculation (Subtotal, VAT 19%, Grand Total)
-- **Offer validity statement** with customizable validity days
+- **Offer validity statement** with customizable validity days:
+  - Positioned above signature section
+  - Format: "Dieses Angebot ist X Tage ab Ausstellungsdatum gültig. Nach Ablauf dieser Frist behalten wir uns vor, Preise und Leistungen anzupassen."
+  - Validity days configurable per user in settings (default: 30 days)
+  - Automatically calculated from user's `offerValidityDays` setting
 - **Signature section** with legally binding signature lines:
   - "Ort, Datum" line
   - "Unterschrift Kunde" line

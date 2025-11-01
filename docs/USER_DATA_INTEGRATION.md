@@ -31,6 +31,9 @@ Die Anwendung wurde erweitert, um Benutzerdaten zu verwalten und diese in PDFs u
 - Währung (z.B. "EUR")
 - Zahlungsbedingungen (z.B. "30 Tage netto")
 - Gültigkeit (z.B. "30 Tage")
+- **Gültigkeitsdauer für Angebote (Tage)**: Konfigurierbare Anzahl der Tage, für die ein Angebot gültig ist (Standard: 30 Tage)
+  - Wird im PDF über der Grußformel angezeigt
+  - Kann in den Einstellungen unter "Geschäftsinformationen" angepasst werden
 
 ### 2. Datenverwaltung
 
@@ -104,6 +107,7 @@ interface UserData {
   defaultCurrency: string;
   defaultPaymentTerms: string;
   defaultValidity: string;
+  offerValidityDays: number; // Gültigkeitsdauer für Angebote in Tagen (Standard: 30)
 }
 ```
 

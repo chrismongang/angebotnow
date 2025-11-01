@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.5.0] - 2025-11-01
+### Added
+- **Bauvorhaben (BV) Feld**: Optionales Feld für die Projektadresse im Angebot
+  - Kann automatisch von der Kundenadresse übernommen werden
+  - Kann manuell separat eingegeben werden, wenn es von der Kundenadresse abweicht
+  - Wird im PDF über der Projektbeschreibung angezeigt (Format: "BV: [Adresse]")
+  - Befindet sich im Adress-Bereich des Angebot-Erstellungsformulars
+- **Gültigkeitsdauer für Angebote**: Konfigurierbare Gültigkeitsdauer in den Einstellungen
+  - Standard: 30 Tage (konfigurierbar pro User)
+  - Konfiguration in Einstellungen → Dein Konto → Geschäftsinformationen
+  - Wird im PDF über der Grußformel angezeigt
+  - Text: "Dieses Angebot ist X Tage ab Ausstellungsdatum gültig. Nach Ablauf dieser Frist behalten wir uns vor, Preise und Leistungen anzupassen."
+
+### Technical
+- Datenbank-Schema erweitert: `bauvorhaben` Feld zur Quote-Tabelle hinzugefügt
+- Datenbank-Schema erweitert: `offerValidityDays` Feld zur User-Tabelle hinzugefügt (Default: 30)
+- PDF-Generierung erweitert um BV-Anzeige und Gültigkeitstext
+
+### Docs
+- Dokumentation für BV-Feld und Gültigkeitsdauer-Features hinzugefügt
+- `docs/USER_DATA_INTEGRATION.md` aktualisiert
+- `docs/PDF_GENERATION.md` erweitert
+
 ## [1.4.0] - 2025-11-01
 ### Added
 - **Multi-page PDF support**: Automatic page breaks with intelligent spacing optimization
@@ -7,8 +30,6 @@
 - **Footer on every page**: Company details, bank information, legal info, and page numbers on all pages (German trade standard)
 - **Signature section**: Legally binding signature lines for customer and craftsman with legal explanation text
 - **German number formatting**: Thousand separators (1.000,00 EUR) and comma decimal separator
-- **Bauvorhaben field**: Optional project location field in PDF
-- **Offer validity days**: Configurable offer validity period with customizable text
 
 ### Improved
 - **Page break optimization**: Smart logic prevents unnecessary page creation, better space utilization
