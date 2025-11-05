@@ -32,7 +32,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [editedPositions, setEditedPositions] = useState<Array<{ title: string; qty: number | string; unit: string; price: number | string }>>([])
+  const [editedPositions, setEditedPositions] = useState<Array<{ title: string; description: string; qty: number | string; unit: string; price: number | string }>>([])
   const [isUpdating, setIsUpdating] = useState(false)
   const [canEdit, setCanEdit] = useState(false)
 
@@ -261,6 +261,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
     // Konvertiere zu Zahlen für das Speichern
     const positionsToSave = editedPositions.map(pos => ({
       title: pos.title,
+      description: pos.description,
       qty: Number(pos.qty),
       unit: pos.unit,
       price: Number(pos.price)
@@ -294,7 +295,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
     }
   }
 
-  const updatePosition = (index: number, field: 'title' | 'qty' | 'unit' | 'price', value: string | number) => {
+  const updatePosition = (index: number, field: 'title' | 'description' | 'qty' | 'unit' | 'price', value: string | number) => {
     const newPositions = [...editedPositions]
     newPositions[index] = {
       ...newPositions[index],
@@ -314,7 +315,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
   }
 
   const addPosition = () => {
-    const newPosition = { title: '', qty: '', unit: 'Psch', price: '' }
+    const newPosition = { title: '', description: '', qty: '', unit: 'Psch', price: '' }
     setEditedPositions([...editedPositions, newPosition])
   }
 
@@ -537,7 +538,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
                                         autoResize(e)
                                       }}
                                       onInput={autoResize}
-                                      placeholder="Bezeichnung"
+                                      placeholder="Bezeichnung (Titel)"
                                       className="bg-white flex-1 min-h-[40px] resize-none overflow-hidden"
                                       rows={1}
                                     />
@@ -550,6 +551,17 @@ export default function QuoteDetailPage({ params }: PageProps) {
                                       <X size={16} />
                                     </Button>
                                   </div>
+                                  <Textarea
+                                    value={(position as any).description || ''}
+                                    onChange={(e) => {
+                                      updatePosition(index, 'description', e.target.value)
+                                      autoResize(e)
+                                    }}
+                                    onInput={autoResize}
+                                    placeholder="Beschreibung (Details zur Position)"
+                                    className="bg-white min-h-[40px] resize-none overflow-hidden"
+                                    rows={1}
+                                  />
                                   <div className="grid grid-cols-3 gap-2">
                                     <Input
                                       type="number"
@@ -581,6 +593,9 @@ export default function QuoteDetailPage({ params }: PageProps) {
                                 <div className="flex justify-between items-center gap-4">
                                   <div className="flex-1 min-w-0 pr-2">
                                     <p className="font-medium break-words">{position.title}</p>
+                                    {(position as any).description && (
+                                      <p className="text-sm text-muted-foreground break-words">{(position as any).description}</p>
+                                    )}
                                     <p className="text-sm text-muted-foreground">
                                       {position.qty} {position.unit}
                                     </p>

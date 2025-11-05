@@ -22,7 +22,7 @@ interface Quote {
   createdAt: Date
   aiData?: {
     description: string
-    positions: Array<{ title: string; qty: number; unit: string; price: number }>
+    positions: Array<{ title: string; description: string; qty: number; unit: string; price: number }>
     total: number
   }
   quoteNumber?: string // Added for structured quote number

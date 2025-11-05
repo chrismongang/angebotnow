@@ -287,7 +287,7 @@ export async function createQuote(formData: FormData) {
   }
 }
 
-export async function updateQuotePositions(quoteId: string, positions: Array<{ title: string; qty: number; unit: string; price: number }>) {
+export async function updateQuotePositions(quoteId: string, positions: Array<{ title: string; description: string; qty: number; unit: string; price: number }>) {
   try {
     // Get authenticated user
     const session = await auth()
