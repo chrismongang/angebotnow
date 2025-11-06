@@ -10,7 +10,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { formatDate, calculateTotal, calculateTotalWithVAT, formatPrice } from '@/lib/utils'
 import { AIResult } from '@/lib/ai/provider'
-import { updateQuotePositions } from '@/lib/actions'
+import { updateQuotePositions, updateQuoteClientInfo } from '@/lib/actions'
 import { AuthenticatedLayout } from "@/components/authenticated-layout"
 import { QuoteFeedback } from "@/components/feedback/quote-feedback"
 import { ArrowLeft, FileText, Download, Share2, Edit, Save, X, Crown, Plus } from 'lucide-react'
@@ -35,6 +35,12 @@ export default function QuoteDetailPage({ params }: PageProps) {
   const [editedPositions, setEditedPositions] = useState<Array<{ title: string; description: string; qty: number | string; unit: string; price: number | string }>>([])
   const [isUpdating, setIsUpdating] = useState(false)
   const [canEdit, setCanEdit] = useState(false)
+  const [isEditingClientInfo, setIsEditingClientInfo] = useState(false)
+  const [editedClientName, setEditedClientName] = useState('')
+  const [editedClientStreet, setEditedClientStreet] = useState('')
+  const [editedClientCity, setEditedClientCity] = useState('')
+  const [editedBauvorhaben, setEditedBauvorhaben] = useState('')
+  const [isUpdatingClientInfo, setIsUpdatingClientInfo] = useState(false)
 
   useEffect(() => {
     const fetchQuote = async () => {
@@ -43,6 +49,11 @@ export default function QuoteDetailPage({ params }: PageProps) {
         if (response.ok) {
           const data = await response.json()
           setQuote(data)
+          // Initialize edit fields with current values
+          setEditedClientName(data.clientName || '')
+          setEditedClientStreet(data.clientStreet || '')
+          setEditedClientCity(data.clientCity || '')
+          setEditedBauvorhaben(data.bauvorhaben || '')
         } else {
           setError('Angebot nicht gefunden')
         }
@@ -71,6 +82,16 @@ export default function QuoteDetailPage({ params }: PageProps) {
     fetchQuote()
     checkEditPermissions()
   }, [id, session])
+
+  // Sync edited fields with quote when quote changes (only if not editing)
+  useEffect(() => {
+    if (quote && !isEditingClientInfo) {
+      setEditedClientName(quote.clientName || '')
+      setEditedClientStreet(quote.clientStreet || '')
+      setEditedClientCity(quote.clientCity || '')
+      setEditedBauvorhaben(quote.bauvorhaben || '')
+    }
+  }, [quote, isEditingClientInfo])
 
   // Auto-resize textareas when entering edit mode
   useEffect(() => {
@@ -319,6 +340,63 @@ export default function QuoteDetailPage({ params }: PageProps) {
     setEditedPositions([...editedPositions, newPosition])
   }
 
+  const handleEditClientInfo = () => {
+    setEditedClientName(quote.clientName || '')
+    setEditedClientStreet(quote.clientStreet || '')
+    setEditedClientCity(quote.clientCity || '')
+    setEditedBauvorhaben(quote.bauvorhaben || '')
+    setIsEditingClientInfo(true)
+  }
+
+  const handleCancelClientInfo = () => {
+    setIsEditingClientInfo(false)
+    setEditedClientName(quote.clientName || '')
+    setEditedClientStreet(quote.clientStreet || '')
+    setEditedClientCity(quote.clientCity || '')
+    setEditedBauvorhaben(quote.bauvorhaben || '')
+  }
+
+  const handleSaveClientInfo = async () => {
+    if (!quote) return
+
+    // Validation
+    if (!editedClientName.trim()) {
+      alert('Bitte geben Sie einen Auftraggebernamen ein.')
+      return
+    }
+
+    setIsUpdatingClientInfo(true)
+    try {
+      const result = await updateQuoteClientInfo(
+        quote.id,
+        editedClientName,
+        editedClientStreet || null,
+        editedClientCity || null,
+        editedBauvorhaben || null
+      )
+      
+      if (result.success) {
+        // Update local state
+        setQuote({
+          ...quote,
+          clientName: editedClientName,
+          clientStreet: editedClientStreet || null,
+          clientCity: editedClientCity || null,
+          bauvorhaben: editedBauvorhaben || null,
+        })
+        setIsEditingClientInfo(false)
+        alert('Auftraggeberinformationen erfolgreich aktualisiert!')
+      } else {
+        alert(result.error || 'Fehler beim Aktualisieren der Auftraggeberinformationen')
+      }
+    } catch (error) {
+      console.error('Error updating client info:', error)
+      alert('Fehler beim Aktualisieren der Auftraggeberinformationen')
+    } finally {
+      setIsUpdatingClientInfo(false)
+    }
+  }
+
   return (
     <AuthenticatedLayout>
       <div className="min-h-screen bg-background p-4 sm:p-8 pb-20 md:pb-8">
@@ -418,20 +496,100 @@ export default function QuoteDetailPage({ params }: PageProps) {
               {/* Project Info Block - Combined */}
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-lg sm:text-xl">Projektinfos</CardTitle>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <CardTitle className="text-lg sm:text-xl">Projektinfos</CardTitle>
+                    {!isEditingClientInfo ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleEditClientInfo}
+                        className="flex items-center gap-2 rounded-[14px] text-[#F89813] border-[#F89813] hover:bg-[#F89813] hover:text-white self-start sm:self-auto"
+                      >
+                        <Edit size={16} />
+                        Bearbeiten
+                      </Button>
+                    ) : (
+                      <div className="flex flex-col sm:flex-row gap-2 self-start sm:self-auto">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleCancelClientInfo}
+                          className="flex items-center gap-2 rounded-[14px]"
+                        >
+                          <X size={16} />
+                          Abbrechen
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={handleSaveClientInfo}
+                          disabled={isUpdatingClientInfo}
+                          className="bg-[#F89813] hover:bg-[#E88A0F] flex items-center gap-2 rounded-[14px]"
+                        >
+                          <Save size={16} />
+                          Speichern
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Client Info */}
                   <div>
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-[#404040]">Auftraggeber</Label>
-                      <p className="text-[#676767] py-2">{quote.clientName}</p>
-                      {(quote.clientStreet || quote.clientCity) && (
-                        <p className="text-[#676767] py-2">
-                          {[quote.clientStreet, quote.clientCity].filter(Boolean).join(', ')}
-                        </p>
+                      {isEditingClientInfo ? (
+                        <Input
+                          type="text"
+                          value={editedClientName}
+                          onChange={(e) => setEditedClientName(e.target.value)}
+                          placeholder="Vor-/Nachname oder Firma"
+                          className="bg-white border-[#EDEDED] focus:border-[#F89813] focus:ring-[#F89813] h-12 text-base rounded-[10px]"
+                          required
+                        />
+                      ) : (
+                        <p className="text-[#676767] py-2">{quote.clientName}</p>
+                      )}
+                      {isEditingClientInfo ? (
+                        <div className="space-y-2">
+                          <Input
+                            type="text"
+                            value={editedClientStreet}
+                            onChange={(e) => setEditedClientStreet(e.target.value)}
+                            placeholder="Straße & Hausnummer"
+                            className="bg-white border-[#EDEDED] focus:border-[#F89813] focus:ring-[#F89813] h-12 text-base rounded-[10px]"
+                          />
+                          <Input
+                            type="text"
+                            value={editedClientCity}
+                            onChange={(e) => setEditedClientCity(e.target.value)}
+                            placeholder="PLZ & Ort"
+                            className="bg-white border-[#EDEDED] focus:border-[#F89813] focus:ring-[#F89813] h-12 text-base rounded-[10px]"
+                          />
+                        </div>
+                      ) : (
+                        (quote.clientStreet || quote.clientCity) && (
+                          <p className="text-[#676767] py-2">
+                            {[quote.clientStreet, quote.clientCity].filter(Boolean).join(', ')}
+                          </p>
+                        )
                       )}
                     </div>
+                  </div>
+                  
+                  {/* Bauvorhaben */}
+                  <div>
+                    <Label className="text-sm font-medium text-[#404040]">Bauvorhaben</Label>
+                    {isEditingClientInfo ? (
+                      <Input
+                        type="text"
+                        value={editedBauvorhaben}
+                        onChange={(e) => setEditedBauvorhaben(e.target.value)}
+                        placeholder="Bauvorhaben (optional)"
+                        className="bg-white border-[#EDEDED] focus:border-[#F89813] focus:ring-[#F89813] h-12 text-base rounded-[10px] mt-2"
+                      />
+                    ) : (
+                      <p className="text-[#676767] py-2">{quote.bauvorhaben || '—'}</p>
+                    )}
                   </div>
                   
                   {/* Project Image - Smaller */}
@@ -530,6 +688,11 @@ export default function QuoteDetailPage({ params }: PageProps) {
                             <div key={index} className="p-3 bg-muted/50 rounded-lg">
                               {isEditing ? (
                                 <div className="space-y-3">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-sm font-semibold text-[#F89813] bg-orange-50 px-2 py-1 rounded-md flex-shrink-0">
+                                      {index + 1}.
+                                    </span>
+                                  </div>
                                   <div className="flex items-start justify-between gap-2">
                                     <Textarea
                                       value={position.title}
@@ -592,6 +755,11 @@ export default function QuoteDetailPage({ params }: PageProps) {
                               ) : (
                                 <div className="flex justify-between items-center gap-4">
                                   <div className="flex-1 min-w-0 pr-2">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="text-sm font-semibold text-[#F89813] bg-orange-50 px-2 py-1 rounded-md flex-shrink-0">
+                                        {index + 1}.
+                                      </span>
+                                    </div>
                                     <p className="font-medium break-words">{position.title}</p>
                                     {(position as any).description && (
                                       <p className="text-sm text-muted-foreground break-words">{(position as any).description}</p>

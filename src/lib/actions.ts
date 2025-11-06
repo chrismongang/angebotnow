@@ -344,3 +344,83 @@ export async function updateQuotePositions(quoteId: string, positions: Array<{ t
     return { success: false, error: 'Ein Fehler ist aufgetreten: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler') }
   }
 }
+
+export async function updateQuoteClientInfo(
+  quoteId: string, 
+  clientName: string, 
+  clientStreet: string | null, 
+  clientCity: string | null, 
+  bauvorhaben: string | null
+) {
+  try {
+    // Get authenticated user
+    const session = await auth()
+    if (!session?.user?.id) {
+      return { success: false, error: 'Nicht angemeldet' }
+    }
+    
+    // Check if database is available
+    if (!process.env.DATABASE_URL) {
+      return { 
+        success: true, 
+        message: 'Demo-Modus: Angebot wurde simuliert (keine Datenbank verfügbar)'
+      }
+    }
+
+    // Validate input
+    if (!clientName || !clientName.trim()) {
+      return { success: false, error: 'Kundenname ist erforderlich' }
+    }
+
+    if (clientName.length > 100) {
+      return { success: false, error: 'Kundenname zu lang (max. 100 Zeichen)' }
+    }
+
+    if (clientStreet && clientStreet.length > 200) {
+      return { success: false, error: 'Straße & Hausnummer zu lang (max. 200 Zeichen)' }
+    }
+
+    if (clientCity && clientCity.length > 200) {
+      return { success: false, error: 'PLZ & Ort zu lang (max. 200 Zeichen)' }
+    }
+
+    if (bauvorhaben && bauvorhaben.length > 200) {
+      return { success: false, error: 'Bauvorhaben zu lang (max. 200 Zeichen)' }
+    }
+
+    // Get existing quote and verify ownership
+    const existingQuote = await prisma.quote.findFirst({
+      where: { 
+        id: quoteId,
+        userId: session.user.id // Only allow access to user's own quotes
+      }
+    })
+
+    if (!existingQuote) {
+      return { success: false, error: 'Angebot nicht gefunden oder Zugriff verweigert' }
+    }
+
+    // Update quote
+    await prisma.quote.update({
+      where: { id: quoteId },
+      data: { 
+        clientName: clientName.trim(),
+        clientStreet: clientStreet?.trim() || null,
+        clientCity: clientCity?.trim() || null,
+        bauvorhaben: bauvorhaben?.trim() || null,
+      },
+    })
+
+    revalidatePath(`/angebot/${quoteId}`)
+    revalidatePath('/angebote')
+
+    return { 
+      success: true, 
+      message: 'Auftraggeberinformationen erfolgreich aktualisiert'
+    }
+
+  } catch (error) {
+    console.error('Error updating quote client info:', error)
+    return { success: false, error: 'Ein Fehler ist aufgetreten: ' + (error instanceof Error ? error.message : 'Unbekannter Fehler') }
+  }
+}
