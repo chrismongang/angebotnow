@@ -17,6 +17,7 @@ import { ArrowLeft, FileText, Download, Share2, Edit, Save, X, Crown, Plus } fro
 import { Label } from '@/components/ui/label'
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { UnitSelect } from "@/components/ui/unit-select"
 
 
 interface PageProps {
@@ -735,9 +736,9 @@ export default function QuoteDetailPage({ params }: PageProps) {
                                       min="0"
                                       step="1"
                                     />
-                                    <Input
+                                    <UnitSelect
                                       value={position.unit}
-                                      onChange={(e) => updatePosition(index, 'unit', e.target.value)}
+                                      onChange={(value) => updatePosition(index, 'unit', value)}
                                       placeholder="Einheit"
                                       className="bg-white"
                                     />
