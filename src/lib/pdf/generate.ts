@@ -73,32 +73,42 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
 
   // Function to wrap text to fit within a specified width
   const wrapText = (text: string, maxWidth: number, fontSize: number): string[] => {
-    const words = text.split(' ');
-    const lines: string[] = [];
-    let currentLine = '';
+    // First, split by newlines to handle multi-line input
+    const inputLines = text.split('\n');
+    const allWrappedLines: string[] = [];
+    
+    // Wrap each line separately
+    for (const inputLine of inputLines) {
+      const words = inputLine.split(' ');
+      const lines: string[] = [];
+      let currentLine = '';
 
-    for (const word of words) {
-      const testLine = currentLine ? `${currentLine} ${word}` : word;
-      const testWidth = font.widthOfTextAtSize(testLine, fontSize);
-      
-      if (testWidth <= maxWidth) {
-        currentLine = testLine;
-      } else {
-        if (currentLine) {
-          lines.push(currentLine);
-          currentLine = word;
+      for (const word of words) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+        
+        if (testWidth <= maxWidth) {
+          currentLine = testLine;
         } else {
-          // Word is too long, split it
-          lines.push(word);
+          if (currentLine) {
+            lines.push(currentLine);
+            currentLine = word;
+          } else {
+            // Word is too long, split it
+            lines.push(word);
+          }
         }
       }
+      
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+      
+      // Add wrapped lines for this input line
+      allWrappedLines.push(...lines);
     }
     
-    if (currentLine) {
-      lines.push(currentLine);
-    }
-    
-    return lines;
+    return allWrappedLines;
   };
 
   // Function to draw wrapped text
