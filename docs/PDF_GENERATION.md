@@ -38,7 +38,9 @@ The generated PDF includes:
   - Titles (bold) and descriptions
   - Quantities and units
   - Prices with German number formatting (1.000,00 EUR)
-- Total calculation (Subtotal, VAT 19%, Grand Total)
+- Total calculation with VAT support:
+  - **Standard**: Subtotal, VAT 19%, Grand Total
+  - **§ 13b UStG**: Subtotal, "Steuerschuldnerschaft des Leistungsempfängers gem. § 13b UStG" (no VAT), Grand Total = Subtotal
 - **Offer validity statement** with customizable validity days:
   - Positioned above signature section
   - Format: "Dieses Angebot ist X Tage ab Ausstellungsdatum gültig. Nach Ablauf dieser Frist behalten wir uns vor, Preise und Leistungen anzupassen."

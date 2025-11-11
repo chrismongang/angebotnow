@@ -41,6 +41,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
   const [editedClientStreet, setEditedClientStreet] = useState('')
   const [editedClientCity, setEditedClientCity] = useState('')
   const [editedBauvorhaben, setEditedBauvorhaben] = useState('')
+  const [editedExcludeVAT, setEditedExcludeVAT] = useState(false)
   const [isUpdatingClientInfo, setIsUpdatingClientInfo] = useState(false)
 
   useEffect(() => {
@@ -55,6 +56,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
           setEditedClientStreet(data.clientStreet || '')
           setEditedClientCity(data.clientCity || '')
           setEditedBauvorhaben(data.bauvorhaben || '')
+          setEditedExcludeVAT(data.excludeVAT || false)
         } else {
           setError('Angebot nicht gefunden')
         }
@@ -91,6 +93,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
       setEditedClientStreet(quote.clientStreet || '')
       setEditedClientCity(quote.clientCity || '')
       setEditedBauvorhaben(quote.bauvorhaben || '')
+      setEditedExcludeVAT(quote.excludeVAT || false)
     }
   }, [quote, isEditingClientInfo])
 
@@ -128,10 +131,11 @@ export default function QuoteDetailPage({ params }: PageProps) {
   const aiData = quote.aiData as AIResult | null
 
   // Calculate correct totals
+  const excludeVAT = quote.excludeVAT || false
   const getQuoteTotal = (positions: Array<{ qty: number | string; price: number | string }>) => {
     const numericPositions = positions.map(p => ({ qty: Number(p.qty) || 0, price: Number(p.price) || 0 }))
     const subtotal = calculateTotal(numericPositions)
-    return calculateTotalWithVAT(subtotal)
+    return calculateTotalWithVAT(subtotal, 0.19, excludeVAT)
   }
 
   const getSubtotal = (positions: Array<{ qty: number | string; price: number | string }>) => {
@@ -140,6 +144,9 @@ export default function QuoteDetailPage({ params }: PageProps) {
   }
 
   const getVAT = (positions: Array<{ qty: number | string; price: number | string }>) => {
+    if (excludeVAT) {
+      return 0; // Keine MwSt. bei § 13b UStG
+    }
     const numericPositions = positions.map(p => ({ qty: Number(p.qty) || 0, price: Number(p.price) || 0 }))
     const subtotal = calculateTotal(numericPositions)
     return calculateTotalWithVAT(subtotal) - subtotal
@@ -384,6 +391,7 @@ export default function QuoteDetailPage({ params }: PageProps) {
           clientStreet: editedClientStreet || null,
           clientCity: editedClientCity || null,
           bauvorhaben: editedBauvorhaben || null,
+          excludeVAT: editedExcludeVAT,
         })
         setIsEditingClientInfo(false)
         alert('Auftraggeberinformationen erfolgreich aktualisiert!')
@@ -590,6 +598,44 @@ export default function QuoteDetailPage({ params }: PageProps) {
                       />
                     ) : (
                       <p className="text-[#676767] py-2">{quote.bauvorhaben || '—'}</p>
+                    )}
+                  </div>
+                  
+                  {/* B2B Construction Company Option */}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      {isEditingClientInfo ? (
+                        <>
+                          <input
+                            type="checkbox"
+                            id="excludeVAT"
+                            checked={editedExcludeVAT}
+                            onChange={(e) => setEditedExcludeVAT(e.target.checked)}
+                            className="w-4 h-4 text-[#F89813] bg-white border-[#EDEDED] rounded focus:ring-[#F89813] focus:ring-2"
+                          />
+                          <Label htmlFor="excludeVAT" className="text-sm font-medium text-[#404040] cursor-pointer">
+                            Auftraggeber ist Bauunternehmen (§ 13b UStG - keine MwSt.)
+                          </Label>
+                        </>
+                      ) : (
+                        <>
+                          <input
+                            type="checkbox"
+                            id="excludeVAT-display"
+                            checked={quote.excludeVAT || false}
+                            disabled
+                            className="w-4 h-4 text-[#F89813] bg-[#EDEDED] border-[#EDEDED] rounded"
+                          />
+                          <Label htmlFor="excludeVAT-display" className="text-sm font-medium text-[#404040]">
+                            Auftraggeber ist Bauunternehmen (§ 13b UStG - keine MwSt.)
+                          </Label>
+                        </>
+                      )}
+                    </div>
+                    {(isEditingClientInfo ? editedExcludeVAT : quote.excludeVAT) && (
+                      <p className="text-xs text-[#676767] pl-6 mt-1">
+                        Bei Angeboten an andere Bauunternehmen entfällt die Mehrwertsteuer gem. § 13b UStG.
+                      </p>
                     )}
                   </div>
                   
@@ -806,8 +852,17 @@ export default function QuoteDetailPage({ params }: PageProps) {
                           <p className="text-sm">{formatPrice(subtotal)}</p>
                         </div>
                         <div className="flex justify-between items-center">
-                          <p className="text-sm text-muted-foreground">19% MwSt.</p>
-                          <p className="text-sm">{formatPrice(vat)}</p>
+                          {excludeVAT ? (
+                            <>
+                              <p className="text-sm text-muted-foreground">§ 13b UStG</p>
+                              <p className="text-sm text-muted-foreground">—</p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-sm text-muted-foreground">19% MwSt.</p>
+                              <p className="text-sm">{formatPrice(vat)}</p>
+                            </>
+                          )}
                         </div>
                         <div className="flex justify-between items-center pt-2 border-t">
                           <p className="text-lg font-semibold">Gesamt</p>

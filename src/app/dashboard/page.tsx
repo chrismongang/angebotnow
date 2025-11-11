@@ -59,6 +59,7 @@ function DashboardContent() {
   const [clientCity, setClientCity] = useState('')
   const [bauvorhaben, setBauvorhaben] = useState('')
   const [includeAddress, setIncludeAddress] = useState(false)
+  const [excludeVAT, setExcludeVAT] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -285,6 +286,7 @@ function DashboardContent() {
       formData.append('clientCity', clientCity)
       formData.append('bauvorhaben', bauvorhaben)
       formData.append('includeAddress', includeAddress.toString())
+      formData.append('excludeVAT', excludeVAT.toString())
       if (selectedFile) {
         formData.append('file', selectedFile)
       }
@@ -334,6 +336,7 @@ function DashboardContent() {
     setClientCity('')
     setBauvorhaben('')
     setIncludeAddress(false)
+    setExcludeVAT(false)
     setSelectedFile(null)
     setPreviewUrl(null)
     setUploadError(null)
@@ -569,6 +572,28 @@ function DashboardContent() {
                       required
                       disabled={isSubmitting}
                     />
+                  </div>
+
+                  {/* B2B Construction Company Option */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="excludeVAT"
+                        checked={excludeVAT}
+                        onChange={(e) => setExcludeVAT(e.target.checked)}
+                        className="w-4 h-4 text-[#F89813] bg-[#EDEDED] border-[#EDEDED] rounded focus:ring-[#F89813] focus:ring-2"
+                        disabled={isSubmitting}
+                      />
+                      <Label htmlFor="excludeVAT" className="text-base font-medium text-[#404040] cursor-pointer">
+                        Auftraggeber ist Bauunternehmen (§ 13b UStG - keine MwSt.)
+                      </Label>
+                    </div>
+                    {excludeVAT && (
+                      <p className="text-sm text-[#676767] pl-6">
+                        Bei Angeboten an andere Bauunternehmen entfällt die Mehrwertsteuer gem. § 13b UStG.
+                      </p>
+                    )}
                   </div>
 
                   {/* Address Section */}

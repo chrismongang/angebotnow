@@ -27,7 +27,10 @@ export function calculateTotal(positions: Array<{ qty: number; price: number }>)
 }
 
 // Helper function to get total with VAT
-export function calculateTotalWithVAT(total: number, vatRate: number = 0.19): number {
+export function calculateTotalWithVAT(total: number, vatRate: number = 0.19, excludeVAT: boolean = false): number {
+  if (excludeVAT) {
+    return total; // Keine MwSt. bei § 13b UStG
+  }
   return total * (1 + vatRate)
 }
 

@@ -1,10 +1,11 @@
-# Angebot-Features: Bauvorhaben & Gültigkeitsdauer
+# Angebot-Features: Bauvorhaben, Gültigkeitsdauer & § 13b UStG
 
 ## Übersicht
 
-Die Angebots-PDFs wurden um zwei wichtige Features erweitert:
+Die Angebots-PDFs wurden um drei wichtige Features erweitert:
 1. **Bauvorhaben (BV)-Feld**: Optionales Feld für die Projektadresse
 2. **Gültigkeitsdauer**: Konfigurierbare Gültigkeitsdauer für Angebote
+3. **§ 13b UStG - Reverse Charge**: Angebote ohne Mehrwertsteuer für Bauunternehmen
 
 ## 1. Bauvorhaben (BV)-Feld
 
@@ -94,6 +95,81 @@ model User {
 - **Default**: 30 Tage (wenn nicht gesetzt)
 - **Typ**: Integer
 
+## 3. § 13b UStG - Reverse Charge für Bauunternehmen
+
+### Funktionsweise
+
+Gemäß § 13b UStG (Umsatzsteuergesetz) entfällt die Mehrwertsteuer bei Angeboten an andere Bauunternehmen. Die Steuerschuldnerschaft liegt beim Leistungsempfänger (Reverse Charge).
+
+#### **Rechtliche Grundlage**
+- **§ 13b UStG**: Steuerschuldnerschaft des Leistungsempfängers
+- Gilt für Bauleistungen zwischen Bauunternehmen
+- Der Leistungsempfänger (Auftraggeber) ist für die Umsatzsteuer zuständig
+- Der Leistungserbringer (Anbieter) stellt keine MwSt. in Rechnung
+
+#### **Funktionsweise in der App**
+- Checkbox "Auftraggeber ist Bauunternehmen (§ 13b UStG - keine MwSt.)"
+- Wenn aktiviert:
+  - **Keine MwSt. wird berechnet** (Gesamtbetrag = Zwischensumme)
+  - **Hinweistext im PDF**: "Steuerschuldnerschaft des Leistungsempfängers gem. § 13b UStG"
+  - **UI-Anzeige**: Statt "19% MwSt." wird "§ 13b UStG" angezeigt
+
+### UI-Integration
+
+**Lage**: 
+- **Quote-Erstellung**: Dashboard → Angebot erstellen → Nach "Name des Auftraggebers"
+- **Quote-Bearbeitung**: Angebots-Detailseite → Auftraggeberinformationen bearbeiten
+
+**Checkbox**:
+- Label: "Auftraggeber ist Bauunternehmen (§ 13b UStG - keine MwSt.)"
+- Erklärungstext erscheint bei Aktivierung
+- Kann jederzeit aktiviert/deaktiviert werden
+
+### Datenbank-Schema
+
+```prisma
+model Quote {
+  // ... andere Felder ...
+  excludeVAT   Boolean     @default(false) // § 13b UStG - Steuerschuldnerschaft des Leistungsempfängers
+}
+```
+
+### Validierung
+
+- **Typ**: Boolean (true/false)
+- **Default**: false (MwSt. wird standardmäßig berechnet)
+- **Änderbar**: Kann bei Quote-Erstellung und -Bearbeitung geändert werden
+
+### Anzeige im PDF
+
+**Normale Berechnung (excludeVAT = false)**:
+```
+Zwischensumme:                   1.000,00 EUR
+19% MwSt.:                         190,00 EUR
+─────────────────────────────────────────────
+Gesamtbetrag:                    1.190,00 EUR
+```
+
+**§ 13b UStG (excludeVAT = true)**:
+```
+Zwischensumme:                   1.000,00 EUR
+Steuerschuldnerschaft des Leistungsempfängers gem. § 13b UStG
+─────────────────────────────────────────────
+Gesamtbetrag:                    1.000,00 EUR
+```
+
+### UI-Anzeige in der Quote-Detailseite
+
+**Normale Berechnung**:
+- Zwischensumme: 1.000,00 EUR
+- 19% MwSt.: 190,00 EUR
+- Gesamt: 1.190,00 EUR
+
+**§ 13b UStG aktiviert**:
+- Zwischensumme: 1.000,00 EUR
+- § 13b UStG: —
+- Gesamt: 1.000,00 EUR
+
 ## Technische Implementierung
 
 ### Backend
@@ -102,6 +178,7 @@ model User {
 ```typescript
 // BV-Feld wird aus FormData gelesen
 const bauvorhaben = formData.get('bauvorhaben') as string
+const excludeVAT = formData.get('excludeVAT') === 'true'
 
 // Logik: Wenn Adresse vorhanden aber BV leer, BV aus Adresse generieren
 let finalBauvorhaben = validatedData.bauvorhaben || null
@@ -114,6 +191,7 @@ await prisma.quote.create({
   data: {
     // ... andere Felder ...
     bauvorhaben: finalBauvorhaben,
+    excludeVAT: excludeVAT,
   }
 })
 ```
@@ -125,6 +203,28 @@ if (input.bauvorhaben && input.bauvorhaben.trim()) {
   drawText('BV:', recipientX, currentContentY, 11, true, rgb(0, 0, 0), page);
   drawText(input.bauvorhaben, recipientX + 40, currentContentY, 11, false, rgb(0, 0, 0), page);
   currentContentY -= 25; // Abstand zwischen BV und Projektbeschreibung
+}
+
+// Total-Berechnung mit § 13b UStG Unterstützung
+const excludeVAT = input.excludeVAT || false;
+
+if (excludeVAT) {
+  // § 13b UStG - Keine MwSt., stattdessen Hinweistext
+  const legalText = "Steuerschuldnerschaft des Leistungsempfängers gem. § 13b UStG";
+  drawText(legalText, totalSectionLeft, currentY, 9, false, rgb(0, 0, 0), page);
+  currentY -= 20;
+  
+  // Total = Subtotal (keine MwSt.)
+  const total = subtotal;
+} else {
+  // Normale Berechnung mit 19% MwSt.
+  const vat = subtotal * 0.19;
+  const total = subtotal + vat;
+  
+  drawText('19% MwSt.:', totalSectionLeft, currentY, 10, true, rgb(0, 0, 0), page);
+  const vatText = `${formatCurrency(vat)} EUR`;
+  drawText(vatText, totalSectionRight - vatTextWidth, currentY, 10, true, rgb(0, 0, 0), page);
+  currentY -= 20;
 }
 
 // Gültigkeitsdauer-Anzeige
@@ -144,6 +244,7 @@ const pdfBytes = await generatePDF({
   // ... andere Parameter ...
   bauvorhaben: quote.bauvorhaben || undefined,
   offerValidityDays: offerValidityDays,
+  excludeVAT: quote.excludeVAT || false,
 })
 ```
 
@@ -153,6 +254,27 @@ const pdfBytes = await generatePDF({
 ```typescript
 // State
 const [bauvorhaben, setBauvorhaben] = useState('')
+const [excludeVAT, setExcludeVAT] = useState(false)
+
+// UI - § 13b UStG Checkbox (nach Auftraggeber-Name)
+<div className="space-y-3">
+  <div className="flex items-center gap-2">
+    <input
+      type="checkbox"
+      id="excludeVAT"
+      checked={excludeVAT}
+      onChange={(e) => setExcludeVAT(e.target.checked)}
+    />
+    <Label htmlFor="excludeVAT">
+      Auftraggeber ist Bauunternehmen (§ 13b UStG - keine MwSt.)
+    </Label>
+  </div>
+  {excludeVAT && (
+    <p className="text-sm text-[#676767] pl-6">
+      Bei Angeboten an andere Bauunternehmen entfällt die Mehrwertsteuer gem. § 13b UStG.
+    </p>
+  )}
+</div>
 
 // UI im Adress-Bereich
 {includeAddress && (
@@ -219,6 +341,12 @@ ALTER TABLE "public"."Quote" ADD COLUMN "bauvorhaben" TEXT;
 ALTER TABLE "public"."User" ADD COLUMN "offerValidityDays" INTEGER NOT NULL DEFAULT 30;
 ```
 
+### Migration 3: § 13b UStG Feld
+```sql
+-- 20251111174759_add_exclude_vat
+ALTER TABLE "public"."Quote" ADD COLUMN "excludeVAT" BOOLEAN NOT NULL DEFAULT false;
+```
+
 ## Verwendung
 
 ### 1. Bauvorhaben hinzufügen
@@ -248,6 +376,20 @@ ALTER TABLE "public"."User" ADD COLUMN "offerValidityDays" INTEGER NOT NULL DEFA
 4. Bei "Gültigkeitsdauer für Angebote (Tage)" die gewünschte Anzahl eingeben
 5. "Speichern" klicken
 6. Alle zukünftigen PDFs verwenden diese Gültigkeitsdauer
+
+### 3. § 13b UStG aktivieren
+
+**Bei Quote-Erstellung**:
+1. Angebot erstellen
+2. Nach Eingabe des Auftraggeber-Namens
+3. Checkbox "Auftraggeber ist Bauunternehmen (§ 13b UStG - keine MwSt.)" aktivieren
+4. Angebot erstellen
+
+**Bei Quote-Bearbeitung**:
+1. Zu Angebots-Detailseite navigieren
+2. "Auftraggeberinformationen bearbeiten" klicken
+3. Checkbox "Auftraggeber ist Bauunternehmen (§ 13b UStG - keine MwSt.)" aktivieren/deaktivieren
+4. "Speichern" klicken
 
 ## Beispiele
 
@@ -279,6 +421,19 @@ Mit freundlichen Grüßen
 Inatros GmbH
 ```
 
+### PDF-Ausgabe mit § 13b UStG
+
+```
+[Positions-Tabelle...]
+
+Zwischensumme:                   5.000,00 EUR
+Steuerschuldnerschaft des Leistungsempfängers gem. § 13b UStG
+─────────────────────────────────────────────
+Gesamtbetrag:                    5.000,00 EUR
+
+[Gültigkeitsdauer...]
+```
+
 ## Best Practices
 
 ### Bauvorhaben
@@ -290,6 +445,12 @@ Inatros GmbH
 - **Standard**: 30 Tage sind für die meisten Fälle ausreichend
 - **Längere Projekte**: Bei größeren Projekten 60-90 Tage sinnvoll
 - **Gesetzliche Vorgaben**: Prüfen Sie gesetzliche Mindestlaufzeiten in Ihrer Region
+
+### § 13b UStG
+- **Nur bei B2B-Bauunternehmen**: Aktivieren Sie diese Option nur, wenn der Auftraggeber ein Bauunternehmen ist
+- **Rechtliche Prüfung**: Stellen Sie sicher, dass die Voraussetzungen für § 13b UStG erfüllt sind
+- **Klarstellung im PDF**: Der Hinweistext im PDF macht die Steuerschuldnerschaft des Leistungsempfängers deutlich
+- **Nachträgliche Änderung**: Kann jederzeit bei der Quote-Bearbeitung aktiviert/deaktiviert werden
 
 ## Fehlerbehebung
 
@@ -307,6 +468,12 @@ Inatros GmbH
 - Prüfen Sie Ihre Einstellungen
 - Stellen Sie sicher, dass der Wert gespeichert wurde
 - Prüfen Sie, ob `offerValidityDays` in der Datenbank vorhanden ist
+
+### § 13b UStG wird nicht angewendet
+- Prüfen Sie, ob die Checkbox aktiviert wurde
+- Prüfen Sie, ob `excludeVAT` in der Datenbank auf `true` gesetzt ist
+- Prüfen Sie die PDF-Generierung - der Hinweistext sollte erscheinen
+- Bei bestehenden Quotes: Prüfen Sie, ob die Quote-Bearbeitung erfolgreich war
 
 ## Verwandte Dokumentation
 

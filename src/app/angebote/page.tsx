@@ -26,6 +26,7 @@ interface Quote {
     total: number
   }
   quoteNumber?: string // Added for structured quote number
+  excludeVAT?: boolean // § 13b UStG
 }
 
 const AngebotePage = dynamicImport(() => Promise.resolve(AngebotePageContent), {
@@ -133,8 +134,8 @@ function AngeboteContent() {
     if (quote.aiData?.positions && Array.isArray(quote.aiData.positions)) {
       // Calculate total from positions
       const subtotal = calculateTotal(quote.aiData.positions)
-      // Return total with VAT (as shown in PDF)
-      return calculateTotalWithVAT(subtotal)
+      // Return total with VAT (as shown in PDF) - berücksichtige excludeVAT
+      return calculateTotalWithVAT(subtotal, 0.19, quote.excludeVAT || false)
     }
     // Fallback to stored total or 0
     return quote.aiData?.total || 0

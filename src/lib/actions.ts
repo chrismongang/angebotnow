@@ -73,6 +73,7 @@ export async function createQuote(formData: FormData) {
     const clientCity = formData.get('clientCity') as string
     const bauvorhaben = formData.get('bauvorhaben') as string
     const includeAddress = formData.get('includeAddress') === 'true'
+    const excludeVAT = formData.get('excludeVAT') === 'true'
     const file = formData.get('file') as File
     
     console.log('Form data received:', {
@@ -147,6 +148,7 @@ export async function createQuote(formData: FormData) {
         clientStreet: includeAddress ? validatedData.clientStreet : null,
         clientCity: includeAddress ? validatedData.clientCity : null,
         bauvorhaben: finalBauvorhaben,
+        excludeVAT: excludeVAT,
         status: 'PENDING',
         userId: session.user.id,
         quoteNumber: quoteNumber, // Store the structured quote number
@@ -350,7 +352,8 @@ export async function updateQuoteClientInfo(
   clientName: string, 
   clientStreet: string | null, 
   clientCity: string | null, 
-  bauvorhaben: string | null
+  bauvorhaben: string | null,
+  excludeVAT: boolean = false
 ) {
   try {
     // Get authenticated user
@@ -408,6 +411,7 @@ export async function updateQuoteClientInfo(
         clientStreet: clientStreet?.trim() || null,
         clientCity: clientCity?.trim() || null,
         bauvorhaben: bauvorhaben?.trim() || null,
+        excludeVAT: excludeVAT,
       },
     })
 

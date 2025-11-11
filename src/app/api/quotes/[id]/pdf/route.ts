@@ -200,6 +200,7 @@ export async function GET(
       clientCity: quote.clientCity || undefined,
       bauvorhaben: (quote as any).bauvorhaben || undefined,
       offerValidityDays: offerValidityDays,
+      excludeVAT: quote.excludeVAT || false,
       company: companyInfo,
       userSubscriptionTier: quote.user.subscriptionTier
     })

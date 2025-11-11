@@ -104,6 +104,7 @@ model Quote {
   clientCity   String?
   clientStreet String?
   bauvorhaben  String?     // Bauvorhaben (kann von Adresse übernommen oder separat eingegeben werden)
+  excludeVAT   Boolean     @default(false) // § 13b UStG - Steuerschuldnerschaft des Leistungsempfängers
   user         User        @relation(fields: [userId], references: [id])
   feedbacks    Feedback[]  // Feedback-Einträge für dieses Angebot
 }

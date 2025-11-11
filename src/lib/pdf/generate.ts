@@ -11,6 +11,7 @@ export type GeneratePDFInput = {
   clientCity?: string;
   bauvorhaben?: string;
   offerValidityDays?: number; // Gültigkeitsdauer für Angebote in Tagen
+  excludeVAT?: boolean; // § 13b UStG - Steuerschuldnerschaft des Leistungsempfängers
   company?: { 
     name?: string; 
     address?: string; 
@@ -494,14 +495,13 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
     currentY = offerY - 60; // Start totals section with some space below separator
   }
   
-  const vat = subtotal * 0.19;
-  const total = subtotal + vat;
-
   // Define total section boundaries
   const totalSectionLeft = recipientX;
   const totalSectionRight = width - 40;
   const totalSectionWidth = totalSectionRight - totalSectionLeft;
 
+  const excludeVAT = input.excludeVAT || false;
+  
   // Subtotal - full width with proper spacing
   drawText('Zwischensumme:', totalSectionLeft, currentY, 10, true, rgb(0, 0, 0), page);
   const subtotalText = `${formatCurrency(subtotal)} EUR`;
@@ -510,27 +510,55 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
   
   currentY -= 20;
   
-  // VAT - full width with proper spacing
-  drawText('19% MwSt.:', totalSectionLeft, currentY, 10, true, rgb(0, 0, 0), page);
-  const vatText = `${formatCurrency(vat)} EUR`;
-  const vatTextWidth = fontBold.widthOfTextAtSize(vatText, 10);
-  drawText(vatText, totalSectionRight - vatTextWidth, currentY, 10, true, rgb(0, 0, 0), page);
-  
-  currentY -= 20;
-  
-  // Total with background - full width highlight
-  page.drawRectangle({
-    x: totalSectionLeft - 5,
-    y: currentY - 5,
-    width: totalSectionWidth + 10,
-    height: 20,
-    color: grayscale(0.95)
-  });
-  
-  drawText('Gesamtbetrag:', totalSectionLeft, currentY, 12, true, rgb(0, 0, 0), page);
-  const totalText = `${formatCurrency(total)} EUR`;
-  const totalTextWidth = fontBold.widthOfTextAtSize(totalText, 12);
-  drawText(totalText, totalSectionRight - totalTextWidth, currentY, 12, true, rgb(0, 0, 0), page);
+  if (excludeVAT) {
+    // § 13b UStG - Keine MwSt., stattdessen Hinweistext
+    const legalText = "Steuerschuldnerschaft des Leistungsempfängers gem. § 13b UStG";
+    drawText(legalText, totalSectionLeft, currentY, 9, false, rgb(0, 0, 0), page);
+    currentY -= 20;
+    
+    // Total = Subtotal (keine MwSt.)
+    const total = subtotal;
+    
+    // Total with background - full width highlight
+    page.drawRectangle({
+      x: totalSectionLeft - 5,
+      y: currentY - 5,
+      width: totalSectionWidth + 10,
+      height: 20,
+      color: grayscale(0.95)
+    });
+    
+    drawText('Gesamtbetrag:', totalSectionLeft, currentY, 12, true, rgb(0, 0, 0), page);
+    const totalText = `${formatCurrency(total)} EUR`;
+    const totalTextWidth = fontBold.widthOfTextAtSize(totalText, 12);
+    drawText(totalText, totalSectionRight - totalTextWidth, currentY, 12, true, rgb(0, 0, 0), page);
+  } else {
+    // Normale Berechnung mit 19% MwSt.
+    const vat = subtotal * 0.19;
+    const total = subtotal + vat;
+    
+    // VAT - full width with proper spacing
+    drawText('19% MwSt.:', totalSectionLeft, currentY, 10, true, rgb(0, 0, 0), page);
+    const vatText = `${formatCurrency(vat)} EUR`;
+    const vatTextWidth = fontBold.widthOfTextAtSize(vatText, 10);
+    drawText(vatText, totalSectionRight - vatTextWidth, currentY, 10, true, rgb(0, 0, 0), page);
+    
+    currentY -= 20;
+    
+    // Total with background - full width highlight
+    page.drawRectangle({
+      x: totalSectionLeft - 5,
+      y: currentY - 5,
+      width: totalSectionWidth + 10,
+      height: 20,
+      color: grayscale(0.95)
+    });
+    
+    drawText('Gesamtbetrag:', totalSectionLeft, currentY, 12, true, rgb(0, 0, 0), page);
+    const totalText = `${formatCurrency(total)} EUR`;
+    const totalTextWidth = fontBold.widthOfTextAtSize(totalText, 12);
+    drawText(totalText, totalSectionRight - totalTextWidth, currentY, 12, true, rgb(0, 0, 0), page);
+  }
 
   // Offer validity - Über dem Unterschriftsbereich
   currentY -= 30;
