@@ -15,7 +15,7 @@ import * as Sentry from '@sentry/nextjs'
 
 const uploadSchema = z.object({
   projectInfo: z.string().min(1, 'Projektinfo ist erforderlich').max(1000, 'Projektinfo zu lang'),
-  clientName: z.string().min(1, 'Kundenname ist erforderlich').max(100, 'Kundenname zu lang'),
+  clientName: z.string().min(1, 'Kundenname ist erforderlich').max(160, 'Kundenname zu lang'),
   clientStreet: z.string().optional(),
   clientCity: z.string().optional(),
   bauvorhaben: z.string().max(200, 'Bauvorhaben zu lang').optional(),
@@ -24,7 +24,7 @@ const uploadSchema = z.object({
 // Schema for when address is required
 const uploadSchemaWithAddress = z.object({
   projectInfo: z.string().min(1, 'Projektinfo ist erforderlich').max(1000, 'Projektinfo zu lang'),
-  clientName: z.string().min(1, 'Kundenname ist erforderlich').max(100, 'Kundenname zu lang'),
+  clientName: z.string().min(1, 'Kundenname ist erforderlich').max(160, 'Kundenname zu lang'),
   clientStreet: z.string().min(1, 'Straße & Hausnummer ist erforderlich').max(200, 'Straße & Hausnummer zu lang'),
   clientCity: z.string().min(1, 'PLZ & Ort ist erforderlich').max(200, 'PLZ & Ort zu lang'),
   bauvorhaben: z.string().max(200, 'Bauvorhaben zu lang').optional(),
@@ -375,8 +375,8 @@ export async function updateQuoteClientInfo(
       return { success: false, error: 'Kundenname ist erforderlich' }
     }
 
-    if (clientName.length > 100) {
-      return { success: false, error: 'Kundenname zu lang (max. 100 Zeichen)' }
+    if (clientName.length > 160) {
+      return { success: false, error: 'Kundenname zu lang (max. 160 Zeichen)' }
     }
 
     if (clientStreet && clientStreet.length > 200) {

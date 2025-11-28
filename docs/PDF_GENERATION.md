@@ -26,7 +26,12 @@ The generated PDF includes:
 - **Header on every page** - Full header with logo/branding, sender info, recipient info, offer number, and date
 - **Footer on every page** - Company details, bank information, legal info, and page numbers
 - Quote number and date
-- Client information (name and address if provided)
+- Client information (name and address if provided):
+  - **Client name with automatic text wrapping**: 
+    - Supports up to 160 characters
+    - Automatically wraps to multiple lines when name exceeds 250px width
+    - Dynamic positioning: All subsequent sections (address, offer details, BV, project description) automatically adjust downward when client name requires multiple lines
+    - Prevents text overflow and maintains professional layout
 - **Bauvorhaben (BV) field** (if provided):
   - Optional field for project location/address
   - Displayed above project description as "BV: [address]"
@@ -105,6 +110,7 @@ PDFs are automatically generated when:
 - **Format Support**: PNG and JPG logos are supported with automatic format detection
 - **Page Management**: Tracks all pages for page numbering
 - **Dynamic Content**: Handles variable content lengths with automatic pagination
+- **Dynamic Header Positioning**: Client name height is calculated dynamically based on wrapped text, ensuring all subsequent sections (address, offer details, BV, project description) are positioned correctly without overlaps
 
 ## Related Documentation
 

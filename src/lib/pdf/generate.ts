@@ -251,7 +251,8 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
   }
 
   // Function to draw header (called on EVERY page)
-  const drawHeader = (targetPage: PDFPage) => {
+  // Returns the offerY position for dynamic content positioning
+  const drawHeader = (targetPage: PDFPage): number => {
     const recipientX = 40;
     const senderX = width - 200;
     const shouldShowBranding = input.userSubscriptionTier !== 'PRO';
@@ -300,19 +301,39 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
       drawText(senderAddress, recipientX, recipientY + 20, 10, false, grayscale(0.5), targetPage);
     }
     
-    drawText(input.clientName, recipientX, recipientY, 12, true, rgb(0, 0, 0), targetPage);
+    // Draw client name with wrapping - max width to prevent overflow
+    const clientNameMaxWidth = 250; // Max width for client name before wrapping
+    const clientNameFontSize = 12;
+    const clientNameLines = drawWrappedText(
+      input.clientName, 
+      recipientX, 
+      recipientY, 
+      clientNameMaxWidth, 
+      clientNameFontSize, 
+      true, // bold
+      rgb(0, 0, 0), 
+      targetPage
+    );
+    
+    // Calculate Y position for client address based on wrapped client name height
+    const clientNameHeight = clientNameLines * (clientNameFontSize + 2);
+    let currentRecipientY = recipientY - clientNameHeight - 4; // 4px spacing after name
     
     // Client address (if provided)
     if (input.clientStreet || input.clientCity) {
       const clientAddress = [input.clientStreet, input.clientCity].filter(Boolean).join('\n');
       const addressLines = clientAddress.split('\n');
       addressLines.forEach((line, index) => {
-        drawText(line, recipientX, recipientY - 16 - (index * 16), 10, false, rgb(0, 0, 0), targetPage);
+        drawText(line, recipientX, currentRecipientY - (index * 16), 10, false, rgb(0, 0, 0), targetPage);
       });
+      // Update position after address
+      currentRecipientY -= (addressLines.length * 16) + 4;
+    } else {
+      currentRecipientY -= 4; // Extra spacing if no address
     }
 
-    // Offer details section
-    const offerY = recipientY - 80;
+    // Offer details section - dynamically positioned based on recipient section height
+    const offerY = currentRecipientY - 20; // 20px spacing before "Angebot" title
     
     // Main title "Angebot"
     drawText('Angebot', recipientX, offerY, 16, true, rgb(0, 0, 0), targetPage);
@@ -326,25 +347,29 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
 
     // Separator line
     drawLine(recipientX, offerY - 40, width - 40, offerY - 40, 1, targetPage);
+    
+    // Return the offerY position so it can be used for content positioning
+    return offerY;
   };
 
   // Function to create a new page with header and footer
-  const createNewPage = (): PDFPage => {
+  // Returns both the page and the offerY position for consistent positioning
+  const createNewPage = (): { page: PDFPage; offerY: number } => {
     const newPage = pdfDoc.addPage([595.28, 841.89]);
     // Draw header and footer immediately on new page
-    drawHeader(newPage);
+    const newPageOfferY = drawHeader(newPage);
     drawFooter(newPage);
     pages.push(newPage);
-    return newPage;
+    return { page: newPage, offerY: newPageOfferY };
   };
 
   // Draw header and footer on first page
-  drawHeader(page);
+  const firstPageOfferY = drawHeader(page);
   drawFooter(page);
 
-  // Content starts after header
+  // Content starts after header - use dynamic offerY from header
   const recipientX = 40;
-  const offerY = (height - 120) - 80; // Same calculation as in drawHeader
+  const offerY = firstPageOfferY; // Use the dynamically calculated offerY
   const salutationY = offerY - 70;
   
   // Bauvorhaben über der Projektbeschreibung (wenn vorhanden)
@@ -395,11 +420,12 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
       
       if (currentY - rowHeight < minY) {
         // Create new page with header and footer
-        page = createNewPage();
-        // Content starts after header - same position as first page
-        // First page: recipientY = height - 120, offerY = recipientY - 80, salutationY = offerY - 70, tableY = salutationY - 30
-        // So table starts at: height - 120 - 80 - 70 - 30 = height - 300
-        const tableY = height - 300;
+        const newPageData = createNewPage();
+        page = newPageData.page;
+        const newPageOfferY = newPageData.offerY;
+        // Content starts after header - use dynamic offerY from header
+        const newPageSalutationY = newPageOfferY - 70;
+        const tableY = newPageSalutationY - 30; // Same spacing as first page
         currentY = tableY - 25; // Space below header row
         
         // Draw table header on new page
@@ -489,10 +515,11 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
   
   // Check if we need a new page for totals (need ~150px for totals + signature)
   if (currentY - 150 < minY) {
-    page = createNewPage();
+    const newPageData = createNewPage();
+    page = newPageData.page;
+    const newPageOfferY = newPageData.offerY;
     // Content starts after header - start totals section below separator
-    const offerY = (height - 120) - 80;
-    currentY = offerY - 60; // Start totals section with some space below separator
+    currentY = newPageOfferY - 60; // Start totals section with some space below separator
   }
   
   // Define total section boundaries
@@ -570,9 +597,11 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
   // Check if we need a new page for signature section (need ~180px)
   const signatureSectionHeight = 180;
   if (currentY - signatureSectionHeight < minY) {
-    page = createNewPage();
-    const offerY = (height - 120) - 80;
-    currentY = offerY - 50; // Start signature section with some space below separator
+    const newPageData = createNewPage();
+    page = newPageData.page;
+    const newPageOfferY = newPageData.offerY;
+    // Content starts after header - start signature section with some space below separator
+    currentY = newPageOfferY - 50; // Start signature section with some space below separator
   }
 
   // Signature section - Rechtsverbindliche Unterschriften
