@@ -10,6 +10,8 @@ import Link from 'next/link'
 import { Plus, Filter, ChevronDown, ChevronUp, FileText, Euro } from 'lucide-react'
 import { cn, calculateTotal, calculateTotalWithVAT, formatPrice } from '@/lib/utils'
 import dynamicImport from 'next/dynamic'
+import { SwipeableQuoteCard } from '@/components/swipeable-quote-card'
+import { DeleteQuoteModal } from '@/components/delete-quote-modal'
 
 // Force dynamic rendering to avoid prerendering issues
 export const dynamic = 'force-dynamic'
@@ -81,6 +83,9 @@ function AngeboteContent() {
   const [showFilter, setShowFilter] = useState(false)
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
   const [isLoading, setIsLoading] = useState(true)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [quoteToDelete, setQuoteToDelete] = useState<Quote | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     loadQuotes()
@@ -139,6 +144,37 @@ function AngeboteContent() {
     }
     // Fallback to stored total or 0
     return quote.aiData?.total || 0
+  }
+
+  const handleDeleteClick = (quote: Quote) => {
+    setQuoteToDelete(quote)
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!quoteToDelete) return
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch(`/api/quotes/${quoteToDelete.id}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        // Remove from list
+        setQuotes(quotes.filter(q => q.id !== quoteToDelete.id))
+        setDeleteModalOpen(false)
+        setQuoteToDelete(null)
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Fehler beim Löschen des Angebots')
+      }
+    } catch (error) {
+      console.error('Error deleting quote:', error)
+      alert('Fehler beim Löschen des Angebots')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   if (isLoading) {
@@ -229,7 +265,7 @@ function AngeboteContent() {
           </div>
 
           {/* Quotes List */}
-          <div className="space-y-8">
+          <div className="space-y-8 pb-24 md:pb-8">
             {sortedQuotes.length === 0 ? (
               <Card className="p-8 text-center">
                 <div className="space-y-4">
@@ -254,60 +290,77 @@ function AngeboteContent() {
               sortedQuotes.map((quote) => {
                 const total = getQuoteTotal(quote)
                 return (
-                  <Link key={quote.id} href={`/angebot/${quote.id}`}>
-                    <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer mb-3">
-                      <CardContent className="p-0">
-                        <div className="flex items-center gap-4">
-                          {/* Image Preview */}
-                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#EDEDED] flex-shrink-0">
-                            {quote.imagePath ? (
-                              <Image
-                                src={quote.imagePath}
-                                alt="Projekt Vorschau"
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <FileText size={20} className="text-[#676767]" />
-                              </div>
-                            )}
-                          </div>
-                          
-                          {/* Content */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-[#404040] mb-1">
-                                  {quote.clientName}
-                                </h3>
-                                <p className="text-xs text-[#676767]">
-                                  {quote.quoteNumber ? `Angebot #${quote.quoteNumber}` : `Angebot #${quote.id}`}
-                                </p>
-                              </div>
-                              <div className="text-right ml-4">
-                                {total > 0 && (
-                                  <div className="mb-1">
-                                    <span className="text-sm font-semibold text-[#404040]">
-                                      {formatPrice(total)}
-                                    </span>
-                                  </div>
-                                )}
-                                <p className="text-xs text-[#676767]">
-                                  {formatDate(quote.createdAt)}
-                                </p>
+                  <SwipeableQuoteCard
+                    key={quote.id}
+                    onDelete={() => handleDeleteClick(quote)}
+                  >
+                    <Link href={`/angebot/${quote.id}`}>
+                      <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                        <CardContent className="p-0">
+                          <div className="flex items-center gap-4">
+                            {/* Image Preview */}
+                            <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#EDEDED] flex-shrink-0">
+                              {quote.imagePath ? (
+                                <Image
+                                  src={quote.imagePath}
+                                  alt="Projekt Vorschau"
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <FileText size={20} className="text-[#676767]" />
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Content */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-semibold text-[#404040] mb-1">
+                                    {quote.clientName}
+                                  </h3>
+                                  <p className="text-xs text-[#676767]">
+                                    {quote.quoteNumber ? `Angebot #${quote.quoteNumber}` : `Angebot #${quote.id}`}
+                                  </p>
+                                </div>
+                                <div className="text-right ml-4">
+                                  {total > 0 && (
+                                    <div className="mb-1">
+                                      <span className="text-sm font-semibold text-[#404040]">
+                                        {formatPrice(total)}
+                                      </span>
+                                    </div>
+                                  )}
+                                  <p className="text-xs text-[#676767]">
+                                    {formatDate(quote.createdAt)}
+                                  </p>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </SwipeableQuoteCard>
                 )
               })
             )}
           </div>
         </div>
       </div>
+
+      <DeleteQuoteModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false)
+          setQuoteToDelete(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        quoteNumber={quoteToDelete?.quoteNumber}
+        clientName={quoteToDelete?.clientName}
+        isDeleting={isDeleting}
+      />
     </AuthenticatedLayout>
   )
 }

@@ -1,11 +1,12 @@
-# Angebot-Features: Bauvorhaben, Gültigkeitsdauer & § 13b UStG
+# Angebot-Features: Bauvorhaben, Gültigkeitsdauer, § 13b UStG & Löschfunktion
 
 ## Übersicht
 
-Die Angebots-PDFs wurden um drei wichtige Features erweitert:
+Die Angebots-PDFs wurden um wichtige Features erweitert:
 1. **Bauvorhaben (BV)-Feld**: Optionales Feld für die Projektadresse
 2. **Gültigkeitsdauer**: Konfigurierbare Gültigkeitsdauer für Angebote
 3. **§ 13b UStG - Reverse Charge**: Angebote ohne Mehrwertsteuer für Bauunternehmen
+4. **Löschfunktion**: Angebote löschen mit Swipe-to-Delete und Bestätigungsmodal (siehe [QUOTE_DELETE_FEATURE.md](./QUOTE_DELETE_FEATURE.md))
 
 ## 1. Bauvorhaben (BV)-Feld
 
@@ -479,4 +480,5 @@ Gesamtbetrag:                    5.000,00 EUR
 
 - [USER_DATA_INTEGRATION.md](./USER_DATA_INTEGRATION.md) - Benutzerdaten-Verwaltung
 - [PDF_GENERATION.md](./PDF_GENERATION.md) - PDF-Generierung im Detail
+- [QUOTE_DELETE_FEATURE.md](./QUOTE_DELETE_FEATURE.md) - Angebot-Löschfunktion (Swipe-to-Delete)
 

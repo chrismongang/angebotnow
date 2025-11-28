@@ -6,6 +6,20 @@ Dieses Dokument gibt einen Überblick über alle verfügbaren Dokumentationen im
 
 ---
 
+## 🆕 **NEUE DOKUMENTATIONEN (Version 1.6.0)**
+
+### **1. [QUOTE_DELETE_FEATURE.md](./QUOTE_DELETE_FEATURE.md)**
+- **Zweck:** Vollständige Dokumentation der Angebot-Löschfunktion
+- **Inhalt:**
+  - Swipe-to-Delete in der Angebot-Übersicht (Mobile & Desktop)
+  - Lösch-Button auf der Detail-Seite
+  - Bestätigungsmodal für Sicherheit
+  - API-Endpunkt und Sicherheits-Checks
+  - Technische Implementierung und Komponenten
+  - UX-Verbesserungen und zukünftige Erweiterungen
+- **Status:** ✅ Neu erstellt
+- **Version:** 1.6.0
+
 ## 🆕 **NEUE DOKUMENTATIONEN (Version 1.5.0)**
 
 ### **1. [QUOTE_FEATURES.md](./QUOTE_FEATURES.md)**
@@ -16,8 +30,8 @@ Dieses Dokument gibt einen Überblick über alle verfügbaren Dokumentationen im
   - Technische Implementierung und Datenbank-Schema
   - UI-Integration und Verwendung
   - Best Practices und Fehlerbehebung
-- **Status:** ✅ Neu erstellt
-- **Version:** 1.5.0
+- **Status:** ✅ Aktualisiert
+- **Version:** 1.5.0 (erweitert um Löschfunktion-Referenz)
 
 ## 🆕 **NEUE DOKUMENTATIONEN (Version 1.3.0)**
 

@@ -6,9 +6,23 @@
 
 ---
 
-## 🆕 **NEUE FEATURES - REFERRAL SYSTEM**
+## 🆕 **NEUE FEATURES - VERSION 1.6.0**
 
-### **🎁 Referral-System (Neu implementiert)**
+### **🗑️ Angebot-Löschfunktion (Neu implementiert)**
+- **Zweck:** Benutzer können erstellte Angebote löschen
+- **Funktionalität:** 
+  - **Swipe-to-Delete** in der Angebot-Übersicht (Mobile & Desktop)
+  - **Lösch-Button** auf der Angebot-Detail-Seite
+  - **Bestätigungsmodal** mit Warnung vor endgültigem Löschen
+  - **Sichere API** mit Authorization-Checks
+  - **Erweiterbar** für zukünftige Aktionen (Archivieren, Status ändern)
+- **Status:** ✅ Vollständig implementiert und getestet
+- **Version:** 1.6.0
+- **Dokumentation:** [QUOTE_DELETE_FEATURE.md](./docs/QUOTE_DELETE_FEATURE.md)
+
+## 🆕 **NEUE FEATURES - REFERRAL SYSTEM (Version 1.2.0)**
+
+### **🎁 Referral-System (Implementiert)**
 - **Zweck:** User-Akquisition durch bestehende Free-User
 - **Funktionalität:** 
   - Free-User können Freunde einladen
@@ -214,6 +228,7 @@ npm run build
 6. **Responsive Design** (Mobile + Desktop)
 7. **Referral-System** - Freunde einladen für Credits
 8. **Multi-Channel Sharing** - WhatsApp, SMS, Email, Native Share
+9. **Angebot-Löschfunktion** - Swipe-to-Delete & Detail-Seite Löschen (NEU)
 
 ### **Für Admins verfügbar:**
 1. **Stripe Dashboard** - Subscription-Management
@@ -262,6 +277,7 @@ npm run build
 - ✅ **Referral-System für User-Akquisition**
 - ✅ **Multi-Channel Sharing**
 - ✅ **Hard Paywall mit Referral-Option**
+- ✅ **Angebot-Löschfunktion mit Swipe-to-Delete**
 
 ### **Was ausgeblendet ist:**
 - ⚠️ Email/Passwort Sign-In (kann bei Bedarf aktiviert werden)
@@ -345,6 +361,6 @@ src/
 ---
 
 **Dokumentation erstellt von:** AI Assistant  
-**Datum:** 01.09.2025  
-**Version:** 1.2.0  
-**Status:** Vollständig implementiert mit Referral-System und bereit für Deployment
+**Datum:** 2025-01-XX  
+**Version:** 1.6.0  
+**Status:** Vollständig implementiert mit Referral-System, Löschfunktion und bereit für Deployment

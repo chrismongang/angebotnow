@@ -6,14 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Image } from "@/components/ui/image"
-import { notFound } from 'next/navigation'
+import { notFound, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { formatDate, calculateTotal, calculateTotalWithVAT, formatPrice } from '@/lib/utils'
 import { AIResult } from '@/lib/ai/provider'
 import { updateQuotePositions, updateQuoteClientInfo } from '@/lib/actions'
 import { AuthenticatedLayout } from "@/components/authenticated-layout"
 import { QuoteFeedback } from "@/components/feedback/quote-feedback"
-import { ArrowLeft, FileText, Download, Share2, Edit, Save, X, Crown, Plus } from 'lucide-react'
+import { DeleteQuoteModal } from '@/components/delete-quote-modal'
+import { ArrowLeft, FileText, Download, Share2, Edit, Save, X, Crown, Plus, Trash2 } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -29,6 +30,7 @@ interface PageProps {
 export default function QuoteDetailPage({ params }: PageProps) {
   const { id } = params
   const { data: session } = useSession()
+  const router = useRouter()
   const [quote, setQuote] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -43,6 +45,8 @@ export default function QuoteDetailPage({ params }: PageProps) {
   const [editedBauvorhaben, setEditedBauvorhaben] = useState('')
   const [editedExcludeVAT, setEditedExcludeVAT] = useState(false)
   const [isUpdatingClientInfo, setIsUpdatingClientInfo] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     const fetchQuote = async () => {
@@ -403,6 +407,33 @@ export default function QuoteDetailPage({ params }: PageProps) {
       alert('Fehler beim Aktualisieren der Auftraggeberinformationen')
     } finally {
       setIsUpdatingClientInfo(false)
+    }
+  }
+
+  const handleDeleteClick = () => {
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    setIsDeleting(true)
+    try {
+      const response = await fetch(`/api/quotes/${id}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        router.push('/angebote')
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Fehler beim Löschen des Angebots')
+        setDeleteModalOpen(false)
+      }
+    } catch (error) {
+      console.error('Error deleting quote:', error)
+      alert('Fehler beim Löschen des Angebots')
+      setDeleteModalOpen(false)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -873,12 +904,41 @@ export default function QuoteDetailPage({ params }: PageProps) {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Delete Quote Card */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base sm:text-lg lg:text-xl">Angebot löschen</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-[#676767] mb-4">
+                    Wenn Sie dieses Angebot löschen, wird es dauerhaft entfernt und kann nicht wiederhergestellt werden.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={handleDeleteClick}
+                    className="w-full border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 rounded-[14px] flex items-center justify-center gap-2"
+                  >
+                    <Trash2 size={18} />
+                    Angebot löschen
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
       </div>
 
       {/* Feedback Section moved above, under PDF block */}
+
+      <DeleteQuoteModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        quoteNumber={quote?.quoteNumber}
+        clientName={quote?.clientName}
+        isDeleting={isDeleting}
+      />
 
       <div className="pb-20 md:pb-8"></div>
     </AuthenticatedLayout>
