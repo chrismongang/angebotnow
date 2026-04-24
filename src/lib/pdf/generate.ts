@@ -67,15 +67,29 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
     return `${formattedInteger},${decimalPart}`;
   };
 
+  const sanitizeSingleLineText = (text: string | undefined | null): string => {
+    return (text ?? '')
+      .replace(/\r\n/g, ' ')
+      .replace(/[\r\n]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  const normalizeMultilineText = (text: string | undefined | null): string => {
+    return (text ?? '')
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n');
+  };
+
   const drawText = (text: string, x: number, y: number, size = 11, bold = false, color: any = rgb(0, 0, 0), targetPage?: PDFPage) => {
     const target = targetPage || getCurrentPage();
-    target.drawText(text, { x, y, size, font: bold ? fontBold : font, color });
+    target.drawText(sanitizeSingleLineText(text), { x, y, size, font: bold ? fontBold : font, color });
   };
 
   // Function to wrap text to fit within a specified width
   const wrapText = (text: string, maxWidth: number, fontSize: number): string[] => {
     // First, split by newlines to handle multi-line input
-    const inputLines = text.split('\n');
+    const inputLines = normalizeMultilineText(text).split('\n');
     const allWrappedLines: string[] = [];
     
     // Wrap each line separately
@@ -382,10 +396,10 @@ export async function generatePDF(input: GeneratePDFInput): Promise<Uint8Array> 
   
   // Project summary only (no greeting or introduction text)
   const projectSummary = input.projectInfo || 'Arbeitsleistung';
-  drawText(projectSummary, recipientX, currentContentY, 11, false, rgb(0, 0, 0), page);
+  const projectSummaryLines = drawWrappedText(projectSummary, recipientX, currentContentY, width - 80, 11, false, rgb(0, 0, 0), page);
 
   // Positions table
-  let currentY = currentContentY - 30; // Reduced space since we removed greeting
+  let currentY = currentContentY - (projectSummaryLines * 13) - 18; // Dynamic spacing for wrapped project summary
   const tableX = recipientX;
   const col1Width = 40;   // Pos
   const col2Width = 200;  // Bezeichnung
